@@ -2,50 +2,96 @@ package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.google.gson.Gson;
+import com.google.gson.*;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * Handler for requests to Lambda function.
  */
 public class AuthorityProxy implements RequestHandler<String, Object> {
 
-    private final transient String BARE_URL = "https://authority.bibsys.no/authority/rest/functions/v2/query?";
-    private final transient char AMP = '&';
+    private final BareConnection bareConnection;
+
+    public AuthorityProxy() {
+        bareConnection = new BareConnection();
+    }
+
+    public AuthorityProxy(BareConnection bareConnection) {
+        this.bareConnection = bareConnection;
+    }
 
     @Override
     public Object handleRequest(final String input, final Context context) {
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put("Content-Type", "application/json");
         headers.put("X-Custom-Header", "application/json");
-        Gson gson = new Gson();
-        Authority authority = gson.fromJson(input, Authority.class);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Authority inputAuthority = gson.fromJson(input, Authority.class);
+        GatewayResponse gatewayResponse = new GatewayResponse("{}", headers, 500);
         try {
-            final String q = "q=" + URLEncoder.encode(authority.getName(), StandardCharsets.UTF_8.toString());
-            final String start = "start=1";
-            final String max = "max=10";
-            final String format = "format=json";
-            String bareUrl = BARE_URL + q + AMP + start + AMP + max + AMP + format;
-            final String pageContents = this.getPageContents(bareUrl);
-            return new GatewayResponse(pageContents, headers, 200);
+            String authorityName = inputAuthority.getName();
+            String bareUrl = bareConnection.setUpQueryUrl(authorityName);
+            final InputStreamReader streamReader = bareConnection.connect(bareUrl);
+            final List<Authority> fetchedAuthority = this.getAuthorities(streamReader);
+            gatewayResponse.setBody(gson.toJson(fetchedAuthority));
+            gatewayResponse.setStatusCode(200);
         } catch (IOException e) {
-            return new GatewayResponse("{}", headers, 500);
+            gatewayResponse.setBody("{\"error\": \"" + e.getMessage() + "\"}");
+            gatewayResponse.setStatusCode(500);
         }
+        return gatewayResponse;
     }
 
-    private String getPageContents(String address) throws IOException {
-        URL url = new URL(address);
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {
-            return br.lines().collect(Collectors.joining(System.lineSeparator()));
+    private List<Authority> getAuthorities(InputStreamReader streamReader) {
+        ArrayList<Authority> authorityList;
+        final JsonObject responseObject = (JsonObject) JsonParser.parseReader(streamReader);
+        int numFound = responseObject.get("numFound").getAsInt();
+        authorityList = new ArrayList<>(numFound);
+        final JsonArray results = responseObject.get("results").getAsJsonArray();
+        for (JsonElement jsonElement : results) {
+            final JsonObject result = (JsonObject) jsonElement;
+            Authority authority = new Authority();
+            final JsonArray marcdata = result.get("marcdata").getAsJsonArray();
+            for (JsonElement marcdatum : marcdata) {
+                final JsonObject marc = (JsonObject) marcdatum;
+                if ("100".equals(marc.get("tag").getAsString())) {
+                    JsonArray subfields = marc.get("subfields").getAsJsonArray();
+                    for (JsonElement subfield : subfields) {
+                        JsonObject sub = (JsonObject) subfield;
+                        if ("a".equals(sub.get("subcode").getAsString())) {
+                            authority.setName(sub.get("value").getAsString());
+                        }
+                        if ("d".equals(sub.get("subcode").getAsString())) {
+                            authority.setBirthDate(sub.get("value").getAsString());
+                        }
+                    }
+                }
+                final JsonObject identifiersMap = (JsonObject) result.get("identifiersMap");
+                authority.setScn(this.getValue(identifiersMap, "scn"));
+                authority.setFeideId(this.getValue(identifiersMap, "feide"));
+                authority.setOrcId(this.getValue(identifiersMap, "orcid"));
+            }
+            authorityList.add(authority);
         }
+        return authorityList;
     }
+
+    private String getValue(JsonObject jsonObject, String key) throws ArrayIndexOutOfBoundsException {
+        String value = "";
+        JsonElement jsonElement = jsonObject.get(key);
+        if (jsonElement != null) {
+            value = jsonElement.getAsJsonArray().get(0).getAsString();
+        }
+        return value;
+    }
+
 }
