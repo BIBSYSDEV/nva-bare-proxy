@@ -1,5 +1,6 @@
 package no.unit.nva.bare;
 
+import javax.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,10 +12,10 @@ public class GatewayResponse {
 
     private String body;
     private final Map<String, String> headers;
-    private int statusCode;
+    private Response.Status status;
 
-    public GatewayResponse(final String body, final Map<String, String> headers, final int statusCode) {
-        this.statusCode = statusCode;
+    public GatewayResponse(final String body, final Map<String, String> headers, final Response.Status status) {
+        this.status = status;
         this.body = body;
         this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
     }
@@ -27,15 +28,15 @@ public class GatewayResponse {
         return headers;
     }
 
-    public int getStatusCode() {
-        return statusCode;
+    public Response.Status getStatus() {
+        return status;
     }
 
     public void setBody(String body) {
         this.body = body;
     }
 
-    public void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
+    public void setStatus(Response.Status status) {
+        this.status = status;
     }
 }

@@ -2,13 +2,17 @@ package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -36,17 +40,17 @@ public class AuthorityProxy implements RequestHandler<String, Object> {
         headers.put("X-Custom-Header", "application/json");
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         Authority inputAuthority = gson.fromJson(input, Authority.class);
-        GatewayResponse gatewayResponse = new GatewayResponse("{}", headers, 500);
+        GatewayResponse gatewayResponse = new GatewayResponse("{}", headers, Response.Status.INTERNAL_SERVER_ERROR);
         try {
             String authorityName = inputAuthority.getName();
-            String bareUrl = bareConnection.setUpQueryUrl(authorityName);
+            URL bareUrl = bareConnection.setUpQueryUrl(authorityName);
             final InputStreamReader streamReader = bareConnection.connect(bareUrl);
             final List<Authority> fetchedAuthority = this.getAuthorities(streamReader);
             gatewayResponse.setBody(gson.toJson(fetchedAuthority));
-            gatewayResponse.setStatusCode(200);
+            gatewayResponse.setStatus(Response.Status.OK);
         } catch (IOException e) {
             gatewayResponse.setBody("{\"error\": \"" + e.getMessage() + "\"}");
-            gatewayResponse.setStatusCode(500);
+            gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
         }
         return gatewayResponse;
     }
@@ -76,16 +80,16 @@ public class AuthorityProxy implements RequestHandler<String, Object> {
                     }
                 }
                 final JsonObject identifiersMap = (JsonObject) result.get("identifiersMap");
-                authority.setScn(this.getValue(identifiersMap, "scn"));
-                authority.setFeideId(this.getValue(identifiersMap, "feide"));
-                authority.setOrcId(this.getValue(identifiersMap, "orcid"));
+                authority.setScn(this.getValueFromJsonArray(identifiersMap, "scn"));
+                authority.setFeideId(this.getValueFromJsonArray(identifiersMap, "feide"));
+                authority.setOrcId(this.getValueFromJsonArray(identifiersMap, "orcid"));
             }
             authorityList.add(authority);
         }
         return authorityList;
     }
 
-    private String getValue(JsonObject jsonObject, String key) throws ArrayIndexOutOfBoundsException {
+    protected String getValueFromJsonArray(JsonObject jsonObject, String key) throws ArrayIndexOutOfBoundsException {
         String value = "";
         JsonElement jsonElement = jsonObject.get(key);
         if (jsonElement != null) {

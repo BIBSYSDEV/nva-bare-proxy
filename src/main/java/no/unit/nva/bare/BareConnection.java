@@ -3,31 +3,32 @@ package no.unit.nva.bare;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 public class BareConnection {
 
-    private final transient String BARE_URL = "https://authority.bibsys.no/authority/rest/functions/v2/query?";
-    private final transient char AMP = '&';
+    private final transient String bareUrl = "https://authority.bibsys.no/authority/rest/functions/v2/query?";
+    private final transient char amp = '&';
 
     public BareConnection() {
     }
 
-    protected InputStreamReader connect(String address) throws IOException {
-        URL url = new URL(address);
+    protected InputStreamReader connect(URL url) throws IOException {
         return new InputStreamReader(url.openStream());
     }
 
 
-    protected String setUpQueryUrl(String authorityName) throws UnsupportedEncodingException {
+    protected URL setUpQueryUrl(String authorityName) throws UnsupportedEncodingException, MalformedURLException {
         final String authoritytype = " authoritytype:person";
         final String q = "q=" + URLEncoder.encode(authorityName + authoritytype, StandardCharsets.UTF_8.toString());
         final String start = "start=1";
         final String max = "max=10";
         final String format = "format=json";
-        return BARE_URL + q + AMP + start + AMP + max + AMP + format;
+        final String address = bareUrl + q + amp + start + amp + max + amp + format;
+        return new URL(address);
     }
 
 }
