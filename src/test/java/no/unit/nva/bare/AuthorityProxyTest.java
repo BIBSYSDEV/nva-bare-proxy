@@ -16,10 +16,13 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -96,6 +99,14 @@ public class AuthorityProxyTest {
         final JsonObject jsonObject = (JsonObject) JsonParser.parseString(testArray);
         String value = authorityProxy.getValueFromJsonArray(jsonObject, testKey1);
         assertEquals(testValue1, value);
+    }
+
+    @Test (expected = IOException.class)
+    public void testExceptionOnBareConnection() throws IOException {
+        BareConnection bareConnection = new BareConnection();
+        URL emptUrl = new URL("http://iam.an.url");
+        bareConnection.connect(emptUrl);
+        fail();
     }
 
 }
