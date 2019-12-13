@@ -12,11 +12,12 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
@@ -47,7 +48,7 @@ public class AuthorityProxyTest {
         InputStream inputStream = AuthorityProxyTest.class.getResourceAsStream("/bareResponse.json");
         InputStreamReader bareResponseStreamReader = new InputStreamReader(inputStream);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
-        when(mockBareConnection.setUpQueryUrl(anyString())).thenCallRealMethod();
+        when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         String postRequestBody = "{\n"
                 + "\"name\": \"May-Britt Moser\",\n"
                 + "\"feideId\": \"may-britt.moser@ntnu.no\",\n"
@@ -55,7 +56,7 @@ public class AuthorityProxyTest {
                 + "}";
         GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(postRequestBody, null);
         assertEquals(Response.Status.OK, result.getStatus());
-        assertEquals(result.getHeaders().get("Content-Type"), "application/json");
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
         String postResponseBody = "[\n"
@@ -78,18 +79,19 @@ public class AuthorityProxyTest {
                 + "\"orcId\": \"\"\n"
                 + "}";
         AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
-        when(mockBareConnection.connect(any())).thenThrow(new IOException("my mock throws an exception"));
-        when(mockBareConnection.setUpQueryUrl(anyString())).thenCallRealMethod();
+        String expectdExceptionMsg = "my mock throws an exception";
+        when(mockBareConnection.connect(any())).thenThrow(new IOException(expectdExceptionMsg));
+        when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(postRequestBody, null);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR, result.getStatus());
         String content = result.getBody();
         assertNotNull(content);
-        assertTrue(content.contains("\"my mock throws an exception\""));
+        assertTrue(content.contains(expectdExceptionMsg));
     }
 
     @Test
     public void testGetValueFromJson() {
-        AuthorityProxy authorityProxy = new AuthorityProxy();
+        AuthorityConverter authorityConverter = new AuthorityConverter();
         String testKey1 = "testKey1";
         String testValue1 = "testValue1";
         String testKey2 = "testKey2";
@@ -97,7 +99,7 @@ public class AuthorityProxyTest {
         String testArray = "{\"" + testKey1 + "\": [\"" + testValue1 + "\"],"
                 + "\"" + testKey2 + "\": [\"" + testValue2 + "\"]}";
         final JsonObject jsonObject = (JsonObject) JsonParser.parseString(testArray);
-        String value = authorityProxy.getValueFromJsonArray(jsonObject, testKey1);
+        String value = authorityConverter.getValueFromJsonArray(jsonObject, testKey1);
         assertEquals(testValue1, value);
     }
 
@@ -107,6 +109,17 @@ public class AuthorityProxyTest {
         URL emptUrl = new URL("http://iam.an.url");
         bareConnection.connect(emptUrl);
         fail();
+    }
+
+
+    @Test
+    public void testErrorResponse() {
+        String expectedJson = "{\"error\":\"error\"}";
+        // calling real constructor (no need to mock as this is not talking to the internet)
+        // but helps code coverage
+        AuthorityProxy fetchDoiMetadata = new AuthorityProxy();
+        String errorJson = fetchDoiMetadata.getErrorAsJson("error");
+        assertEquals(expectedJson, errorJson);
     }
 
 }

@@ -28,6 +28,14 @@ public class Authority {
         return orcId;
     }
 
+    public String getScn() {
+        return scn;
+    }
+
+    public String getBirthDate() {
+        return birthDate;
+    }
+
     public void setScn(String scn) {
         this.scn = scn;
     }
@@ -46,5 +54,9 @@ public class Authority {
 
     public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
+    }
+
+    public static Authority create() {
+        return new Authority();
     }
 }

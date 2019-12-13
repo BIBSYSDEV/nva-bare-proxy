@@ -10,18 +10,14 @@ import java.nio.charset.StandardCharsets;
 
 public class BareConnection {
 
-    private final transient String bareUrl = "https://authority.bibsys.no/authority/rest/functions/v2/query?";
-    private final transient char amp = '&';
-
-    public BareConnection() {
-    }
+    private final static transient String bareUrl = "https://authority.bibsys.no/authority/rest/functions/v2/query?";
+    private final static transient char amp = '&';
 
     protected InputStreamReader connect(URL url) throws IOException {
         return new InputStreamReader(url.openStream());
     }
 
-
-    protected URL setUpQueryUrl(String authorityName) throws UnsupportedEncodingException, MalformedURLException {
+    protected URL generateQueryUrl(String authorityName) throws UnsupportedEncodingException, MalformedURLException {
         final String authoritytype = " authoritytype:person";
         final String q = "q=" + URLEncoder.encode(authorityName + authoritytype, StandardCharsets.UTF_8.toString());
         final String start = "start=1";
