@@ -139,6 +139,28 @@ public class AuthorityProxyTest {
     }
 
     @Test
+    public void testEmptyHitListResponse() throws Exception {
+        AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
+        InputStream inputStream = AuthorityProxyTest.class.getResourceAsStream("/bareEmptyResponse.json");
+        InputStreamReader bareResponseStreamReader = new InputStreamReader(inputStream);
+        when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
+        when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
+        String postRequestBody = "{\n"
+                + "\"name\": \"\",\n"
+                + "\"feideId\": \"\",\n"
+                + "\"orcId\": \"0000-0001-7884-3049\"\n"
+                + "}";
+        GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(postRequestBody, null);
+        assertEquals(Response.Status.OK, result.getStatus());
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
+        String content = result.getBody();
+        assertNotNull(content);
+        Type authorityListType = new TypeToken<ArrayList<Authority>>(){}.getType();
+        List<Authority> responseAuthority = new Gson().fromJson(content, authorityListType);
+        assertTrue("The result should be an empty list", responseAuthority.isEmpty());
+    }
+
+    @Test
     public void testFailingRequest() throws IOException {
         String postRequestBody = "{\n"
                 + "\"name\": \"May-Britt Moser\",\n"
