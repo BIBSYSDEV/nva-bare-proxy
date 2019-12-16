@@ -46,7 +46,7 @@ public class AuthorityProxy implements RequestHandler<String, Object> {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         Authority inputAuthority = gson.fromJson(input, Authority.class);
         GatewayResponse gatewayResponse = new GatewayResponse("{}", headers, Response.Status.INTERNAL_SERVER_ERROR);
-        String authorityName = inputAuthority.getName();
+        String authorityName = this.selectQueryParameter(inputAuthority);
         try {
             URL bareUrl = bareConnection.generateQueryUrl(authorityName);
             try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
@@ -61,6 +61,18 @@ public class AuthorityProxy implements RequestHandler<String, Object> {
         }
 
         return gatewayResponse;
+    }
+
+    private String selectQueryParameter(Authority inputAuthority) {
+        String queryParam = "";
+        if (!inputAuthority.getName().isEmpty()) {
+            queryParam = inputAuthority.getName();
+        } else if (!inputAuthority.getFeideId().isEmpty()) {
+            queryParam = inputAuthority.getFeideId();
+        } else if (!inputAuthority.getOrcId().isEmpty()) {
+            queryParam = inputAuthority.getOrcId();
+        }
+        return queryParam;
     }
 
     /**

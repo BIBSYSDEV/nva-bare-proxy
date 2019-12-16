@@ -1,5 +1,7 @@
 package no.unit.nva.bare;
 
+import java.util.Objects;
+
 public class Authority {
 
     private String name;
@@ -56,7 +58,5 @@ public class Authority {
         this.birthDate = birthDate;
     }
 
-    public static Authority create() {
-        return new Authority();
-    }
+
 }
