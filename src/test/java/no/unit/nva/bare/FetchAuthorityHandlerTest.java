@@ -34,7 +34,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AuthorityProxyTest {
+public class FetchAuthorityHandlerTest {
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
@@ -49,8 +49,8 @@ public class AuthorityProxyTest {
 
     @Test
     public void testSuccessfulResponseWithNameParam() throws IOException {
-        AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
-        InputStream inputStream = AuthorityProxyTest.class.getResourceAsStream("/bareResponse.json");
+        FetchAuthorityHandler mockFetchAuthorityHandler = new FetchAuthorityHandler(mockBareConnection);
+        InputStream inputStream = FetchAuthorityHandlerTest.class.getResourceAsStream("/bareResponse.json");
         InputStreamReader bareResponseStreamReader = new InputStreamReader(inputStream);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
@@ -59,7 +59,7 @@ public class AuthorityProxyTest {
                 + "\"feideId\": \"may-britt.moser@ntnu.no\",\n"
                 + "\"orcId\": \"0000-0001-7884-3049\"\n"
                 + "}";
-        GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(postRequestBody, null);
+        GatewayResponse result = (GatewayResponse) mockFetchAuthorityHandler.handleRequest(postRequestBody, null);
         assertEquals(Response.Status.OK, result.getStatus());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
@@ -78,8 +78,8 @@ public class AuthorityProxyTest {
 
     @Test
     public void testSuccessfulResponseWithFeideIdParam() throws IOException {
-        AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
-        InputStream inputStream = AuthorityProxyTest.class.getResourceAsStream("/bareResponse.json");
+        FetchAuthorityHandler mockFetchAuthorityHandler = new FetchAuthorityHandler(mockBareConnection);
+        InputStream inputStream = FetchAuthorityHandlerTest.class.getResourceAsStream("/bareResponse.json");
         InputStreamReader bareResponseStreamReader = new InputStreamReader(inputStream);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
@@ -88,7 +88,7 @@ public class AuthorityProxyTest {
                 + "\"feideId\": \"may-britt.moser@ntnu.no\",\n"
                 + "\"orcId\": \"0000-0001-7884-3049\"\n"
                 + "}";
-        GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(postRequestBody, null);
+        GatewayResponse result = (GatewayResponse) mockFetchAuthorityHandler.handleRequest(postRequestBody, null);
         assertEquals(Response.Status.OK, result.getStatus());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
@@ -107,8 +107,8 @@ public class AuthorityProxyTest {
 
     @Test
     public void testSuccessfulResponseWithOrcIdParam() throws Exception {
-        AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
-        InputStream inputStream = AuthorityProxyTest.class.getResourceAsStream("/bareResponse.json");
+        FetchAuthorityHandler mockFetchAuthorityHandler = new FetchAuthorityHandler(mockBareConnection);
+        InputStream inputStream = FetchAuthorityHandlerTest.class.getResourceAsStream("/bareResponse.json");
         InputStreamReader bareResponseStreamReader = new InputStreamReader(inputStream);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
@@ -117,7 +117,7 @@ public class AuthorityProxyTest {
                 + "\"feideId\": \"\",\n"
                 + "\"orcId\": \"0000-0001-7884-3049\"\n"
                 + "}";
-        GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(postRequestBody, null);
+        GatewayResponse result = (GatewayResponse) mockFetchAuthorityHandler.handleRequest(postRequestBody, null);
         assertEquals(Response.Status.OK, result.getStatus());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
@@ -140,8 +140,8 @@ public class AuthorityProxyTest {
 
     @Test
     public void testEmptyHitListResponse() throws Exception {
-        AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
-        InputStream inputStream = AuthorityProxyTest.class.getResourceAsStream("/bareEmptyResponse.json");
+        FetchAuthorityHandler mockFetchAuthorityHandler = new FetchAuthorityHandler(mockBareConnection);
+        InputStream inputStream = FetchAuthorityHandlerTest.class.getResourceAsStream("/bareEmptyResponse.json");
         InputStreamReader bareResponseStreamReader = new InputStreamReader(inputStream);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
@@ -150,7 +150,7 @@ public class AuthorityProxyTest {
                 + "\"feideId\": \"\",\n"
                 + "\"orcId\": \"0000-0001-7884-3049\"\n"
                 + "}";
-        GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(postRequestBody, null);
+        GatewayResponse result = (GatewayResponse) mockFetchAuthorityHandler.handleRequest(postRequestBody, null);
         assertEquals(Response.Status.OK, result.getStatus());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
@@ -167,11 +167,11 @@ public class AuthorityProxyTest {
                 + "\"feideId\": \"\",\n"
                 + "\"orcId\": \"\"\n"
                 + "}";
-        AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
+        FetchAuthorityHandler mockFetchAuthorityHandler = new FetchAuthorityHandler(mockBareConnection);
         String expectdExceptionMsg = "my mock throws an exception";
         when(mockBareConnection.connect(any())).thenThrow(new IOException(expectdExceptionMsg));
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
-        GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(postRequestBody, null);
+        GatewayResponse result = (GatewayResponse) mockFetchAuthorityHandler.handleRequest(postRequestBody, null);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR, result.getStatus());
         String content = result.getBody();
         assertNotNull(content);
@@ -205,7 +205,7 @@ public class AuthorityProxyTest {
         String expectedJson = "{\"error\":\"error\"}";
         // calling real constructor (no need to mock as this is not talking to the internet)
         // but helps code coverage
-        AuthorityProxy fetchDoiMetadata = new AuthorityProxy();
+        FetchAuthorityHandler fetchDoiMetadata = new FetchAuthorityHandler();
         String errorJson = fetchDoiMetadata.getErrorAsJson("error");
         assertEquals(expectedJson, errorJson);
     }

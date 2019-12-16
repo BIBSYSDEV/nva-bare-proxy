@@ -11,22 +11,38 @@ Globals:
     Timeout: 20
 
 Resources:
-  NvaBareProxy:
+  FetchAuthorityHandler:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: NvaBareProxy
-      Handler: no.unit.nva.bare.AuthorityProxy::handleRequest
+      Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
       Runtime: java8
       MemorySize: 512
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM1: VALUE
       Events:
-        NvaBareProxy:
+        FetchAuthorityHandler:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /authority
             Method: post
+  UpdateAuthorityHandler:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: NvaBareProxy
+      Handler: no.unit.nva.bare.UpdateAuthorityHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          PARAM1: VALUE
+      Events:
+        FetchAuthorityProxy:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /authority/{scn}
+            Method: put
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Handler for requests to Lambda function.
  */
-public class AuthorityProxy implements RequestHandler<String, Object> {
+public class FetchAuthorityHandler implements RequestHandler<String, Object> {
 
     public static final transient String X_CUSTOM_HEADER = "X-Custom-Header";
     public static final transient String ERROR_KEY = "error";
@@ -28,12 +28,12 @@ public class AuthorityProxy implements RequestHandler<String, Object> {
     private final transient AuthorityConverter authorityConverter;
 
 
-    public AuthorityProxy() {
+    public FetchAuthorityHandler() {
         bareConnection = new BareConnection();
         authorityConverter = new AuthorityConverter();
     }
 
-    public AuthorityProxy(BareConnection bareConnection) {
+    public FetchAuthorityHandler(BareConnection bareConnection) {
         this.bareConnection = bareConnection;
         authorityConverter = new AuthorityConverter();
     }
