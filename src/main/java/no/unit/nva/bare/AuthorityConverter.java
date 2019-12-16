@@ -29,10 +29,11 @@ public class AuthorityConverter {
         int numFound = jsonObject.get(NUM_FOUND_TAG).getAsInt();
         List<Authority> authorityList = new ArrayList<>(numFound);
         final JsonArray results = jsonObject.get(RESULTS_TAG).getAsJsonArray();
-        Authority authority;
         for (JsonElement jsonElement : results) {
             final JsonObject result = (JsonObject) jsonElement;
-            authority = new Authority();
+            // Todo: decide if we should keep that hack to silence pmd AvoidInstantiatingObjectsInLoops-rule
+            //          or better an exclude the rule
+            Authority authority = this.createNewAuthority();
             final JsonArray marcdata = result.get(MARCDATA_TAG).getAsJsonArray();
             for (JsonElement marcdatum : marcdata) {
                 final JsonObject marc = (JsonObject) marcdatum;
@@ -56,6 +57,10 @@ public class AuthorityConverter {
             authorityList.add(authority);
         }
         return authorityList;
+    }
+
+    private Authority createNewAuthority() {
+        return new Authority();
     }
 
     protected String getValueFromJsonArray(JsonObject jsonObject, String key) {

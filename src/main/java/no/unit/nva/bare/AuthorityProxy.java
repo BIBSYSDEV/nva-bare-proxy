@@ -49,7 +49,7 @@ public class AuthorityProxy implements RequestHandler<String, Object> {
         String authorityName = inputAuthority.getName();
         try {
             URL bareUrl = bareConnection.generateQueryUrl(authorityName);
-            try (InputStreamReader streamReader = bareConnection.connect(bareUrl)){
+            try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
                 final JsonObject responseObject = (JsonObject) JsonParser.parseReader(streamReader);
                 final List<Authority> fetchedAuthority = authorityConverter.getAuthoritiesFrom(responseObject);
                 gatewayResponse.setBody(gson.toJson(fetchedAuthority));

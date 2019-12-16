@@ -10,8 +10,8 @@ import java.nio.charset.StandardCharsets;
 
 public class BareConnection {
 
-    private final static transient String bareUrl = "https://authority.bibsys.no/authority/rest/functions/v2/query?";
-    private final static transient char amp = '&';
+    private static final transient String bareUrl = "https://authority.bibsys.no/authority/rest/functions/v2/query?";
+    private static final transient char amp = '&';
 
     protected InputStreamReader connect(URL url) throws IOException {
         return new InputStreamReader(url.openStream());

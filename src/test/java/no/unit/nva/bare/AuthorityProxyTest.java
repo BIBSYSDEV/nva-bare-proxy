@@ -111,7 +111,6 @@ public class AuthorityProxyTest {
         fail();
     }
 
-
     @Test
     public void testErrorResponse() {
         String expectedJson = "{\"error\":\"error\"}";
