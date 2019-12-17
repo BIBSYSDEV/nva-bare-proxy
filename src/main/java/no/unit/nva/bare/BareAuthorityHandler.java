@@ -5,11 +5,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 
 import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class BareAuthorityHandler implements RequestHandler<APIGatewayProxyRequestEvent, GatewayResponse> {
 

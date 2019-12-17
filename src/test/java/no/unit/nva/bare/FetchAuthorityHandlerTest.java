@@ -1,8 +1,6 @@
 package no.unit.nva.bare;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,14 +19,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -179,35 +175,15 @@ public class FetchAuthorityHandlerTest {
     }
 
     @Test
-    public void testGetValueFromJson() {
-        AuthorityConverter authorityConverter = new AuthorityConverter();
-        String testKey1 = "testKey1";
-        String testValue1 = "testValue1";
-        String testKey2 = "testKey2";
-        String testValue2 = "testValue2";
-        String testArray = "{\"" + testKey1 + "\": [\"" + testValue1 + "\"],"
-                + "\"" + testKey2 + "\": [\"" + testValue2 + "\"]}";
-        final JsonObject jsonObject = (JsonObject) JsonParser.parseString(testArray);
-        String value = authorityConverter.getValueFromJsonArray(jsonObject, testKey1);
-        assertEquals(testValue1, value);
-    }
-
-    @Test (expected = IOException.class)
-    public void testExceptionOnBareConnection() throws IOException {
-        BareConnection bareConnection = new BareConnection();
-        URL emptUrl = new URL("http://iam.an.url");
-        bareConnection.connect(emptUrl);
-        fail();
-    }
-
-    @Test
-    public void testErrorResponse() {
-        String expectedJson = "{\"error\":\"error\"}";
-        // calling real constructor (no need to mock as this is not talking to the internet)
-        // but helps code coverage
-        GatewayResponse gatewayResponse = new GatewayResponse("mock", Response.Status.CREATED);
-        gatewayResponse.setErrorBody("error");
-        assertEquals(expectedJson, gatewayResponse.getBody());
+    public void testSelectQueryParameter() {
+        Authority authority = new Authority();
+        authority.setName("");
+        String feideId = "bob@unit.no";
+        authority.setFeideId(feideId);
+        authority.setOrcId("");
+        FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler();
+        String queryParameter = fetchAuthorityHandler.selectQueryParameter(authority);
+        assertEquals(feideId, queryParameter);
     }
 
 }
