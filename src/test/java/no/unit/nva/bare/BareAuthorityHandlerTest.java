@@ -37,13 +37,13 @@ public class BareAuthorityHandlerTest {
         GatewayResponse gatewayResponse = bareAuthorityHandler.handleRequest(requestEvent, null);
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatus(Response.Status.BAD_REQUEST);
-        expectedResponse.setErrorBody(String.format(FetchAuthorityHandler.MISSING_BODY_ELEMENTS, null));
+        expectedResponse.setErrorBody(String.format(FetchAuthorityHandler.MISSING_BODY_ELEMENTS, "null"));
         assertEquals(expectedResponse.getStatus(), gatewayResponse.getStatus());
         assertEquals(expectedResponse.getBody(), gatewayResponse.getBody());
     }
 
     @Test
-    public void testHandleRequestPuting() {
+    public void testHandleRequestPutting() {
         APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
         requestEvent.setHttpMethod(HttpMethod.PUT);
         BareAuthorityHandler bareAuthorityHandler = new BareAuthorityHandler();

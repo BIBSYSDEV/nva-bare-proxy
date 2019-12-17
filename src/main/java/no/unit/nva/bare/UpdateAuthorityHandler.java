@@ -2,6 +2,7 @@ package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.lang3.StringUtils;
@@ -9,8 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -52,15 +51,17 @@ public class UpdateAuthorityHandler extends AuthorityHandler {
                 gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
             } else {
                 JsonObject jsonObject = (JsonObject) JsonParser.parseString(body);
-                String feideId = jsonObject.get(AuthorityConverter.FEIDE_KEY).getAsString();
-                String orcId = jsonObject.get(AuthorityConverter.ORCID_KEY).getAsString();
+                JsonElement feideIdElement = jsonObject.get(AuthorityConverter.FEIDE_KEY);
+                String feideId = feideIdElement == null ? "" : feideIdElement.getAsString();
+                JsonElement orcIdElement = jsonObject.get(AuthorityConverter.ORCID_KEY);
+                String orcId = orcIdElement == null ? "" : orcIdElement.getAsString();
                 if (StringUtils.isEmpty(feideId) && orcId.isEmpty()) {
                     gatewayResponse.setErrorBody(BODY_ARGS_MISSING);
                     gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
                 } else {
                     try {
-                    URL bareUrl = bareConnection.generateQueryUrl(scn);
-                    try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
+                        URL bareUrl = bareConnection.generateQueryUrl(scn);
+                        try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
                             final JsonObject responseObject = (JsonObject) JsonParser.parseReader(streamReader);
                             final List<Authority> fetchedAuthority = authorityConverter.getAuthoritiesFrom(responseObject);
                             int numOfAuthoritiesFound = fetchedAuthority.size();
