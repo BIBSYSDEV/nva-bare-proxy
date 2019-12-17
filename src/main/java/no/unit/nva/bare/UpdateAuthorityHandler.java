@@ -1,88 +1,90 @@
 package no.unit.nva.bare;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.commons.lang3.StringUtils;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Handler for requests to Lambda function.
  */
-public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
+public class UpdateAuthorityHandler extends AuthorityHandler {
 
-    public static final transient String X_CUSTOM_HEADER = "X-Custom-Header";
-    public static final transient String ERROR_KEY = "error";
-    private final transient BareConnection bareConnection;
-    private final transient AuthorityConverter authorityConverter;
-
+    public static final String AUTHORITY_NOT_FOUND = "Authority not found for 'scn = %s'";
+    public static final String TO_MANY_AUTHORITIES_FOUND = "To many authorities found for 'scn = %s'";
+    public static final String BODY_ARGS_MISSING = "Nothing to update. 'feideId' and 'orcId' are missing.";
+    public static final String MISSING_BODY_ELEMENT_EVENT = "Missing body element 'event'.";
+    public static final String MISSING_PATH_PARAMETER_SCN = "Missing path parameter 'scn'.";
+    public static final String SCN_KEY = "scn";
 
     public UpdateAuthorityHandler() {
-        bareConnection = new BareConnection();
-        authorityConverter = new AuthorityConverter();
+        super();
     }
 
     public UpdateAuthorityHandler(BareConnection bareConnection) {
-        this.bareConnection = bareConnection;
-        authorityConverter = new AuthorityConverter();
+        super(bareConnection);
     }
 
-    @Override
-    public GatewayResponse handleRequest(final Map<String, Object> input, final Context context) {
-        Map<String, String> headers = new ConcurrentHashMap<>();
-        headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);
-        Map<String, String> pathParameters = (Map<String, String>) input.get("pathParameters");
-        String scn = pathParameters.get("scn");
-        GatewayResponse gatewayResponse = new GatewayResponse("{}", headers, Response.Status.INTERNAL_SERVER_ERROR);
-        try {
-            URL bareUrl = bareConnection.generateQueryUrl(scn);
-            try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
-                final JsonObject responseObject = (JsonObject) JsonParser.parseReader(streamReader);
-                final List<Authority> fetchedAuthority = authorityConverter.getAuthoritiesFrom(responseObject);
-                if (fetchedAuthority.size() == 1) {
-                    Authority authority = fetchedAuthority.get(0);
-//                    authority.setFeideId(feideId);
-//                    authority.setOrcId(orcId);
-                } else {
-                    // to many or to less authorities -> we cannot do it.
+    public GatewayResponse handleRequest(final APIGatewayProxyRequestEvent input) {
+        Map<String, String> pathParameters = input.getPathParameters();
+        String scn = pathParameters.get(SCN_KEY);
+        String body = input.getBody();
+        if (StringUtils.isEmpty(scn)) {
+            gatewayResponse.setErrorBody(MISSING_PATH_PARAMETER_SCN);
+            gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
+        } else if (StringUtils.isEmpty(body)) {
+            gatewayResponse.setErrorBody(MISSING_BODY_ELEMENT_EVENT);
+            gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
+        } else {
+            JsonObject jsonObject = (JsonObject) JsonParser.parseString(body);
+            String feideId = jsonObject.get(AuthorityConverter.FEIDE_KEY).getAsString();
+            String orcId = jsonObject.get(AuthorityConverter.ORCID_KEY).getAsString();
+            if (StringUtils.isEmpty(feideId) && orcId.isEmpty()) {
+                gatewayResponse.setErrorBody(BODY_ARGS_MISSING);
+                gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
+            } else {
+                try {
+                    URL bareUrl = bareConnection.generateQueryUrl(scn);
+                    try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
+                        final JsonObject responseObject = (JsonObject) JsonParser.parseReader(streamReader);
+                        final List<Authority> fetchedAuthority = authorityConverter.getAuthoritiesFrom(responseObject);
+                        int numOfAuthoritiesFound = fetchedAuthority.size();
+                        switch (numOfAuthoritiesFound) {
+                            case 1:
+                                Authority authority = fetchedAuthority.get(0);
+                                if (!StringUtils.isEmpty(feideId)) {
+                                    authority.setFeideId(feideId);
+                                }
+                                if (!StringUtils.isEmpty(orcId)) {
+                                    authority.setOrcId(orcId);
+                                }
+                                // do the update
+                                gatewayResponse.setBody(new Gson().toJson(authority));
+                                gatewayResponse.setStatus(Response.Status.OK);
+                                break;
+                            case 0:
+                                gatewayResponse.setErrorBody(String.format(AUTHORITY_NOT_FOUND, scn));
+                                gatewayResponse.setStatus(Response.Status.NOT_FOUND);
+                                break;
+                            default:
+                                gatewayResponse.setErrorBody(String.format(TO_MANY_AUTHORITIES_FOUND, scn));
+                                gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+                            }
+                        }
+                } catch (Exception e) {
+                    gatewayResponse.setErrorBody(e.getMessage());
+                    gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
                 }
-//                gatewayResponse.setBody(gson.toJson(fetchedAuthority));
-//                gatewayResponse.setStatus(Response.Status.OK);
             }
-        } catch (Exception e) {
-            gatewayResponse.setBody(this.getErrorAsJson(e.getMessage()));
-            gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
         }
-
         return gatewayResponse;
     }
-
-    /**
-     * Get error message as a json string.
-     *
-     * @param message message from exception
-     * @return String containing an error message as json
-     */
-    protected String getErrorAsJson(String message) {
-        JsonObject json = new JsonObject();
-        json.addProperty(ERROR_KEY, message);
-        return json.toString();
-    }
-
 
 }

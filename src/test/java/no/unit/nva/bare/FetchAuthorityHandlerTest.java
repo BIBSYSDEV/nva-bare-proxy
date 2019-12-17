@@ -59,7 +59,7 @@ public class FetchAuthorityHandlerTest {
                 + "\"feideId\": \"may-britt.moser@ntnu.no\",\n"
                 + "\"orcId\": \"0000-0001-7884-3049\"\n"
                 + "}";
-        GatewayResponse result = (GatewayResponse) mockFetchAuthorityHandler.handleRequest(postRequestBody, null);
+        GatewayResponse result = mockFetchAuthorityHandler.handleRequest(postRequestBody);
         assertEquals(Response.Status.OK, result.getStatus());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
@@ -88,7 +88,7 @@ public class FetchAuthorityHandlerTest {
                 + "\"feideId\": \"may-britt.moser@ntnu.no\",\n"
                 + "\"orcId\": \"0000-0001-7884-3049\"\n"
                 + "}";
-        GatewayResponse result = (GatewayResponse) mockFetchAuthorityHandler.handleRequest(postRequestBody, null);
+        GatewayResponse result = mockFetchAuthorityHandler.handleRequest(postRequestBody);
         assertEquals(Response.Status.OK, result.getStatus());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
@@ -117,7 +117,7 @@ public class FetchAuthorityHandlerTest {
                 + "\"feideId\": \"\",\n"
                 + "\"orcId\": \"0000-0001-7884-3049\"\n"
                 + "}";
-        GatewayResponse result = (GatewayResponse) mockFetchAuthorityHandler.handleRequest(postRequestBody, null);
+        GatewayResponse result = mockFetchAuthorityHandler.handleRequest(postRequestBody);
         assertEquals(Response.Status.OK, result.getStatus());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
@@ -150,7 +150,7 @@ public class FetchAuthorityHandlerTest {
                 + "\"feideId\": \"\",\n"
                 + "\"orcId\": \"0000-0001-7884-3049\"\n"
                 + "}";
-        GatewayResponse result = (GatewayResponse) mockFetchAuthorityHandler.handleRequest(postRequestBody, null);
+        GatewayResponse result = mockFetchAuthorityHandler.handleRequest(postRequestBody);
         assertEquals(Response.Status.OK, result.getStatus());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
@@ -171,7 +171,7 @@ public class FetchAuthorityHandlerTest {
         String expectdExceptionMsg = "my mock throws an exception";
         when(mockBareConnection.connect(any())).thenThrow(new IOException(expectdExceptionMsg));
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
-        GatewayResponse result = (GatewayResponse) mockFetchAuthorityHandler.handleRequest(postRequestBody, null);
+        GatewayResponse result = mockFetchAuthorityHandler.handleRequest(postRequestBody);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR, result.getStatus());
         String content = result.getBody();
         assertNotNull(content);
@@ -205,9 +205,9 @@ public class FetchAuthorityHandlerTest {
         String expectedJson = "{\"error\":\"error\"}";
         // calling real constructor (no need to mock as this is not talking to the internet)
         // but helps code coverage
-        FetchAuthorityHandler fetchDoiMetadata = new FetchAuthorityHandler();
-        String errorJson = fetchDoiMetadata.getErrorAsJson("error");
-        assertEquals(expectedJson, errorJson);
+        GatewayResponse gatewayResponse = new GatewayResponse("mock", Response.Status.CREATED);
+        gatewayResponse.setErrorBody("error");
+        assertEquals(expectedJson, gatewayResponse.getBody());
     }
 
 }
