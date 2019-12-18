@@ -46,7 +46,7 @@ public class FetchAuthorityHandlerTest {
     @Test
     public void testSuccessfulResponseWithNameParam() throws IOException {
         FetchAuthorityHandler mockFetchAuthorityHandler = new FetchAuthorityHandler(mockBareConnection);
-        InputStream inputStream = FetchAuthorityHandlerTest.class.getResourceAsStream("/bareResponse.json");
+        InputStream inputStream = FetchAuthorityHandlerTest.class.getResourceAsStream("/bareSingleAuthorityResponse.json");
         InputStreamReader bareResponseStreamReader = new InputStreamReader(inputStream);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
@@ -75,7 +75,7 @@ public class FetchAuthorityHandlerTest {
     @Test
     public void testSuccessfulResponseWithFeideIdParam() throws IOException {
         FetchAuthorityHandler mockFetchAuthorityHandler = new FetchAuthorityHandler(mockBareConnection);
-        InputStream inputStream = FetchAuthorityHandlerTest.class.getResourceAsStream("/bareResponse.json");
+        InputStream inputStream = FetchAuthorityHandlerTest.class.getResourceAsStream("/bareSingleAuthorityResponse.json");
         InputStreamReader bareResponseStreamReader = new InputStreamReader(inputStream);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
@@ -104,7 +104,7 @@ public class FetchAuthorityHandlerTest {
     @Test
     public void testSuccessfulResponseWithOrcIdParam() throws Exception {
         FetchAuthorityHandler mockFetchAuthorityHandler = new FetchAuthorityHandler(mockBareConnection);
-        InputStream inputStream = FetchAuthorityHandlerTest.class.getResourceAsStream("/bareResponse.json");
+        InputStream inputStream = FetchAuthorityHandlerTest.class.getResourceAsStream("/bareSingleAuthorityResponse.json");
         InputStreamReader bareResponseStreamReader = new InputStreamReader(inputStream);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();

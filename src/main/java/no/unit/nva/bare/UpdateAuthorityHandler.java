@@ -26,6 +26,9 @@ public class UpdateAuthorityHandler extends AuthorityHandler {
     public static final String MISSING_BODY_ELEMENT_EVENT = "Missing body element 'event'.";
     public static final String MISSING_PATH_PARAMETER_SCN = "Missing path parameter 'scn'.";
     public static final String SCN_KEY = "scn";
+    public static final String FEIDEID_KEY = "feideId";
+    public static final String ORCID_KEY = "orcId";
+    public static final String BODY_KEY = "body";
 
     public UpdateAuthorityHandler() {
         super();
@@ -42,20 +45,17 @@ public class UpdateAuthorityHandler extends AuthorityHandler {
             gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
         } else {
             String scn = pathParameters.get(SCN_KEY);
-            String body = input.getBody();
+            String bodyEvent = input.getBody();
             if (StringUtils.isEmpty(scn)) {
                 gatewayResponse.setErrorBody(MISSING_PATH_PARAMETER_SCN);
                 gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
-            } else if (StringUtils.isEmpty(body)) {
+            } else if (StringUtils.isEmpty(bodyEvent)) {
                 gatewayResponse.setErrorBody(MISSING_BODY_ELEMENT_EVENT);
                 gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
             } else {
-                JsonObject jsonObject = (JsonObject) JsonParser.parseString(body);
-                JsonElement feideIdElement = jsonObject.get(AuthorityConverter.FEIDE_KEY);
-                String feideId = feideIdElement == null ? "" : feideIdElement.getAsString();
-                JsonElement orcIdElement = jsonObject.get(AuthorityConverter.ORCID_KEY);
-                String orcId = orcIdElement == null ? "" : orcIdElement.getAsString();
-                if (StringUtils.isEmpty(feideId) && orcId.isEmpty()) {
+                String feideId = getValueFromJsonObject(bodyEvent, FEIDEID_KEY);
+                String orcId = getValueFromJsonObject(bodyEvent, ORCID_KEY);
+                if (feideId.isEmpty() && orcId.isEmpty()) {
                     gatewayResponse.setErrorBody(BODY_ARGS_MISSING);
                     gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
                 } else {
@@ -84,7 +84,7 @@ public class UpdateAuthorityHandler extends AuthorityHandler {
                                     break;
                                 default:
                                     gatewayResponse.setErrorBody(String.format(TO_MANY_AUTHORITIES_FOUND, scn));
-                                    gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+                                    gatewayResponse.setStatus(Response.Status.CONFLICT);
                             }
                         }
                     } catch (IOException e) {
@@ -95,6 +95,16 @@ public class UpdateAuthorityHandler extends AuthorityHandler {
             }
         }
         return gatewayResponse;
+    }
+
+    protected String getValueFromJsonObject(String body, String key) {
+        JsonObject jsonObject = (JsonObject) JsonParser.parseString(body);
+        JsonElement jsonElement = jsonObject.get(BODY_KEY);
+        if (Objects.nonNull(jsonElement)) {
+            jsonObject = (JsonObject) JsonParser.parseString(jsonElement.getAsString());
+            jsonElement = jsonObject.get(key);
+        }
+        return Objects.isNull(jsonElement) ? "" : jsonElement.getAsString();
     }
 
 }
