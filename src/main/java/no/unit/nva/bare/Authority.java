@@ -1,7 +1,5 @@
 package no.unit.nva.bare;
 
-import java.util.Objects;
-
 public class Authority {
 
     private String name;

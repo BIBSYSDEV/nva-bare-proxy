@@ -1,7 +1,7 @@
 # Nva Bare Proxy
 
-The propose of this project is to fetch authority-metadata by given parameters like name or/and feideId (POST request).
-As well it is expected that authority-metadata can be updated by a PUT request updating/adding feideId or/and orcId to an existing authority identified by its scn.
+The purpose of this project is to fetch authority-metadata by given parameters like name or/and feideId (POST request).
+As well it is expected that authority-metadata can be updated by a PUT request updating/adding feideId or/and orcId to an existing authority identified by its scn (aka. System Corntrol Number).
  
 The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
@@ -136,7 +136,7 @@ Next, you can use AWS Serverless Application Repository to deploy ready to use A
           "orcId": "0000-0001-7884-3049"
         }
      ```
-     (the body have to contain a value to at least one of the parameters (name, feideId, orcId))
+     (the body has to contain a value for to at least one of the following parameters: name, feideId, orcId.)
         
      Response:
      ```json
@@ -159,7 +159,7 @@ Next, you can use AWS Serverless Application Repository to deploy ready to use A
       "orcId": "0000-0001-7884-3049"
     }
     ```
-  (the body must contain at least one value of the parameters (feideId, orcId))
+  (the body has to contain at least a value for at least one of the parameters: feideId, orcId.)
     
   Response
   
