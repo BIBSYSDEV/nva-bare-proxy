@@ -1,7 +1,7 @@
 # Nva Bare Proxy
 
 The purpose of this project is to fetch authority-metadata by given parameters like name or/and feideId (POST request).
-As well it is expected that authority-metadata can be updated by a PUT request updating/adding feideId or/and orcId to an existing authority identified by its scn (aka. System Corntrol Number).
+As well it is expected that authority-metadata can be updated by a PUT request updating/adding feideId or/and orcId to an existing authority identified by its scn (aka. System Control Number).
  
 The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
