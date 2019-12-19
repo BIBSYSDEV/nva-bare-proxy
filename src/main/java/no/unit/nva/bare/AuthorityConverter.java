@@ -47,9 +47,9 @@ public class AuthorityConverter {
         Optional<String[]> scnArray = Optional.ofNullable(bareAuthority.identifiersMap.get(SCN_KEY));
         final String scn = scnArray.orElse(new String[]{id})[0];
         Optional<String[]> feideArray = Optional.ofNullable(bareAuthority.identifiersMap.get(FEIDE_KEY));
-        final String feideId = feideArray.orElse(new String[]{""})[0];
+        final String feideId = feideArray.orElse(new String[]{EMPTY_STRING})[0];
         Optional<String[]> orcIdArray = Optional.ofNullable(bareAuthority.identifiersMap.get(ORCID_KEY));
-        final String orcId = orcIdArray.orElse(new String[]{""})[0];
+        final String orcId = orcIdArray.orElse(new String[]{EMPTY_STRING})[0];
         Authority authority = new Authority();
         authority.setName(name);
         authority.setScn(scn);
