@@ -20,7 +20,7 @@ public class FetchAuthorityHandler {
 
     public static final String EMPTY_STRING = "";
     protected static final String MISSING_BODY_ELEMENTS = "Missing body paramters %s";
-    protected final GatewayResponse gatewayResponse = new GatewayResponse();
+    protected final transient GatewayResponse gatewayResponse = new GatewayResponse();
     protected final transient AuthorityConverter authorityConverter = new AuthorityConverter();
     protected final transient BareConnection bareConnection;
 

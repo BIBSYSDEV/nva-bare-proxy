@@ -27,6 +27,7 @@ public class BareAuthorityHandler implements RequestHandler<APIGatewayProxyReque
             default:
                 gatewayResponse.setErrorBody(HTTP_METHOD_NOT_SUPPORTED);
                 gatewayResponse.setStatus(Response.Status.METHOD_NOT_ALLOWED);
+                break;
         }
         return gatewayResponse;
     }

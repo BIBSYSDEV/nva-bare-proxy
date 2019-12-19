@@ -30,7 +30,7 @@ public class UpdateAuthorityHandler {
     public static final String FEIDEID_KEY = "feideId";
     public static final String ORCID_KEY = "orcId";
     public static final String BODY_KEY = "body";
-    protected final GatewayResponse gatewayResponse = new GatewayResponse();
+    protected final transient GatewayResponse gatewayResponse = new GatewayResponse();
     protected final transient AuthorityConverter authorityConverter = new AuthorityConverter();
     protected final transient BareConnection bareConnection;
 
@@ -90,6 +90,7 @@ public class UpdateAuthorityHandler {
                                 default:
                                     gatewayResponse.setErrorBody(String.format(TO_MANY_AUTHORITIES_FOUND, scn));
                                     gatewayResponse.setStatus(Response.Status.CONFLICT);
+                                    break;
                             }
                         }
                     } catch (IOException | URISyntaxException e) {
