@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GatewayResponse {
 
+    public static final String EMPTY_JSON = "{}";
     private String body;
     private final Map<String, String> headers;
     private Response.Status status;
@@ -23,7 +24,7 @@ public class GatewayResponse {
 
     public GatewayResponse() {
         this.status = Response.Status.INTERNAL_SERVER_ERROR;
-        this.body = "{}";
+        this.body = EMPTY_JSON;
         this.headers = this.generateDefaultHeaders();
     }
 
@@ -70,4 +71,5 @@ public class GatewayResponse {
         headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);
         return Collections.unmodifiableMap(new HashMap<>(headers));
     }
+
 }

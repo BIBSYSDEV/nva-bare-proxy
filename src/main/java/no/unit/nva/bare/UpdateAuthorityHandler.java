@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ import java.util.Objects;
 /**
  * Handler for requests to Lambda function.
  */
-public class UpdateAuthorityHandler extends AuthorityHandler {
+public class UpdateAuthorityHandler {
 
     public static final String AUTHORITY_NOT_FOUND = "Authority not found for 'scn = %s'";
     public static final String TO_MANY_AUTHORITIES_FOUND = "To many authorities found for 'scn = %s'";
@@ -29,13 +30,17 @@ public class UpdateAuthorityHandler extends AuthorityHandler {
     public static final String FEIDEID_KEY = "feideId";
     public static final String ORCID_KEY = "orcId";
     public static final String BODY_KEY = "body";
+    protected final GatewayResponse gatewayResponse = new GatewayResponse();
+    protected final transient AuthorityConverter authorityConverter = new AuthorityConverter();
+    protected final transient BareConnection bareConnection;
+
 
     public UpdateAuthorityHandler() {
-        super();
+        this.bareConnection = new BareConnection();
     }
 
     public UpdateAuthorityHandler(BareConnection bareConnection) {
-        super(bareConnection);
+        this.bareConnection = bareConnection;
     }
 
     public GatewayResponse handleRequest(final APIGatewayProxyRequestEvent input) {
@@ -62,8 +67,8 @@ public class UpdateAuthorityHandler extends AuthorityHandler {
                     try {
                         URL bareUrl = bareConnection.generateQueryUrl(scn);
                         try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
-                            final JsonObject responseObject = (JsonObject) JsonParser.parseReader(streamReader);
-                            final List<Authority> fetchedAuthority = authorityConverter.getAuthoritiesFrom(responseObject);
+                            final List<Authority> fetchedAuthority =
+                                    authorityConverter.extractAuthoritiesFrom(streamReader);
                             int numOfAuthoritiesFound = fetchedAuthority.size();
                             switch (numOfAuthoritiesFound) {
                                 case 1:
@@ -87,7 +92,7 @@ public class UpdateAuthorityHandler extends AuthorityHandler {
                                     gatewayResponse.setStatus(Response.Status.CONFLICT);
                             }
                         }
-                    } catch (IOException e) {
+                    } catch (IOException | URISyntaxException e) {
                         gatewayResponse.setErrorBody(e.getMessage());
                         gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
                     }

@@ -36,12 +36,12 @@ public class Authority {
         return birthDate;
     }
 
-    public void setScn(String scn) {
-        this.scn = scn;
-    }
-
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setScn(String scn) {
+        this.scn = scn;
     }
 
     public void setFeideId(String feideId) {
@@ -55,6 +55,4 @@ public class Authority {
     public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
     }
-
-
 }

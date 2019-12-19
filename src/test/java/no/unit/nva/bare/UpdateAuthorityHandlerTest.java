@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
@@ -150,7 +151,7 @@ public class UpdateAuthorityHandlerTest {
     }
 
     @Test
-    public void testUpdateAuthorityCommunicationErrors() throws IOException {
+    public void testUpdateAuthorityCommunicationErrors() throws IOException, URISyntaxException {
         APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
         requestEvent.setHttpMethod(HttpMethod.PUT);
         HashMap<String, String> pathParams = new HashMap<>();
