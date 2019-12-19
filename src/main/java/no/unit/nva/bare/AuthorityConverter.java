@@ -1,70 +1,26 @@
 package no.unit.nva.bare;
 
-import com.google.gson.JsonArray;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.util.ArrayList;
+import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class AuthorityConverter {
 
-
-    public static final String NUM_FOUND_TAG = "numFound";
-    public static final String RESULTS_TAG = "results";
-    public static final String MARCDATA_TAG = "marcdata";
     public static final String MARC_TAG_PERSONAL_NAME_FIELD_CODE = "100";
-    public static final String MARC_TAG_TAG = "tag";
-    public static final String MARC_TAG_SUBFIELDS = "subfields";
-    public static final String MARC_TAG_SUBCODE = "subcode";
-    public static final String MARC_TAG_VALUE = "value";
     public static final String MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE = "a";
     public static final String MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE = "d";
-    public static final String IDENTIFIERS_MAP_KEY = "identifiersMap";
     public static final String SCN_KEY = "scn";
     public static final String FEIDE_KEY = "feide";
     public static final String ORCID_KEY = "orcid";
     public static final String EMPTY_STRING = "";
 
-    protected List<Authority> getAuthoritiesFrom(JsonObject jsonObject) {
-        int numFound = jsonObject.get(NUM_FOUND_TAG).getAsInt();
-        List<Authority> authorityList = new ArrayList<>(numFound);
-        final JsonArray results = jsonObject.get(RESULTS_TAG).getAsJsonArray();
-        for (JsonElement jsonElement : results) {
-            final JsonObject result = (JsonObject) jsonElement;
-            // Todo: decide if we should keep that hack to silence pmd AvoidInstantiatingObjectsInLoops-rule
-            //          or better an exclude the rule
-            Authority authority = this.createNewAuthority();
-            final JsonArray marcdata = result.get(MARCDATA_TAG).getAsJsonArray();
-            for (JsonElement marcdatum : marcdata) {
-                final JsonObject marc = (JsonObject) marcdatum;
-                if (MARC_TAG_PERSONAL_NAME_FIELD_CODE.equals(marc.get(MARC_TAG_TAG).getAsString())) {
-                    JsonArray subfields = marc.get(MARC_TAG_SUBFIELDS).getAsJsonArray();
-                    for (JsonElement subfield : subfields) {
-                        JsonObject sub = (JsonObject) subfield;
-                        String subcodeTag = sub.get(MARC_TAG_SUBCODE).getAsString();
-                        if (MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE.equals(subcodeTag)) {
-                            authority.setName(sub.get(MARC_TAG_VALUE).getAsString());
-                        }
-                        if (MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE.equals(subcodeTag)) {
-                            authority.setBirthDate(sub.get(MARC_TAG_VALUE).getAsString());
-                        }
-                    }
-                }
-            }
-            final JsonObject identifiersMap = (JsonObject) result.get(IDENTIFIERS_MAP_KEY);
-            authority.setScn(getValueFromJsonArray(identifiersMap, SCN_KEY));
-            authority.setFeideId(getValueFromJsonArray(identifiersMap, FEIDE_KEY));
-            authority.setOrcId(getValueFromJsonArray(identifiersMap, ORCID_KEY));
-            authorityList.add(authority);
-        }
-        return authorityList;
-    }
-
-    private Authority createNewAuthority() {
-        return new Authority();
-    }
 
     protected String getValueFromJsonArray(JsonObject jsonObject, String key) {
         String value = EMPTY_STRING;
@@ -78,4 +34,40 @@ public class AuthorityConverter {
     private boolean isNonEmptyArray(JsonElement jsonElement) {
         return Objects.nonNull(jsonElement) && jsonElement.getAsJsonArray().size() > 0;
     }
+
+    protected List<Authority> extractAuthoritiesFrom(InputStreamReader reader) {
+        final BareResponse bareResponse = new Gson().fromJson(reader, BareResponse.class);
+        return Arrays.stream(bareResponse.results).map(this::asAuthority).collect(Collectors.toList());
+    }
+
+    private Authority asAuthority(BareAuthority bareAuthority) {
+        final String name = this.findValueIn(bareAuthority, MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE);
+        final String date = this.findValueIn(bareAuthority, MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE);
+        final String id = bareAuthority.systemControlNumber;
+        Optional<String[]> scnArray = Optional.ofNullable(bareAuthority.identifiersMap.get(SCN_KEY));
+        final String scn = scnArray.orElse(new String[]{id})[0];
+        Optional<String[]> feideArray = Optional.ofNullable(bareAuthority.identifiersMap.get(FEIDE_KEY));
+        final String feideId = feideArray.orElse(new String[]{""})[0];
+        Optional<String[]> orcIdArray = Optional.ofNullable(bareAuthority.identifiersMap.get(ORCID_KEY));
+        final String orcId = orcIdArray.orElse(new String[]{""})[0];
+        Authority authority = new Authority();
+        authority.setName(name);
+        authority.setScn(scn);
+        authority.setFeideId(feideId);
+        authority.setOrcId(orcId);
+        authority.setBirthDate(date);
+        return authority;
+    }
+
+    private String findValueIn(BareAuthority bareAuthority, String marcTagDatesAssociatedWithPersonalNameSubfieldCode) {
+        List<String> values = Arrays.stream(bareAuthority.marcdata)
+                .filter(marc -> Arrays.asList(new String[]{MARC_TAG_PERSONAL_NAME_FIELD_CODE}).contains(marc.tag))
+                .flatMap(marc -> Arrays.stream(marc.subfields))
+                .filter(subfield -> marcTagDatesAssociatedWithPersonalNameSubfieldCode.equals(subfield.subcode))
+                .map(subfield -> subfield.value)
+                .collect(Collectors.toList());
+        return Optional.ofNullable(values.get(0)).orElse(EMPTY_STRING);
+    }
+
+
 }

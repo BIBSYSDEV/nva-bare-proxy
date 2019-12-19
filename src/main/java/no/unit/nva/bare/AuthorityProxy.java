@@ -5,7 +5,6 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -56,8 +55,7 @@ public class AuthorityProxy implements RequestHandler<String, Object> {
             // The eventually thrown exceptions here catches in the outer try/catch as they are IOExceptions as well
             // and the inputStream is closed by this try automatically
             try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
-                final JsonObject responseObject = (JsonObject) JsonParser.parseReader(streamReader);
-                final List<Authority> fetchedAuthority = authorityConverter.getAuthoritiesFrom(responseObject);
+                final List<Authority> fetchedAuthority = authorityConverter.extractAuthoritiesFrom(streamReader);
                 gatewayResponse.setBody(gson.toJson(fetchedAuthority));
                 gatewayResponse.setStatus(Response.Status.OK);
             }
