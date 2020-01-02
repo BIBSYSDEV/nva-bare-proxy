@@ -107,8 +107,7 @@ public class UpdateAuthorityHandler {
         JsonObject jsonObject = (JsonObject) JsonParser.parseString(body);
         JsonElement jsonElement = jsonObject.get(BODY_KEY);
         if (Objects.nonNull(jsonElement)) {
-            jsonObject = (JsonObject) JsonParser.parseString(jsonElement.getAsString());
-            jsonElement = jsonObject.get(key);
+            jsonElement = ((JsonObject) jsonElement).get(key);
         }
         return Objects.isNull(jsonElement) ? "" : jsonElement.getAsString();
     }
