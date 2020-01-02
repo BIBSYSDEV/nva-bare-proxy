@@ -146,7 +146,8 @@ Next, you can use AWS Serverless Application Repository to deploy ready to use A
             "scn": "90517730",
             "feideId": "",
             "orcId": "",
-            "birth date": "1963-"
+            "birthDate": "1963-",
+            "handle": "http://hdl.handle.net/11250/1969546"
           }
         ]
 
@@ -157,10 +158,14 @@ Next, you can use AWS Serverless Application Repository to deploy ready to use A
 * PUT to /authority/90517730 with body
 
     ```json
-    {
-      "feideId": "may-britt.moser@ntnu.no",
-      "orcId": "0000-0001-7884-3049"
-    }
+       {
+            "name": "Moser, May-Britt",
+            "scn": "90517730",
+            "feideId": "may-britt.moser@ntnu.no",
+            "orcId": "0000-0001-7884-3049",
+            "birthDate": "1963-",
+            "handle": "http://hdl.handle.net/11250/1969546"
+       }
     ```
   (the body must contain at least one value of the parameters (feideId, orcId))
     
@@ -172,6 +177,7 @@ Next, you can use AWS Serverless Application Repository to deploy ready to use A
       "scn": "90517730",
       "feideId": "may-britt.moser@ntnu.no",
       "orcId": "0000-0001-7884-3049",
-      "birth date": "1963-"
+      "birthDate": "1963-",
+      "handle": "http://hdl.handle.net/11250/1969546"
     }
     ```
