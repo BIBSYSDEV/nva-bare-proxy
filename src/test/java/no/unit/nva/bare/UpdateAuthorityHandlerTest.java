@@ -33,8 +33,10 @@ public class UpdateAuthorityHandlerTest {
     public static final String EMPTY_JSON = "{}";
     public static final String EMPTY_STRING = "";
     public static final String MOCK_SCN_VALUE = "scn";
+    public static final String FULL_UPDATE_AUTHORITY_EVENT_JSON = "/fullUpdateAuthorityEvent.json";
     public static final String FOOBAR_UPDATE_AUTHORITY_EVENT_JSON = "/fooBarUpdateAuthorityEvent.json";
     public static final String BARE_SINGLE_AUTHORITY_RESPONSE_JSON = "/bareSingleAuthorityResponse.json";
+    public static final String BARE_SINGLE_AUTHORITY_RESPONSE_WITH_ALL_IDS_JSON = "/bareSingleAuthorityResponseWithAllIds.json";
     public static final String BARE_EMPTY_RESPONSE_JSON = "/bareEmptyResponse.json";
     public static final String BARE_MANY_AUTHORITY_RESPONSE_JSON = "/bareManyAuthorityResponse.json";
     public static final String EXCEPTION_IS_EXPECTED = "Exception is expected.";
@@ -101,18 +103,20 @@ public class UpdateAuthorityHandlerTest {
     }
 
     @Test
-    public void testUpdateAuthoritySingleAuthorityResponse() throws IOException {
+    public void testUpdateAuthoritySingleAuthorityResponse() throws Exception {
         APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
         requestEvent.setHttpMethod(HttpMethod.PUT);
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
         requestEvent.setPathParameters(pathParams);
-        InputStream asStream = FetchAuthorityHandlerTest.class.getResourceAsStream(FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
+        InputStream asStream = FetchAuthorityHandlerTest.class.getResourceAsStream(FULL_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
         requestEvent.setBody(st);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
-        InputStream stream = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON);
-        when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream));
+        InputStream stream1 = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON);
+        when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream1));
+        InputStream s2 = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_WITH_ALL_IDS_JSON);
+        when(mockBareConnection.update(any())).thenReturn(new InputStreamReader(s2));
         GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
         Authority responseAuthority = new Gson().fromJson(response.getBody(), Authority.class);
         assertEquals(Response.Status.OK, response.getStatus());
@@ -123,7 +127,7 @@ public class UpdateAuthorityHandlerTest {
     }
 
     @Test
-    public void testUpdateAuthorityNonAuthorityResponse() throws IOException {
+    public void testUpdateAuthorityNonAuthorityResponse() throws Exception {
         APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
         requestEvent.setHttpMethod(HttpMethod.PUT);
         HashMap<String, String> pathParams = new HashMap<>();
@@ -143,7 +147,7 @@ public class UpdateAuthorityHandlerTest {
     }
 
     @Test
-    public void testUpdateAuthorityManyAuthorityResponse() throws IOException {
+    public void testUpdateAuthorityManyAuthorityResponse() throws Exception {
         APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
         requestEvent.setHttpMethod(HttpMethod.PUT);
         HashMap<String, String> pathParams = new HashMap<>();
@@ -153,8 +157,8 @@ public class UpdateAuthorityHandlerTest {
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
         requestEvent.setBody(st);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
-        InputStream stream = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_MANY_AUTHORITY_RESPONSE_JSON);
-        when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream));
+        InputStream stream1 = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_MANY_AUTHORITY_RESPONSE_JSON);
+        when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream1));
         GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatus(Response.Status.CONFLICT);

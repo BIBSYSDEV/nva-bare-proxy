@@ -65,55 +65,61 @@ public class UpdateAuthorityHandler {
                     gatewayResponse.setErrorBody(BODY_ARGS_MISSING);
                     gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
                 } else {
-                    try {
-                        URL bareQueryUrl = bareConnection.generateQueryUrl(scn);
-                        try (InputStreamReader streamReader = bareConnection.connect(bareQueryUrl)) {
-                            final List<Authority> fetchedAuthority =
-                                    authorityConverter.extractAuthoritiesFrom(streamReader);
-                            int numOfAuthoritiesFound = fetchedAuthority.size();
-                            switch (numOfAuthoritiesFound) {
-                                case 1:
-                                    Authority authority = fetchedAuthority.get(0);
-                                    if (!StringUtils.isEmpty(feideId)) {
-                                        authority.setFeideId(feideId);
-                                    }
-                                    if (!StringUtils.isEmpty(orcId)) {
-                                        authority.setOrcId(orcId);
-                                    }
-                                    // Todo: the actual update
-                                    try (InputStreamReader isr = bareConnection.update(authority)) {
-                                        final List<Authority> updatedAuthority =
-                                                authorityConverter.extractAuthoritiesFrom(isr);
-                                        if (updatedAuthority.size() == 1) {
-                                            gatewayResponse.setBody(new Gson().toJson(updatedAuthority.get(0)));
-                                            gatewayResponse.setStatus(Response.Status.OK);
-                                        } else {
-                                            gatewayResponse.setErrorBody(String.format(COMMUNICATION_FAILURE_WHILE_UPDATING, scn));
-                                            gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
-                                        }
-                                    } catch (IOException e) {
-                                    gatewayResponse.setErrorBody(e.getMessage());
-                                    gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
-                                }
-                                    break;
-                                case 0:
-                                    gatewayResponse.setErrorBody(String.format(AUTHORITY_NOT_FOUND, scn));
-                                    gatewayResponse.setStatus(Response.Status.NOT_FOUND);
-                                    break;
-                                default:
-                                    gatewayResponse.setErrorBody(String.format(TO_MANY_AUTHORITIES_FOUND, scn));
-                                    gatewayResponse.setStatus(Response.Status.CONFLICT);
-                                    break;
-                            }
-                        }
-                    } catch (IOException | URISyntaxException e) {
-                        gatewayResponse.setErrorBody(e.getMessage());
-                        gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
-                    }
+                    updateIdentifiersOnAuthority(scn, feideId, orcId);
                 }
             }
         }
         return gatewayResponse;
+    }
+
+    private void updateIdentifiersOnAuthority(String scn, String feideId, String orcId) {
+        try {
+            URL bareQueryUrl = bareConnection.generateQueryUrl(scn);
+            try (InputStreamReader streamReader = bareConnection.connect(bareQueryUrl)) {
+                final List<Authority> fetchedAuthority = authorityConverter.extractAuthoritiesFrom(streamReader);
+                int numOfAuthoritiesFound = fetchedAuthority.size();
+                switch (numOfAuthoritiesFound) {
+                    case 1:
+                        Authority authority = fetchedAuthority.get(0);
+                        if (!StringUtils.isEmpty(feideId)) {
+                            authority.setFeideId(feideId);
+                        }
+                        if (!StringUtils.isEmpty(orcId)) {
+                            authority.setOrcId(orcId);
+                        }
+                        updateAuthorityOnBare(scn, authority);
+                        break;
+                    case 0:
+                        gatewayResponse.setErrorBody(String.format(AUTHORITY_NOT_FOUND, scn));
+                        gatewayResponse.setStatus(Response.Status.NOT_FOUND);
+                        break;
+                    default:
+                        gatewayResponse.setErrorBody(String.format(TO_MANY_AUTHORITIES_FOUND, scn));
+                        gatewayResponse.setStatus(Response.Status.CONFLICT);
+                        break;
+                }
+            }
+        } catch (IOException | URISyntaxException e) {
+            gatewayResponse.setErrorBody(e.getMessage());
+            gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void updateAuthorityOnBare(String scn, Authority authority) {
+        try (InputStreamReader isr = bareConnection.update(authority)) {
+            final List<Authority> updatedAuthority =
+                    authorityConverter.extractAuthoritiesFrom(isr);
+            if (updatedAuthority.size() == 1) {
+                gatewayResponse.setBody(new Gson().toJson(updatedAuthority.get(0)));
+                gatewayResponse.setStatus(Response.Status.OK);
+            } else {
+                gatewayResponse.setErrorBody(String.format(COMMUNICATION_FAILURE_WHILE_UPDATING, scn));
+                gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+            }
+        } catch (IOException | URISyntaxException e) {
+            gatewayResponse.setErrorBody(e.getMessage());
+            gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+        }
     }
 
     protected String getValueFromJsonObject(String body, String key) {
