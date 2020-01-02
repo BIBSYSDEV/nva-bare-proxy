@@ -1,5 +1,6 @@
 package no.unit.nva.bare;
 
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,4 +37,14 @@ public class BareConnection {
         return uri.toURL();
     }
 
+    public InputStreamReader update(Authority authority) throws IOException, URISyntaxException {
+        URI uri = new URIBuilder()
+                .setScheme(HTTPS)
+                .setHost(BARE_HOST)
+                .setPath(BARE_PATH)
+                .setPath(authority.getScn())
+                .build();
+        HttpPut put = new HttpPut(uri);
+        return connect(generateQueryUrl(authority.getScn()));
+    }
 }

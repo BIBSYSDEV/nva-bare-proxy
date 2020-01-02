@@ -26,6 +26,7 @@ public class UpdateAuthorityHandler {
     public static final String BODY_ARGS_MISSING = "Nothing to update. 'feideId' and 'orcId' are missing.";
     public static final String MISSING_BODY_ELEMENT_EVENT = "Missing body element 'event'.";
     public static final String MISSING_PATH_PARAMETER_SCN = "Missing path parameter 'scn'.";
+    public static final String COMMUNICATION_FAILURE_WHILE_UPDATING = "Communication failure while updating authority %s";
     public static final String SCN_KEY = "scn";
     public static final String FEIDEID_KEY = "feideId";
     public static final String ORCID_KEY = "orcId";
@@ -65,8 +66,8 @@ public class UpdateAuthorityHandler {
                     gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
                 } else {
                     try {
-                        URL bareUrl = bareConnection.generateQueryUrl(scn);
-                        try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
+                        URL bareQueryUrl = bareConnection.generateQueryUrl(scn);
+                        try (InputStreamReader streamReader = bareConnection.connect(bareQueryUrl)) {
                             final List<Authority> fetchedAuthority =
                                     authorityConverter.extractAuthoritiesFrom(streamReader);
                             int numOfAuthoritiesFound = fetchedAuthority.size();
@@ -80,8 +81,20 @@ public class UpdateAuthorityHandler {
                                         authority.setOrcId(orcId);
                                     }
                                     // Todo: the actual update
-                                    gatewayResponse.setBody(new Gson().toJson(authority));
-                                    gatewayResponse.setStatus(Response.Status.OK);
+                                    try (InputStreamReader isr = bareConnection.update(authority)) {
+                                        final List<Authority> updatedAuthority =
+                                                authorityConverter.extractAuthoritiesFrom(isr);
+                                        if (updatedAuthority.size() == 1) {
+                                            gatewayResponse.setBody(new Gson().toJson(updatedAuthority.get(0)));
+                                            gatewayResponse.setStatus(Response.Status.OK);
+                                        } else {
+                                            gatewayResponse.setErrorBody(String.format(COMMUNICATION_FAILURE_WHILE_UPDATING, scn));
+                                            gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+                                        }
+                                    } catch (IOException e) {
+                                    gatewayResponse.setErrorBody(e.getMessage());
+                                    gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+                                }
                                     break;
                                 case 0:
                                     gatewayResponse.setErrorBody(String.format(AUTHORITY_NOT_FOUND, scn));

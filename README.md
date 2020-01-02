@@ -140,13 +140,15 @@ Next, you can use AWS Serverless Application Repository to deploy ready to use A
         
      Response:
      ```json
-        {
-          "name": "Moser, May-Britt",
-          "scn": "90517730",
-          "feideId": "",
-          "orcId": "",
-          "birth date": "1963-"
-        }
+        [
+          {
+            "name": "Moser, May-Britt",
+            "scn": "90517730",
+            "feideId": "",
+            "orcId": "",
+            "birth date": "1963-"
+          }
+        ]
      ```
 
 
