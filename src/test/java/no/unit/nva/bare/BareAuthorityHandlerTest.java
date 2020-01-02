@@ -21,9 +21,6 @@ public class BareAuthorityHandlerTest {
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
 
-    @Mock
-    BareConnection mockBareConnection;
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);

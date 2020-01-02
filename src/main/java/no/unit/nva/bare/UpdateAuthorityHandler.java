@@ -79,7 +79,7 @@ public class UpdateAuthorityHandler {
                                     if (!StringUtils.isEmpty(orcId)) {
                                         authority.setOrcId(orcId);
                                     }
-                                    // do the update
+                                    // Todo: the actual update
                                     gatewayResponse.setBody(new Gson().toJson(authority));
                                     gatewayResponse.setStatus(Response.Status.OK);
                                     break;

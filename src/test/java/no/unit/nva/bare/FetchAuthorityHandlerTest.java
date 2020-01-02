@@ -58,8 +58,8 @@ public class FetchAuthorityHandlerTest {
     @Test
     public void testSuccessfulResponseWithNameParam() throws Exception {
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
-        InputStream asStream = FetchAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE);
-        InputStreamReader bareResponseStreamReader = new InputStreamReader(asStream);
+        InputStream st = FetchAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE);
+        InputStreamReader bareResponseStreamReader = new InputStreamReader(st);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ALL_PARAMETERS);

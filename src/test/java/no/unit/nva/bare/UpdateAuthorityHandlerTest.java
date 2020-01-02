@@ -28,6 +28,9 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateAuthorityHandlerTest {
 
+    public static final String EMPTY_JSON = "{}";
+    public static final String FULL_UPDATE_AUTHORITY_EVENT_JSON = "/fullUpdateAuthorityEvent.json";
+
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
 
@@ -78,7 +81,7 @@ public class UpdateAuthorityHandlerTest {
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put("scn", "scn");
         requestEvent.setPathParameters(pathParams);
-        requestEvent.setBody("{}");
+        requestEvent.setBody(EMPTY_JSON);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatus(Response.Status.BAD_REQUEST);
@@ -95,6 +98,8 @@ public class UpdateAuthorityHandlerTest {
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put("scn", "scn");
         requestEvent.setPathParameters(pathParams);
+        InputStream st = FetchAuthorityHandlerTest.class.getResourceAsStream(FULL_UPDATE_AUTHORITY_EVENT_JSON);
+        InputStreamReader bareResponseStreamReader = new InputStreamReader(st);
         String mockFeideId = "foo.bar@unit.no";
         String mockOrcId = "0000-0000-0000-0000";
         requestEvent.setBody("{\"body\": \"{\\\"feideId\\\":\\\"" + mockFeideId + "\\\", \\\"orcId\\\":\\\"" + mockOrcId + "\\\"}\"}");
