@@ -1,8 +1,6 @@
 package no.unit.nva.bare;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +42,9 @@ public class FetchAuthorityHandlerTest {
     public static final String FETCH_AUTHORITY_EVENT_JSON_ONE_PARAMETER = "/oneParamFetchAuthorityEvent.json";
     public static final String SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON = "/singleAuthorityGatewayResponseBody.json";
     public static final String MY_MOCK_THROWS_AN_EXCEPTION = "my mock throws an exception";
+    public static final String EMPTY_STRING = "";
+    public static final String BOB_AT_UNIT_DOT_NO = "bob@unit.no";
+
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
 
@@ -98,7 +98,7 @@ public class FetchAuthorityHandlerTest {
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ONE_PARAMETER);
-        GatewayResponse result = (GatewayResponse) mockFetchAuthorityHandler.handleRequest(postRequestBody);
+        GatewayResponse result = mockFetchAuthorityHandler.handleRequest(postRequestBody);
         assertEquals(Response.Status.OK, result.getStatus());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
@@ -145,13 +145,12 @@ public class FetchAuthorityHandlerTest {
     @Test
     public void testSelectQueryParameter() {
         Authority authority = new Authority();
-        authority.setName("");
-        String feideId = "bob@unit.no";
-        authority.setFeideId(feideId);
-        authority.setOrcId("");
+        authority.setName(EMPTY_STRING);
+        authority.setFeideId(BOB_AT_UNIT_DOT_NO);
+        authority.setOrcId(EMPTY_STRING);
         FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler();
         String queryParameter = fetchAuthorityHandler.selectQueryParameter(authority);
-        assertEquals(feideId, queryParameter);
+        assertEquals(BOB_AT_UNIT_DOT_NO, queryParameter);
     }
 
     private String readJsonStringFromFile(String fetchAuthorityEventJsonAllParameters) {

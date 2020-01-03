@@ -114,7 +114,7 @@ public class UpdateAuthorityHandler {
     private void updateAuthorityOnBare(String scn, Authority authority) {
         try (CloseableHttpResponse response = bareConnection.update(authority)) {
             HttpEntity responseEntity = response.getEntity();
-            List<Authority> updatedAuthority = new ArrayList<>();
+            List<Authority> updatedAuthority;
             try (InputStream contentStream = responseEntity.getContent()) {
                 String content = IOUtils.toString(contentStream, StandardCharsets.UTF_8.name());
                 updatedAuthority = authorityConverter.extractAuthoritiesFrom(content);
