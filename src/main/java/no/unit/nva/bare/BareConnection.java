@@ -61,7 +61,6 @@ public class BareConnection {
                 .setPath(BARE_PATH)
                 .setPath(authority.getScn())
                 .build();
-        //Todo: ApiKey, connection to development
         HttpPut putRequest = new HttpPut(uri);
         putRequest.setHeader(APIKEY_KEY, BARE_APIKEY);
         putRequest.setEntity(new StringEntity(new Gson().toJson(authority, Authority.class)));
