@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +38,11 @@ public class AuthorityConverter {
 
     protected List<Authority> extractAuthoritiesFrom(InputStreamReader reader) {
         final BareResponse bareResponse = new Gson().fromJson(reader, BareResponse.class);
+        return Arrays.stream(bareResponse.results).map(this::asAuthority).collect(Collectors.toList());
+    }
+
+    protected List<Authority> extractAuthoritiesFrom(String json) {
+        final BareResponse bareResponse = new Gson().fromJson(json, BareResponse.class);
         return Arrays.stream(bareResponse.results).map(this::asAuthority).collect(Collectors.toList());
     }
 

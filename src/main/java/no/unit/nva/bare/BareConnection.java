@@ -1,7 +1,14 @@
 package no.unit.nva.bare;
 
+import com.google.gson.Gson;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -17,6 +24,15 @@ public class BareConnection {
     public static final String HTTPS = "https";
     public static final String BARE_HOST = "authority.bibsys.no";
     public static final String BARE_PATH = "/authority/rest/functions/v2/query";
+    private CloseableHttpClient httpClient;
+
+    public BareConnection(CloseableHttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
+
+    public BareConnection() {
+        httpClient = HttpClients.createDefault();
+    }
 
     protected InputStreamReader connect(URL url) throws IOException {
         return new InputStreamReader(url.openStream());
@@ -37,14 +53,15 @@ public class BareConnection {
         return uri.toURL();
     }
 
-    public InputStreamReader update(Authority authority) throws IOException, URISyntaxException {
+    public CloseableHttpResponse update(Authority authority) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(BARE_HOST)
                 .setPath(BARE_PATH)
                 .setPath(authority.getScn())
                 .build();
-        HttpPut put = new HttpPut(uri);
-        return connect(generateQueryUrl(authority.getScn()));
+        HttpPut putRequest = new HttpPut(uri);
+        putRequest.setEntity(new StringEntity(new Gson().toJson(authority, Authority.class)));
+        return httpClient.execute(putRequest);
     }
 }

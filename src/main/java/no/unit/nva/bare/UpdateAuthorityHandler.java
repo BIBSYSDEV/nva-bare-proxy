@@ -5,13 +5,20 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.util.EntityUtils;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -106,9 +113,14 @@ public class UpdateAuthorityHandler {
     }
 
     private void updateAuthorityOnBare(String scn, Authority authority) {
-        try (InputStreamReader isr = bareConnection.update(authority)) {
-            final List<Authority> updatedAuthority =
-                    authorityConverter.extractAuthoritiesFrom(isr);
+        try (CloseableHttpResponse response = bareConnection.update(authority)) {
+            HttpEntity responseEntity = response.getEntity();
+            List<Authority> updatedAuthority = new ArrayList<>();
+            if (Objects.nonNull(responseEntity)) {
+                InputStream contentStream = responseEntity.getContent();
+                String content = IOUtils.toString(contentStream, StandardCharsets.UTF_8.name());
+                updatedAuthority = authorityConverter.extractAuthoritiesFrom(content);
+            }
             if (updatedAuthority.size() == 1) {
                 gatewayResponse.setBody(new Gson().toJson(updatedAuthority.get(0)));
                 gatewayResponse.setStatus(Response.Status.OK);

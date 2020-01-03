@@ -3,6 +3,8 @@ package no.unit.nva.bare;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,6 +49,10 @@ public class UpdateAuthorityHandlerTest {
 
     @Mock
     BareConnection mockBareConnection;
+    @Mock
+    CloseableHttpResponse mockCloseableHttpResponse;
+    @Mock
+    HttpEntity mockEntity;
 
     @Before
     public void setUp() {
@@ -115,8 +121,11 @@ public class UpdateAuthorityHandlerTest {
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
         InputStream stream1 = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON);
         when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream1));
-        InputStream s2 = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_WITH_ALL_IDS_JSON);
-        when(mockBareConnection.update(any())).thenReturn(new InputStreamReader(s2));
+        InputStream stream = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_WITH_ALL_IDS_JSON);
+        mockCloseableHttpResponse.setEntity(mockEntity);
+        when(mockEntity.getContent()).thenReturn(stream);
+        when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
+        when(mockBareConnection.update(any())).thenReturn(mockCloseableHttpResponse);
         GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
         Authority responseAuthority = new Gson().fromJson(response.getBody(), Authority.class);
         assertEquals(Response.Status.OK, response.getStatus());
