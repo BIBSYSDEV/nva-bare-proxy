@@ -9,7 +9,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.util.EntityUtils;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -116,12 +115,11 @@ public class UpdateAuthorityHandler {
         try (CloseableHttpResponse response = bareConnection.update(authority)) {
             HttpEntity responseEntity = response.getEntity();
             List<Authority> updatedAuthority = new ArrayList<>();
-            if (Objects.nonNull(responseEntity)) {
-                InputStream contentStream = responseEntity.getContent();
+            try (InputStream contentStream = responseEntity.getContent()) {
                 String content = IOUtils.toString(contentStream, StandardCharsets.UTF_8.name());
                 updatedAuthority = authorityConverter.extractAuthoritiesFrom(content);
             }
-            if (updatedAuthority.size() == 1) {
+            if (!updatedAuthority.isEmpty()) {
                 gatewayResponse.setBody(new Gson().toJson(updatedAuthority.get(0)));
                 gatewayResponse.setStatus(Response.Status.OK);
             } else {

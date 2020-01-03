@@ -1,7 +1,6 @@
 package no.unit.nva.bare;
 
 import com.google.gson.Gson;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
@@ -24,7 +23,7 @@ public class BareConnection {
     public static final String HTTPS = "https";
     public static final String BARE_HOST = "authority.bibsys.no";
     public static final String BARE_PATH = "/authority/rest/functions/v2/query";
-    private CloseableHttpClient httpClient;
+    private transient final CloseableHttpClient httpClient;
 
     public BareConnection(CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
