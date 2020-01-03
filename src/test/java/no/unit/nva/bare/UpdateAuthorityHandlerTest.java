@@ -64,7 +64,7 @@ public class UpdateAuthorityHandlerTest {
         APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
         requestEvent.setHttpMethod(HttpMethod.PUT);
         HashMap<String, String> pathParams = new HashMap<>();
-        pathParams.put("scn", "");
+        pathParams.put(UpdateAuthorityHandler.SCN_KEY, EMPTY_STRING);
         requestEvent.setPathParameters(pathParams);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
         GatewayResponse expectedResponse = new GatewayResponse();
@@ -80,7 +80,7 @@ public class UpdateAuthorityHandlerTest {
         APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
         requestEvent.setHttpMethod(HttpMethod.PUT);
         HashMap<String, String> pathParams = new HashMap<>();
-        pathParams.put("scn", "scn");
+        pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
         requestEvent.setPathParameters(pathParams);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
         GatewayResponse expectedResponse = new GatewayResponse();
@@ -96,7 +96,7 @@ public class UpdateAuthorityHandlerTest {
         APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
         requestEvent.setHttpMethod(HttpMethod.PUT);
         HashMap<String, String> pathParams = new HashMap<>();
-        pathParams.put("scn", "scn");
+        pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
         requestEvent.setPathParameters(pathParams);
         requestEvent.setBody(EMPTY_JSON);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
