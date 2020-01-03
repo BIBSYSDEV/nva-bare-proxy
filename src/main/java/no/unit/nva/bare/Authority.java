@@ -7,6 +7,7 @@ public class Authority {
     private String feideId;
     private String orcId;
     private String birthDate;
+    private String handle;
 
     public Authority() {
         name = "";
@@ -14,6 +15,7 @@ public class Authority {
         feideId = "";
         orcId = "";
         birthDate = "";
+        handle = "";
     }
 
     public String getName() {
@@ -36,6 +38,10 @@ public class Authority {
         return birthDate;
     }
 
+    public String getHandle() {
+        return handle;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -54,5 +60,9 @@ public class Authority {
 
     public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
+    }
+
+    public void setHandle(String handle) {
+        this.handle = handle;
     }
 }

@@ -109,6 +109,7 @@ public class FetchAuthorityHandlerTest {
         List<Authority> expectedResponseAuthority = new Gson().fromJson(postResponseBody, authorityListType);
         assertEquals(expectedResponseAuthority.get(0).getScn(), responseAuthority.get(0).getScn());
         assertEquals(expectedResponseAuthority.get(0).getBirthDate(), responseAuthority.get(0).getBirthDate());
+        assertEquals(expectedResponseAuthority.get(0).getHandle(), responseAuthority.get(0).getHandle());
     }
 
     @Test

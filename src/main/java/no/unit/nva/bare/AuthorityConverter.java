@@ -19,6 +19,7 @@ public class AuthorityConverter {
     public static final String SCN_KEY = "scn";
     public static final String FEIDE_KEY = "feide";
     public static final String ORCID_KEY = "orcid";
+    public static final String HANDLE_KEY = "handle";
     public static final String EMPTY_STRING = "";
 
 
@@ -55,12 +56,15 @@ public class AuthorityConverter {
         final String feideId = feideArray.orElse(new String[]{EMPTY_STRING})[0];
         Optional<String[]> orcIdArray = Optional.ofNullable(bareAuthority.identifiersMap.get(ORCID_KEY));
         final String orcId = orcIdArray.orElse(new String[]{EMPTY_STRING})[0];
+        Optional<String[]> handleArray = Optional.ofNullable(bareAuthority.identifiersMap.get(HANDLE_KEY));
+        final String handle = handleArray.orElse(new String[]{EMPTY_STRING})[0];
         Authority authority = new Authority();
         authority.setName(name);
         authority.setScn(scn);
         authority.setFeideId(feideId);
         authority.setOrcId(orcId);
         authority.setBirthDate(date);
+        authority.setHandle(handle);
         return authority;
     }
 
