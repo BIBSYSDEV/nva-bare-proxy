@@ -115,7 +115,7 @@ public class UpdateAuthorityHandlerTest {
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
         requestEvent.setPathParameters(pathParams);
-        InputStream asStream = FetchAuthorityHandlerTest.class.getResourceAsStream(FULL_UPDATE_AUTHORITY_EVENT_JSON);
+        InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(FULL_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
         requestEvent.setBody(st);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
@@ -136,13 +136,39 @@ public class UpdateAuthorityHandlerTest {
     }
 
     @Test
+    public void testUpdateAuthoritySingleAuthorityEmptyResponse() throws Exception {
+        APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
+        requestEvent.setHttpMethod(HttpMethod.PUT);
+        HashMap<String, String> pathParams = new HashMap<>();
+        pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
+        requestEvent.setPathParameters(pathParams);
+        InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(FULL_UPDATE_AUTHORITY_EVENT_JSON);
+        String st = IOUtils.toString(asStream, Charset.defaultCharset());
+        requestEvent.setBody(st);
+        UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
+        InputStream stream1 = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON);
+        when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream1));
+        InputStream stream = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_EMPTY_RESPONSE_JSON);
+        mockCloseableHttpResponse.setEntity(mockEntity);
+        when(mockEntity.getContent()).thenReturn(stream);
+        when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
+        when(mockBareConnection.update(any())).thenReturn(mockCloseableHttpResponse);
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
+        GatewayResponse expectedResponse = new GatewayResponse();
+        expectedResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+        expectedResponse.setErrorBody(String.format(UpdateAuthorityHandler.COMMUNICATION_FAILURE_WHILE_UPDATING, MOCK_SCN_VALUE));
+        assertEquals(expectedResponse.getStatus(), response.getStatus());
+        assertEquals(expectedResponse.getBody(), response.getBody());
+    }
+
+    @Test
     public void testUpdateAuthorityNonAuthorityResponse() throws Exception {
         APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
         requestEvent.setHttpMethod(HttpMethod.PUT);
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
         requestEvent.setPathParameters(pathParams);
-        InputStream asStream = FetchAuthorityHandlerTest.class.getResourceAsStream(FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
+        InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
         requestEvent.setBody(st);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
@@ -162,7 +188,7 @@ public class UpdateAuthorityHandlerTest {
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
         requestEvent.setPathParameters(pathParams);
-        InputStream asStream = FetchAuthorityHandlerTest.class.getResourceAsStream(FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
+        InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
         requestEvent.setBody(st);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
@@ -183,7 +209,7 @@ public class UpdateAuthorityHandlerTest {
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
         requestEvent.setPathParameters(pathParams);
-        InputStream asStream = FetchAuthorityHandlerTest.class.getResourceAsStream(FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
+        InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
         requestEvent.setBody(st);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
@@ -199,7 +225,7 @@ public class UpdateAuthorityHandlerTest {
 
     @Test
     public void testParseJsonBodyEvent() throws Exception {
-        InputStream asStream = FetchAuthorityHandlerTest.class.getResourceAsStream(FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
+        InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
         String jsonString = IOUtils.toString(asStream, Charset.defaultCharset());
         UpdateAuthorityHandler updateAuthorityHandler = new UpdateAuthorityHandler(new BareConnection());
         String feideId = updateAuthorityHandler.getValueFromJsonObject(jsonString, UpdateAuthorityHandler.FEIDEID_KEY);
