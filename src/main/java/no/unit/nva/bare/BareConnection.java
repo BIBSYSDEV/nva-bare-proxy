@@ -21,8 +21,10 @@ import java.nio.charset.StandardCharsets;
 public class BareConnection {
 
     public static final String HTTPS = "https";
-    public static final String BARE_HOST = "authority.bibsys.no";
+    public static final String BARE_HOST = System.getenv("bareHost");
     public static final String BARE_PATH = "/authority/rest/functions/v2/query";
+    public static final String BARE_APIKEY = System.getenv("bareApiKey");
+    public static final String APIKEY_KEY = "apikey";
     private transient final CloseableHttpClient httpClient;
 
     public BareConnection(CloseableHttpClient httpClient) {
@@ -61,6 +63,7 @@ public class BareConnection {
                 .build();
         //Todo: ApiKey, connection to development
         HttpPut putRequest = new HttpPut(uri);
+        putRequest.setHeader(APIKEY_KEY, BARE_APIKEY);
         putRequest.setEntity(new StringEntity(new Gson().toJson(authority, Authority.class)));
         return httpClient.execute(putRequest);
     }
