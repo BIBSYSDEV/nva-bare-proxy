@@ -44,6 +44,7 @@ public class FetchAuthorityHandlerTest {
     public static final String FETCH_AUTHORITY_EVENT_JSON_TWO_PARAMETERS = "/twoParamsFetchAuthorityEvent.json";
     public static final String FETCH_AUTHORITY_EVENT_JSON_ONE_PARAMETER = "/oneParamFetchAuthorityEvent.json";
     public static final String SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON = "/singleAuthorityGatewayResponseBody.json";
+    public static final String MY_MOCK_THROWS_AN_EXCEPTION = "my mock throws an exception";
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
 
@@ -132,14 +133,13 @@ public class FetchAuthorityHandlerTest {
     public void testFailingRequest() throws Exception {
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ALL_PARAMETERS);
         FetchAuthorityHandler mockFetchAuthorityHandler = new FetchAuthorityHandler(mockBareConnection);
-        String expectdExceptionMsg = "my mock throws an exception";
-        when(mockBareConnection.connect(any())).thenThrow(new IOException(expectdExceptionMsg));
+        when(mockBareConnection.connect(any())).thenThrow(new IOException(MY_MOCK_THROWS_AN_EXCEPTION));
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         GatewayResponse result = mockFetchAuthorityHandler.handleRequest(postRequestBody);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR, result.getStatus());
         String content = result.getBody();
         assertNotNull(content);
-        assertTrue(content.contains(expectdExceptionMsg));
+        assertTrue(content.contains(MY_MOCK_THROWS_AN_EXCEPTION));
     }
 
     @Test

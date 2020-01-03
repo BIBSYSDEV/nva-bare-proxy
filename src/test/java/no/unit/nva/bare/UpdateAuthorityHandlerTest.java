@@ -25,6 +25,8 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -159,6 +161,28 @@ public class UpdateAuthorityHandlerTest {
         expectedResponse.setErrorBody(String.format(UpdateAuthorityHandler.COMMUNICATION_FAILURE_WHILE_UPDATING, MOCK_SCN_VALUE));
         assertEquals(expectedResponse.getStatus(), response.getStatus());
         assertEquals(expectedResponse.getBody(), response.getBody());
+    }
+
+    @Test
+    public void testUpdateAuthorityBareConnectionError() throws Exception {
+        APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
+        requestEvent.setHttpMethod(HttpMethod.PUT);
+        HashMap<String, String> pathParams = new HashMap<>();
+        pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
+        requestEvent.setPathParameters(pathParams);
+        InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(FULL_UPDATE_AUTHORITY_EVENT_JSON);
+        String st = IOUtils.toString(asStream, Charset.defaultCharset());
+        requestEvent.setBody(st);
+        UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
+        InputStream stream1 = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON);
+        when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream1));
+        mockCloseableHttpResponse.setEntity(mockEntity);
+        when(mockBareConnection.update(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        String content = response.getBody();
+        assertNotNull(content);
+        assertTrue(content.contains(EXCEPTION_IS_EXPECTED));
     }
 
     @Test
