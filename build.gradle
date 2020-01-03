@@ -41,7 +41,7 @@ jar.enabled = false
 project.tasks.build.dependsOn project.tasks.shadowJar
 
 pmd {
-    toolVersion = '6.18.0'
+    toolVersion = '6.20.0'
     ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/ruleset.xml')
     ruleSets = []
     ignoreFailures = false
@@ -82,7 +82,7 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'METHOD'
                 value = 'COVEREDRATIO'
-                minimum = 0.75
+                minimum = 0.98
             }
         }
 
