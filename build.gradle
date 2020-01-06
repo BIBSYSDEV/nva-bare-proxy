@@ -9,8 +9,8 @@ plugins {
 group 'no.unit.nva'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.8  // source-code version and must be <= targetCompatibility
-targetCompatibility = 1.8 // bytecode target version
+sourceCompatibility = JavaVersion.VERSION_1_8  // source-code version and must be <= targetCompatibility
+targetCompatibility = JavaVersion.VERSION_1_8 // bytecode target version
 
 repositories {
     mavenCentral()
@@ -50,7 +50,6 @@ pmd {
 checkstyle {
     configFile = rootProject.resources.text.fromFile('config/checkstyle/checkstyle.xml').asFile()
     showViolations = true
-    toolVersion '8.23'
 }
 
 tasks.withType(Checkstyle) {
