@@ -70,14 +70,14 @@ public class UpdateAuthorityHandler {
                     gatewayResponse.setErrorBody(BODY_ARGS_MISSING);
                     gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
                 } else {
-                    updateIdentifiersOnAuthority(scn, feideId, orcId);
+                    updateFeideIdAndOrcId(scn, feideId, orcId);
                 }
             }
         }
         return gatewayResponse;
     }
 
-    private void updateIdentifiersOnAuthority(String scn, String feideId, String orcId) {
+    private void updateFeideIdAndOrcId(String scn, String feideId, String orcId) {
         try {
             URL bareQueryUrl = bareConnection.generateQueryUrl(scn);
             try (InputStreamReader streamReader = bareConnection.connect(bareQueryUrl)) {

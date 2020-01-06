@@ -45,7 +45,7 @@ After deployment is complete you can run the following command to retrieve the A
 ```bash
 AWS$ aws cloudformation describe-stacks \
     --stack-name AWS \
-    --query 'Stacks[].Outputs[?OutputKey==`HelloWorldApi`]' \
+    --query 'Stacks[].Outputs[?OutputKey==`NvaBareProxyApi`]' \
     --output table
 ``` 
 
@@ -57,14 +57,14 @@ Build your application with the `sam build` command.
 AWS$ sam build
 ```
 
-The SAM CLI installs dependencies defined in `HelloWorldFunction/build.gradle`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
+The SAM CLI installs dependencies defined in `nva-bare-proxy/build.gradle`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
 
 Test a single function by invoking it directly with a test event. An event is a JSON document that represents the input that the function receives from the event source. Test events are included in the `events` folder in this project.
 
 Run functions locally and invoke them with the `sam local invoke` command.
 
 ```bash
-AWS$ sam local invoke HelloWorldFunction --event events/event.json
+AWS$ sam local invoke BareAuthorityHandler --event events/event.json
 ```
 
 The SAM CLI can also emulate your application's API. Use the `sam local start-api` to run the API locally on port 3000.
@@ -74,15 +74,31 @@ AWS$ sam local start-api
 AWS$ curl http://localhost:3000/
 ```
 
+The application expects two environment variables:
+ * `bareHost` defines the source of the Authority data (utvikle-a.bibsys.no for development, authority.bibsys.no for production)
+ * `bareApiKey` should be defined in the AWS SecretsManager and is needed to for update/PUT functionality
+
+```yaml
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          bareHost: "utvikle-a.bibsys.no"
+          bareApiKey: '{{resolve:ssm:bareApiKey:1}}'
+```
+
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
 
 ```yaml
       Events:
-        NvaBareProxy:
-          Type: Api
+        PostEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /authority
             Method: post
+        PutEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /authority/{scn}
+            Method: put
 ```
 
 ## Add a resource to your application
@@ -117,13 +133,6 @@ To delete the sample application and the bucket that you created, use the AWS CL
 AWS$ aws cloudformation delete-stack --stack-name AWS
 AWS$ aws s3 rb s3://BUCKET_NAME
 ```
-
-## Resources
-
-See the [AWS SAM developer guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) for an introduction to SAM specification, the SAM CLI, and serverless application concepts.
-
-Next, you can use AWS Serverless Application Repository to deploy ready to use Apps that go beyond hello world samples and learn how authors developed their applications: [AWS Serverless Application Repository main page](https://aws.amazon.com/serverless/serverlessrepo/)
-
 
 ## Example
 
