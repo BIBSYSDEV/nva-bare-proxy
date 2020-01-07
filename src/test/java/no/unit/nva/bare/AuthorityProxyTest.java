@@ -70,7 +70,7 @@ public class AuthorityProxyTest {
 
         AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.OK.getStatusCode(), result.getStatus());
+        assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
@@ -91,7 +91,7 @@ public class AuthorityProxyTest {
 
         AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
         GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.OK.getStatusCode(), result.getStatus());
+        assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
@@ -112,7 +112,7 @@ public class AuthorityProxyTest {
 
         AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
         GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.OK.getStatusCode(), result.getStatus());
+        assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
@@ -137,7 +137,7 @@ public class AuthorityProxyTest {
 
         AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
         GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.OK.getStatusCode(), result.getStatus());
+        assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
@@ -158,7 +158,7 @@ public class AuthorityProxyTest {
 
         AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
         GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), result.getStatus());
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), result.getStatusCode());
         String content = result.getBody();
         assertNotNull(content);
         assertTrue(content.contains(expectdExceptionMsg));

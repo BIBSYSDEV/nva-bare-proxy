@@ -58,11 +58,11 @@ public class AuthorityProxy implements RequestHandler<Map<String, Object>, Gatew
             try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
                 final List<Authority> fetchedAuthority = authorityConverter.extractAuthoritiesFrom(streamReader);
                 gatewayResponse.setBody(gson.toJson(fetchedAuthority));
-                gatewayResponse.setStatus(Response.Status.OK.getStatusCode());
+                gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
             }
         } catch (IOException | URISyntaxException e) {
             gatewayResponse.setBody(this.getErrorAsJson(e.getMessage()));
-            gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+            gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
         return gatewayResponse;
     }
