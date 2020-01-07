@@ -15,6 +15,9 @@ import static no.unit.nva.bare.AuthorityProxy.X_CUSTOM_HEADER;
  */
 public class GatewayResponse {
 
+    public static final String CORS_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
+    public static final String CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME = "AllowOrigin";
+
     public static final String EMPTY_JSON = "{}";
     private String body;
     private final Map<String, String> headers;
@@ -50,6 +53,16 @@ public class GatewayResponse {
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);
+        headers.putAll(getHeadersFromEnvironment());
         return Collections.unmodifiableMap(new HashMap<>(headers));
+    }
+
+    private Map<String, String> getHeadersFromEnvironment() {
+        Map<String, String> additionalHeaders = new ConcurrentHashMap<>();
+        if (System.getenv(CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME) != null
+                && System.getenv(CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME).length() > 0) {
+            additionalHeaders.put(CORS_ALLOW_ORIGIN_HEADER, System.getenv(CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME));
+        }
+        return additionalHeaders;
     }
 }
