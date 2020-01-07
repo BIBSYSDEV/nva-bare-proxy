@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Handler for requests to Lambda function.
  */
-public class AuthorityProxy implements RequestHandler<String, Object> {
+public class AuthorityProxy implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
     public static final transient String X_CUSTOM_HEADER = "X-Custom-Header";
     public static final transient String ERROR_KEY = "error";
@@ -42,12 +42,13 @@ public class AuthorityProxy implements RequestHandler<String, Object> {
     }
 
     @Override
-    public Object handleRequest(final String input, final Context context) {
+    public GatewayResponse handleRequest(final Map<String, Object> input, final Context context) {
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Authority inputAuthority = gson.fromJson(input, Authority.class);
+        String authoritySource = (String) input.get("body");
+        Authority inputAuthority = gson.fromJson(authoritySource, Authority.class);
         GatewayResponse gatewayResponse = new GatewayResponse();
         String authorityName = this.selectQueryParameter(inputAuthority);
         try {
