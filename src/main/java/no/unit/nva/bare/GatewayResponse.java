@@ -18,10 +18,10 @@ public class GatewayResponse {
     public static final String EMPTY_JSON = "{}";
     private String body;
     private final Map<String, String> headers;
-    private Response.Status status;
+    private int status;
 
     public GatewayResponse() {
-        this.status = Response.Status.INTERNAL_SERVER_ERROR;
+        this.status = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
         this.body = EMPTY_JSON;
         this.headers = this.generateDefaultHeaders();
     }
@@ -34,7 +34,7 @@ public class GatewayResponse {
         return headers;
     }
 
-    public Response.Status getStatus() {
+    public int getStatus() {
         return status;
     }
 
@@ -42,7 +42,7 @@ public class GatewayResponse {
         this.body = body;
     }
 
-    public void setStatus(Response.Status status) {
+    public void setStatus(int status) {
         this.status = status;
     }
 
