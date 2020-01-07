@@ -10,7 +10,32 @@ Globals:
   Function:
     Timeout: 20
 
+Parameters:
+  CognitoAuthorizerArn:
+    Type: String
+    Description: Reference to Cognito UserPool for the stage
+  CustomDomain:
+    Type: String
+    Description: Custom API to connect this lambda to
+  CustomDomainBasePath:
+    Type: String
+    Description: Base path mapping in CustomDomain
+
 Resources:
+
+  NvaBareProxyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Auth:
+        Authorizers:
+          MyCognitoAuthorizer:
+            UserPoolArn: !Ref CognitoAuthorizerArn
+      Cors:
+        AllowCredentials: true
+        AllowOrigin: "'http://localhost:3000'"
+        AllowMethods: "'OPTIONS, GET'"
+
   NvaBareProxy:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -25,19 +50,16 @@ Resources:
         NvaBareProxy:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /authority
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /
             Method: post
 
-Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  NvaBareProxyApi:
-    Description: "API Gateway endpoint URL for Prod stage for NVA Bare Proxy"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/authority/"
-  NvaBareProxy:
-    Description: "NVA Bare Proxy Function ARN"
-    Value: !GetAtt NvaBareProxy.Arn
-  NvaBareProxyIamRole:
-    Description: "Implicit IAM Role created for NVA Bare proxy function"
-    Value: !GetAtt NvaBareProxyRole.Arn
+  NvaBareProxyBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: !Ref CustomDomainBasePath
+      DomainName: !Ref CustomDomain
+      RestApiId: !Ref NvaBareProxyApi
+      Stage: !Ref NvaBareProxyApi.Stage
