@@ -42,7 +42,6 @@ Resources:
       Environment:
         Variables:
           AllowOrigin: "http://localhost:3000"
-#      CodeUri:
       Handler: no.unit.nva.bare.AuthorityProxy::handleRequest
       Runtime: java8
       MemorySize: 512
