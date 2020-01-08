@@ -33,7 +33,7 @@ public class AuthorityConverter {
     }
 
     private boolean isNonEmptyArray(JsonElement jsonElement) {
-        return Objects.nonNull(jsonElement) && jsonElement.getAsJsonArray().size() > 0;
+        return Objects.nonNull(jsonElement) && jsonElement.isJsonArray();
     }
 
     protected List<Authority> extractAuthoritiesFrom(InputStreamReader reader) {

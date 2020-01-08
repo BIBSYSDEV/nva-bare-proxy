@@ -43,7 +43,8 @@ public class FetchAuthorityHandlerTest {
     public static final String SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON = "/singleAuthorityGatewayResponseBody.json";
     public static final String MY_MOCK_THROWS_AN_EXCEPTION = "my mock throws an exception";
     public static final String EMPTY_STRING = "";
-    public static final String BOB_AT_UNIT_DOT_NO = "bob@unit.no";
+    public static final String FAKE_FEIDE_ID = "bob@unit.no";
+    public static final String FAKE_ORC_ID = "0000-0000-0000-0000";
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
@@ -144,14 +145,36 @@ public class FetchAuthorityHandlerTest {
     }
 
     @Test
-    public void testSelectQueryParameter() {
+    public void testSelectQueryParameterIsFeideId() {
         Authority authority = new Authority();
         authority.setName(EMPTY_STRING);
-        authority.setFeideId(BOB_AT_UNIT_DOT_NO);
+        authority.setFeideId(FAKE_FEIDE_ID);
+        authority.setOrcId(FAKE_ORC_ID);
+        FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler();
+        String queryParameter = fetchAuthorityHandler.selectQueryParameter(authority);
+        assertEquals(FAKE_FEIDE_ID, queryParameter);
+    }
+
+    @Test
+    public void testSelectQueryParameterIsOrcId() {
+        Authority authority = new Authority();
+        authority.setName(EMPTY_STRING);
+        authority.setFeideId(EMPTY_STRING);
+        authority.setOrcId(FAKE_ORC_ID);
+        FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler();
+        String queryParameter = fetchAuthorityHandler.selectQueryParameter(authority);
+        assertEquals(FAKE_ORC_ID, queryParameter);
+    }
+
+    @Test
+    public void testSelectQueryParameter_Non() {
+        Authority authority = new Authority();
+        authority.setName(EMPTY_STRING);
+        authority.setFeideId(EMPTY_STRING);
         authority.setOrcId(EMPTY_STRING);
         FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler();
         String queryParameter = fetchAuthorityHandler.selectQueryParameter(authority);
-        assertEquals(BOB_AT_UNIT_DOT_NO, queryParameter);
+        assertEquals(EMPTY_STRING, queryParameter);
     }
 
     private String readJsonStringFromFile(String fetchAuthorityEventJsonAllParameters) {
