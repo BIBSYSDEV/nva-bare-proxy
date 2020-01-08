@@ -9,6 +9,15 @@ Description: >
 Globals:
   Function:
     Timeout: 20
+  Api:
+    Cors:
+      AllowCredentials: true
+      AllowOrigin: !Sub
+        - "'${Domain}'"
+        - Domain: !Ref  CorsOrigin
+      AllowMethods: "'OPTIONS, GET'"
+      AllowHeaders: "'Content-Type'"
+
 
 Parameters:
   CognitoAuthorizerArn:
@@ -34,12 +43,6 @@ Resources:
         Authorizers:
           MyCognitoAuthorizer:
             UserPoolArn: !Ref CognitoAuthorizerArn
-      Cors:
-        AllowCredentials: true
-        AllowOrigin: !Sub
-          - "'${Domain}'"
-          - Domain: !Ref  CorsOrigin
-        AllowMethods: "'OPTIONS, GET'"
       EndpointConfiguration: Regional
 
 
