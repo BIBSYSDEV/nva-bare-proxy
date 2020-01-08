@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static no.unit.nva.bare.AuthorityProxy.X_CUSTOM_HEADER;
 
 /**
  * POJO containing response object for API Gateway.
@@ -52,7 +51,6 @@ public class GatewayResponse {
     private Map<String, String> generateDefaultHeaders() {
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        headers.put(X_CUSTOM_HEADER, MediaType.APPLICATION_JSON);
         headers.putAll(getHeadersFromEnvironment());
         return Collections.unmodifiableMap(new HashMap<>(headers));
     }
