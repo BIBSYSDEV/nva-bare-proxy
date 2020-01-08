@@ -20,6 +20,10 @@ Parameters:
   CustomDomainBasePath:
     Type: String
     Description: Base path mapping in CustomDomain
+  CorsDomain:
+    Type: String
+    Description: Value to use for Cors 'Allow...' header if value is set
+    Default: '{{resolve:systemsmanager:DefaultCorsOrigin:1}}'
 
 Resources:
 
