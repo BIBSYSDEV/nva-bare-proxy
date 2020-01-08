@@ -20,10 +20,9 @@ Parameters:
   CustomDomainBasePath:
     Type: String
     Description: Base path mapping in CustomDomain
-  CorsDomain:
+  CorsOrigin:
     Type: String
     Description: Value to use for Cors 'Allow...' header if value is set
-    Default: '{{resolve:ssm:DefaultCorsOrigin:1}}'
 
 Resources:
 
@@ -37,7 +36,9 @@ Resources:
             UserPoolArn: !Ref CognitoAuthorizerArn
       Cors:
         AllowCredentials: true
-        AllowOrigin: "'http://localhost:3000'"
+        AllowOrigin: !Sub
+          - "'${Domain}'"
+          - Domain: !Ref  CorsOrigin
         AllowMethods: "'OPTIONS, GET'"
 
   NvaBareProxyFunction:
@@ -45,7 +46,9 @@ Resources:
     Properties:
       Environment:
         Variables:
-          AllowOrigin: "http://localhost:3000"
+          AllowOrigin: !Sub
+            - "${Domain}"
+            - Domain: !Ref  CorsOrigin
       Handler: no.unit.nva.bare.AuthorityProxy::handleRequest
       Runtime: java8
       MemorySize: 512
