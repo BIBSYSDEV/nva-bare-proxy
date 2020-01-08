@@ -2,6 +2,7 @@ package no.unit.nva.bare;
 
 public class Authority {
 
+    public static final String EMPTY_STRING = "";
     private String name;
     private String scn;
     private String feideId;
@@ -9,13 +10,16 @@ public class Authority {
     private String birthDate;
     private String handle;
 
+    /**
+     * POJO to hold authority metadata.
+     */
     public Authority() {
-        name = "";
-        scn = "";
-        feideId = "";
-        orcId = "";
-        birthDate = "";
-        handle = "";
+        name = EMPTY_STRING;
+        scn = EMPTY_STRING;
+        feideId = EMPTY_STRING;
+        orcId = EMPTY_STRING;
+        birthDate = EMPTY_STRING;
+        handle = EMPTY_STRING;
     }
 
     public String getName() {

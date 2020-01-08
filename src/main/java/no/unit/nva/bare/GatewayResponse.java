@@ -22,12 +22,18 @@ public class GatewayResponse {
     private static final transient String X_CUSTOM_HEADER = "X-Custom-Header";
     public static final transient String ERROR_KEY = "error";
 
+    /**
+     * GatewayResponse contains response status, response headers and body with payload resp. error messages.
+     */
     public GatewayResponse() {
         this.status = Response.Status.INTERNAL_SERVER_ERROR;
         this.body = EMPTY_JSON;
         this.headers = this.generateDefaultHeaders();
     }
 
+    /**
+     * GatewayResponse convinience constructor to set response status and body with payload direct.
+     */
     public GatewayResponse(final String body, final Response.Status status) {
         this.status = status;
         this.body = body;

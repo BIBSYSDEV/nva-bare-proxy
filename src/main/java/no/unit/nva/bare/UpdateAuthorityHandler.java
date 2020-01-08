@@ -31,7 +31,7 @@ public class UpdateAuthorityHandler {
     public static final String BODY_ARGS_MISSING = "Nothing to update. 'feideId' and 'orcId' are missing.";
     public static final String MISSING_BODY_ELEMENT_EVENT = "Missing body element 'event'.";
     public static final String MISSING_PATH_PARAMETER_SCN = "Missing path parameter 'scn'.";
-    public static final String COMMUNICATION_FAILURE_WHILE_UPDATING = "Communication failure while updating authority %s";
+    public static final String COMMUNICATION_ERROR_WHILE_UPDATING = "Communication failure while updating authority %s";
     public static final String SCN_KEY = "scn";
     public static final String FEIDEID_KEY = "feideId";
     public static final String ORCID_KEY = "orcId";
@@ -49,6 +49,11 @@ public class UpdateAuthorityHandler {
         this.bareConnection = bareConnection;
     }
 
+    /**
+     * Main lambda function to update feideId or/and orcId on Bare authority metadata.
+     * @param input payload with body-parameter containing the authority metadata
+     * @return a GatewayResponse
+     */
     public GatewayResponse handleRequest(final APIGatewayProxyRequestEvent input) {
         Map<String, String> pathParameters = input.getPathParameters();
         if (Objects.isNull(pathParameters)) {
@@ -122,7 +127,7 @@ public class UpdateAuthorityHandler {
                 gatewayResponse.setBody(new Gson().toJson(updatedAuthority.get(0)));
                 gatewayResponse.setStatus(Response.Status.OK);
             } else {
-                gatewayResponse.setErrorBody(String.format(COMMUNICATION_FAILURE_WHILE_UPDATING, scn));
+                gatewayResponse.setErrorBody(String.format(COMMUNICATION_ERROR_WHILE_UPDATING, scn));
                 gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
             }
         } catch (IOException | URISyntaxException e) {

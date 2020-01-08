@@ -33,6 +33,11 @@ public class FetchAuthorityHandler {
         this.bareConnection = bareConnection;
     }
 
+    /**
+     * Main lambda function to get authority metadata from Bare.
+     * @param input payload with identifying parameters
+     * @return a GatewayResponse
+     */
     public GatewayResponse handleRequest(final String input) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         Authority inputAuthority = gson.fromJson(input, Authority.class);

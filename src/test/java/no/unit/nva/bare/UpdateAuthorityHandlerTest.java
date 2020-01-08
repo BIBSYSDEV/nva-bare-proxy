@@ -158,7 +158,7 @@ public class UpdateAuthorityHandlerTest {
         GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
-        expectedResponse.setErrorBody(String.format(UpdateAuthorityHandler.COMMUNICATION_FAILURE_WHILE_UPDATING, MOCK_SCN_VALUE));
+        expectedResponse.setErrorBody(String.format(UpdateAuthorityHandler.COMMUNICATION_ERROR_WHILE_UPDATING, MOCK_SCN_VALUE));
         assertEquals(expectedResponse.getStatus(), response.getStatus());
         assertEquals(expectedResponse.getBody(), response.getBody());
     }

@@ -25,7 +25,7 @@ public class BareConnection {
     public static final String BARE_PATH = "/authority/rest/functions/v2/query";
     public static final String BARE_APIKEY = System.getenv("bareApiKey");
     public static final String APIKEY_KEY = "apikey";
-    private transient final CloseableHttpClient httpClient;
+    private final transient CloseableHttpClient httpClient;
 
     public BareConnection(CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
@@ -54,6 +54,13 @@ public class BareConnection {
         return uri.toURL();
     }
 
+    /**
+     * Updates metadata of the given authority to Bare.
+     * @param authority Authority to update
+     * @return CloseableHttpResponse
+     * @throws IOException communication error
+     * @throws URISyntaxException error while creating URI
+     */
     public CloseableHttpResponse update(Authority authority) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
