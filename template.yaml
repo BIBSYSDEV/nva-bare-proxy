@@ -23,7 +23,7 @@ Parameters:
   CorsDomain:
     Type: String
     Description: Value to use for Cors 'Allow...' header if value is set
-    Default: '{{resolve:systemsmanager:DefaultCorsOrigin:1}}'
+    Default: '{{resolve:ssm:DefaultCorsOrigin:1}}'
 
 Resources:
 
