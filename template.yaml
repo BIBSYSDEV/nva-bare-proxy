@@ -46,7 +46,7 @@ Resources:
       EndpointConfiguration: Regional
 
 
-  NvaBareProxyFunction:
+  NvaBareFetchFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Environment:
@@ -58,7 +58,7 @@ Resources:
       Runtime: java8
       MemorySize: 512
       Events:
-        NvaBareProxyEvent:
+        NvaBareFetchEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Auth:
@@ -66,6 +66,29 @@ Resources:
             RestApiId: !Ref NvaBareProxyApi
             Path: /
             Method: post
+
+  NvaBareUpdateFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          AllowOrigin: !Sub
+          - "${Domain}"
+          - Domain: !Ref  CorsOrigin
+          bareHost: "utvikle-a.bibsys.no"
+          bareApiKey: '{{resolve:ssm:bareApiKey:1}}'
+      Handler: no.unit.nva.bare.UpdateAuthorityHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Events:
+        NvaBareUpdateEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}
+            Method: put
 
   NvaBareProxyBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
