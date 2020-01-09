@@ -1,6 +1,7 @@
 package no.unit.nva.bare;
 
 import com.google.gson.JsonObject;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -21,8 +22,9 @@ public class GatewayResponse {
     public static final String EMPTY_JSON = "{}";
     public static final transient String ERROR_KEY = "error";
     private String body;
-    private final Map<String, String> headers;
+    private Map<String, String> headers;
     private int statusCode;
+    private String corsAllowDomain;
 
     /**
      * GatewayResponse contains response status, response headers and body with payload resp. error messages.
@@ -30,16 +32,18 @@ public class GatewayResponse {
     public GatewayResponse() {
         this.statusCode = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
         this.body = EMPTY_JSON;
-        this.headers = this.generateDefaultHeaders();
+        this.corsAllowDomain = System.getenv(CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME);
+        this.generateDefaultHeaders();
     }
 
     /**
-     * GatewayResponse convinience constructor to set response status and body with payload direct.
+     * GatewayResponse convenience constructor to set response status and body with payload direct.
      */
     public GatewayResponse(final String body, final int status) {
         this.statusCode = status;
         this.body = body;
-        this.headers = this.generateDefaultHeaders();
+        this.corsAllowDomain = System.getenv(CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME);
+        this.generateDefaultHeaders();
     }
 
     public String getBody() {
@@ -73,19 +77,16 @@ public class GatewayResponse {
         this.body = json.toString();
     }
 
-    private Map<String, String> generateDefaultHeaders() {
+    protected void generateDefaultHeaders() {
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        headers.putAll(getHeadersFromEnvironment());
-        return Collections.unmodifiableMap(new HashMap<>(headers));
+        if (StringUtils.isNotEmpty(corsAllowDomain)) {
+            headers.put(CORS_ALLOW_ORIGIN_HEADER, corsAllowDomain);
+        }
+        this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
     }
 
-    private Map<String, String> getHeadersFromEnvironment() {
-        Map<String, String> additionalHeaders = new ConcurrentHashMap<>();
-        if (System.getenv(CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME) != null
-                && System.getenv(CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME).length() > 0) {
-            additionalHeaders.put(CORS_ALLOW_ORIGIN_HEADER, System.getenv(CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME));
-        }
-        return additionalHeaders;
+    public void setCorsAllowDomain(String corsAllowDomain) {
+        this.corsAllowDomain = corsAllowDomain;
     }
 }
