@@ -27,16 +27,14 @@ public class GatewayResponseTest {
     }
 
     @Test
-    public void testNoCORSHeaders() {
+    public void testNoCorsHeaders() {
         GatewayResponse gatewayResponse = new GatewayResponse(MOCK_BODY, Response.Status.CREATED.getStatusCode());
         assertFalse(gatewayResponse.getHeaders().containsKey(GatewayResponse.CORS_ALLOW_ORIGIN_HEADER));
     }
 
     @Test
-    public void testCORSHeaders() {
-        GatewayResponse gatewayResponse = new GatewayResponse(MOCK_BODY, Response.Status.CREATED.getStatusCode());
-        gatewayResponse.setCorsAllowDomain(CORS_HEADER);
-        gatewayResponse.generateDefaultHeaders();
+    public void testCorsHeaders() {
+        GatewayResponse gatewayResponse = new GatewayResponse(CORS_HEADER);
         assertTrue(gatewayResponse.getHeaders().containsKey(GatewayResponse.CORS_ALLOW_ORIGIN_HEADER));
     }
 

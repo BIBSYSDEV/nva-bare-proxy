@@ -56,6 +56,7 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
      * @return a GatewayResponse
      */
     @Override
+    @SuppressWarnings("unchecked")
     public GatewayResponse handleRequest(final Map<String, Object> input, Context context) {
         String bodyEvent = (String) input.get("body");
         Map<String, String> pathParameters = (Map<String, String>) input.get("pathParameters");

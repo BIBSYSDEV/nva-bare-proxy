@@ -22,9 +22,9 @@ public class GatewayResponse {
     public static final String EMPTY_JSON = "{}";
     public static final transient String ERROR_KEY = "error";
     private String body;
-    private Map<String, String> headers;
+    private transient Map<String, String> headers;
     private int statusCode;
-    private String corsAllowDomain;
+    private final transient String corsAllowDomain;
 
     /**
      * GatewayResponse contains response status, response headers and body with payload resp. error messages.
@@ -33,6 +33,16 @@ public class GatewayResponse {
         this.statusCode = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
         this.body = EMPTY_JSON;
         this.corsAllowDomain = System.getenv(CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME);
+        this.generateDefaultHeaders();
+    }
+
+    /**
+     * GatewayResponse constructor for test purposes.
+     */
+    protected GatewayResponse(String allowCorsDomainHeaders) {
+        this.statusCode = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
+        this.body = EMPTY_JSON;
+        this.corsAllowDomain = allowCorsDomainHeaders;
         this.generateDefaultHeaders();
     }
 
@@ -77,7 +87,7 @@ public class GatewayResponse {
         this.body = json.toString();
     }
 
-    protected void generateDefaultHeaders() {
+    private void generateDefaultHeaders() {
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         if (StringUtils.isNotEmpty(corsAllowDomain)) {
@@ -86,7 +96,4 @@ public class GatewayResponse {
         this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
     }
 
-    public void setCorsAllowDomain(String corsAllowDomain) {
-        this.corsAllowDomain = corsAllowDomain;
-    }
 }
