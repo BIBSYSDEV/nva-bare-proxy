@@ -23,6 +23,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
 
     public static final String EMPTY_STRING = "";
     protected static final String MISSING_BODY = "Missing body";
+    public static final String BODY_Key = "body";
     protected final transient GatewayResponse gatewayResponse = new GatewayResponse();
     protected final transient AuthorityConverter authorityConverter = new AuthorityConverter();
     protected final transient BareConnection bareConnection;
@@ -44,7 +45,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
     @Override
     public GatewayResponse handleRequest(final Map<String, Object> input, Context context) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String authoritySource = (String) input.get("body");
+        String authoritySource = (String) input.get(BODY_Key);
         Authority inputAuthority = gson.fromJson(authoritySource, Authority.class);
         if (Objects.nonNull(inputAuthority)) {
             String authorityName = this.selectQueryParameter(inputAuthority);
