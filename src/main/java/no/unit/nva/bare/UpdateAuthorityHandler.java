@@ -1,6 +1,7 @@
 package no.unit.nva.bare;
 
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -24,7 +25,7 @@ import java.util.Objects;
 /**
  * Handler for requests to Lambda function.
  */
-public class UpdateAuthorityHandler {
+public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
     public static final String AUTHORITY_NOT_FOUND = "Authority not found for 'scn = %s'";
     public static final String TO_MANY_AUTHORITIES_FOUND = "To many authorities found for 'scn = %s'";
@@ -54,26 +55,27 @@ public class UpdateAuthorityHandler {
      * @param input payload with body-parameter containing the authority metadata
      * @return a GatewayResponse
      */
-    public GatewayResponse handleRequest(final APIGatewayProxyRequestEvent input) {
-        Map<String, String> pathParameters = input.getPathParameters();
+    @Override
+    public GatewayResponse handleRequest(final Map<String, Object> input, Context context) {
+        String bodyEvent = (String) input.get("body");
+        Map<String, String> pathParameters = (Map<String, String>) input.get("pathParameters");
         if (Objects.isNull(pathParameters)) {
             gatewayResponse.setErrorBody(MISSING_PATH_PARAMETER_SCN);
-            gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
+            gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
         } else {
             String scn = pathParameters.get(SCN_KEY);
-            String bodyEvent = input.getBody();
             if (StringUtils.isEmpty(scn)) {
                 gatewayResponse.setErrorBody(MISSING_PATH_PARAMETER_SCN);
-                gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
+                gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
             } else if (StringUtils.isEmpty(bodyEvent)) {
                 gatewayResponse.setErrorBody(MISSING_BODY_ELEMENT_EVENT);
-                gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
+                gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
             } else {
                 String feideId = getValueFromJsonObject(bodyEvent, FEIDEID_KEY);
                 String orcId = getValueFromJsonObject(bodyEvent, ORCID_KEY);
                 if (feideId.isEmpty() && orcId.isEmpty()) {
                     gatewayResponse.setErrorBody(BODY_ARGS_MISSING);
-                    gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
+                    gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
                 } else {
                     updateFeideIdAndOrcId(scn, feideId, orcId);
                 }
@@ -101,17 +103,17 @@ public class UpdateAuthorityHandler {
                         break;
                     case 0:
                         gatewayResponse.setErrorBody(String.format(AUTHORITY_NOT_FOUND, scn));
-                        gatewayResponse.setStatus(Response.Status.NOT_FOUND);
+                        gatewayResponse.setStatusCode(Response.Status.NOT_FOUND.getStatusCode());
                         break;
                     default:
                         gatewayResponse.setErrorBody(String.format(TO_MANY_AUTHORITIES_FOUND, scn));
-                        gatewayResponse.setStatus(Response.Status.CONFLICT);
+                        gatewayResponse.setStatusCode(Response.Status.CONFLICT.getStatusCode());
                         break;
                 }
             }
         } catch (IOException | URISyntaxException e) {
             gatewayResponse.setErrorBody(e.getMessage());
-            gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+            gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
     }
 
@@ -125,14 +127,14 @@ public class UpdateAuthorityHandler {
             }
             if (!updatedAuthority.isEmpty()) {
                 gatewayResponse.setBody(new Gson().toJson(updatedAuthority.get(0)));
-                gatewayResponse.setStatus(Response.Status.OK);
+                gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
             } else {
                 gatewayResponse.setErrorBody(String.format(COMMUNICATION_ERROR_WHILE_UPDATING, scn));
-                gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+                gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
             }
         } catch (IOException | URISyntaxException e) {
             gatewayResponse.setErrorBody(e.getMessage());
-            gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+            gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
     }
 

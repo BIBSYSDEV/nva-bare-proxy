@@ -54,7 +54,7 @@ Resources:
           AllowOrigin: !Sub
             - "${Domain}"
             - Domain: !Ref  CorsOrigin
-      Handler: no.unit.nva.bare.AuthorityProxy::handleRequest
+      Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
       Runtime: java8
       MemorySize: 512
       Events:

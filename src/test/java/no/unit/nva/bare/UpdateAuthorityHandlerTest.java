@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -53,6 +54,8 @@ public class UpdateAuthorityHandlerTest {
     public static final String BARE_MANY_AUTHORITY_RESPONSE_JSON = "/bareManyAuthorityResponse.json";
     public static final String EXCEPTION_IS_EXPECTED = "Exception is expected.";
     public static final String MOCK_FEIDE_VALUE = "foo.bar@unit.no";
+    public static final String PATH_PARAMETERS_KEY = "pathParameters";
+    public static final String BODY_KEY = "body";
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
@@ -71,63 +74,75 @@ public class UpdateAuthorityHandlerTest {
 
     @Test
     public void testFailingRequestCauseEmptySCN() {
-        APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
-        requestEvent.setHttpMethod(HttpMethod.PUT);
+        Map<String, Object> requestEvent = new HashMap<>();
+        requestEvent.put("body", "postRequestBody");
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, EMPTY_STRING);
-        requestEvent.setPathParameters(pathParams);
+        requestEvent.put("pathParameters", pathParams);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
         GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatus(Response.Status.BAD_REQUEST);
+        expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
         expectedResponse.setErrorBody(UpdateAuthorityHandler.MISSING_PATH_PARAMETER_SCN);
-        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
-        assertEquals(expectedResponse.getStatus(), response.getStatus());
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
+        assertEquals(expectedResponse.getStatusCode(), response.getStatusCode());
         assertEquals(expectedResponse.getBody(), response.getBody());
     }
 
     @Test
     public void testFailingRequestCauseEmptyBody() {
-        APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
-        requestEvent.setHttpMethod(HttpMethod.PUT);
+        Map<String, Object> requestEvent = new HashMap<>();
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
-        requestEvent.setPathParameters(pathParams);
+        requestEvent.put("pathParameters", pathParams);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
         GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatus(Response.Status.BAD_REQUEST);
+        expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
         expectedResponse.setErrorBody(UpdateAuthorityHandler.MISSING_BODY_ELEMENT_EVENT);
-        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
-        assertEquals(expectedResponse.getStatus(), response.getStatus());
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
+        assertEquals(expectedResponse.getStatusCode(), response.getStatusCode());
+        assertEquals(expectedResponse.getBody(), response.getBody());
+    }
+
+    @Test
+    public void testFailingRequestCauseMissingPathParameters() {
+        Map<String, Object> requestEvent = new HashMap<>();
+//        HashMap<String, String> pathParams = new HashMap<>();
+//        pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
+//        requestEvent.put("pathParameters", pathParams);
+        UpdateAuthorityHandler updateAuthorityHandler = new UpdateAuthorityHandler();
+        GatewayResponse expectedResponse = new GatewayResponse();
+        expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
+        expectedResponse.setErrorBody(UpdateAuthorityHandler.MISSING_PATH_PARAMETER_SCN);
+        GatewayResponse response = updateAuthorityHandler.handleRequest(requestEvent, null);
+        assertEquals(expectedResponse.getStatusCode(), response.getStatusCode());
         assertEquals(expectedResponse.getBody(), response.getBody());
     }
 
     @Test
     public void testFailingRequestCauseEmptyBodyParameters() {
-        APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
-        requestEvent.setHttpMethod(HttpMethod.PUT);
+        Map<String, Object> requestEvent = new HashMap<>();
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
-        requestEvent.setPathParameters(pathParams);
-        requestEvent.setBody(EMPTY_JSON);
+        requestEvent.put("pathParameters", pathParams);
+        requestEvent.put("body", EMPTY_JSON);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
         GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatus(Response.Status.BAD_REQUEST);
+        expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
         expectedResponse.setErrorBody(UpdateAuthorityHandler.BODY_ARGS_MISSING);
-        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
-        assertEquals(expectedResponse.getStatus(), response.getStatus());
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
+        assertEquals(expectedResponse.getStatusCode(), response.getStatusCode());
         assertEquals(expectedResponse.getBody(), response.getBody());
     }
 
     @Test
     public void testUpdateAuthoritySingleAuthorityResponse() throws Exception {
-        APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
-        requestEvent.setHttpMethod(HttpMethod.PUT);
+        Map<String, Object> requestEvent = new HashMap<>();
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
-        requestEvent.setPathParameters(pathParams);
+        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(FULL_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
-        requestEvent.setBody(st);
+        requestEvent.put(BODY_KEY, st);
         InputStream stream1 = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON);
         when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream1));
         InputStream stream = UpdateAuthorityHandlerTest.class.getResourceAsStream(
@@ -137,9 +152,9 @@ public class UpdateAuthorityHandlerTest {
         when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
         when(mockBareConnection.update(any())).thenReturn(mockCloseableHttpResponse);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
-        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
         Authority responseAuthority = new Gson().fromJson(response.getBody(), Authority.class);
-        assertEquals(Response.Status.OK, response.getStatus());
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatusCode());
         String mockFeideId = mockUpdateAuthorityHandler.getValueFromJsonObject(st, UpdateAuthorityHandler.FEIDEID_KEY);
         String mockOrcId = mockUpdateAuthorityHandler.getValueFromJsonObject(st, UpdateAuthorityHandler.ORCID_KEY);
         assertEquals(mockFeideId, responseAuthority.getFeideId());
@@ -148,15 +163,14 @@ public class UpdateAuthorityHandlerTest {
 
     @Test
     public void testUpdateAuthoritySingleAuthorityResponseOnlyFeideId() throws Exception {
-        APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
-        requestEvent.setHttpMethod(HttpMethod.PUT);
+        Map<String, Object> requestEvent = new HashMap<>();
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
-        requestEvent.setPathParameters(pathParams);
+        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(
                 FEIDEID_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
-        requestEvent.setBody(st);
+        requestEvent.put(BODY_KEY, st);
         InputStream stream1 = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON);
         when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream1));
         InputStream stream = UpdateAuthorityHandlerTest.class.getResourceAsStream(
@@ -166,23 +180,22 @@ public class UpdateAuthorityHandlerTest {
         when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
         when(mockBareConnection.update(any())).thenReturn(mockCloseableHttpResponse);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
-        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
         Authority responseAuthority = new Gson().fromJson(response.getBody(), Authority.class);
-        assertEquals(Response.Status.OK, response.getStatus());
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatusCode());
         String mockFeideId = mockUpdateAuthorityHandler.getValueFromJsonObject(st, UpdateAuthorityHandler.FEIDEID_KEY);
         assertEquals(mockFeideId, responseAuthority.getFeideId());
     }
 
     @Test
     public void testUpdateAuthoritySingleAuthorityResponseOnlyOrcId() throws Exception {
-        APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
-        requestEvent.setHttpMethod(HttpMethod.PUT);
+        Map<String, Object> requestEvent = new HashMap<>();
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
-        requestEvent.setPathParameters(pathParams);
+        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(ORCID_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
-        requestEvent.setBody(st);
+        requestEvent.put(BODY_KEY, st);
         InputStream stream1 = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON);
         when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream1));
         InputStream stream = UpdateAuthorityHandlerTest.class.getResourceAsStream(
@@ -192,41 +205,39 @@ public class UpdateAuthorityHandlerTest {
         when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
         when(mockBareConnection.update(any())).thenReturn(mockCloseableHttpResponse);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
-        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
         Authority responseAuthority = new Gson().fromJson(response.getBody(), Authority.class);
-        assertEquals(Response.Status.OK, response.getStatus());
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatusCode());
         String mockOrcId = mockUpdateAuthorityHandler.getValueFromJsonObject(st, UpdateAuthorityHandler.ORCID_KEY);
         assertEquals(mockOrcId, responseAuthority.getOrcId());
     }
 
     @Test
     public void testUpdateAuthoritySingleAuthorityResponse_onlyOrcid()  {
-        APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
-        requestEvent.setHttpMethod(HttpMethod.PUT);
+        Map<String, Object> requestEvent = new HashMap<>();
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
-        requestEvent.setPathParameters(pathParams);
-        requestEvent.setBody(EMPTY_UPDATE_AUTHORITY_EVENT_JSON);
+        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
+        requestEvent.put(BODY_KEY, EMPTY_UPDATE_AUTHORITY_EVENT_JSON);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
         mockCloseableHttpResponse.setEntity(mockEntity);
-        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
         GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatus(Response.Status.BAD_REQUEST);
+        expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
         expectedResponse.setErrorBody(UpdateAuthorityHandler.BODY_ARGS_MISSING);
-        assertEquals(expectedResponse.getStatus(), response.getStatus());
+        assertEquals(expectedResponse.getStatusCode(), response.getStatusCode());
         assertEquals(expectedResponse.getBody(), response.getBody());
     }
 
     @Test
     public void testUpdateAuthoritySingleAuthorityEmptyResponse() throws Exception {
-        APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
-        requestEvent.setHttpMethod(HttpMethod.PUT);
+        Map<String, Object> requestEvent = new HashMap<>();
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
-        requestEvent.setPathParameters(pathParams);
+        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(FULL_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
-        requestEvent.setBody(st);
+        requestEvent.put(BODY_KEY, st);
         InputStream stream1 = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON);
         when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream1));
         InputStream stream = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_EMPTY_RESPONSE_JSON);
@@ -235,32 +246,31 @@ public class UpdateAuthorityHandlerTest {
         when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
         when(mockBareConnection.update(any())).thenReturn(mockCloseableHttpResponse);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
-        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
         GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+        expectedResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         expectedResponse.setErrorBody(String.format(UpdateAuthorityHandler.COMMUNICATION_ERROR_WHILE_UPDATING,
                 MOCK_SCN_VALUE));
-        assertEquals(expectedResponse.getStatus(), response.getStatus());
+        assertEquals(expectedResponse.getStatusCode(), response.getStatusCode());
         assertEquals(expectedResponse.getBody(), response.getBody());
     }
 
     @Test
     public void testUpdateAuthorityBareConnectionError() throws Exception {
-        APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
-        requestEvent.setHttpMethod(HttpMethod.PUT);
+        Map<String, Object> requestEvent = new HashMap<>();
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
-        requestEvent.setPathParameters(pathParams);
+        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(FULL_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
-        requestEvent.setBody(st);
+        requestEvent.put(BODY_KEY, st);
         InputStream stream1 = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON);
         when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream1));
         mockCloseableHttpResponse.setEntity(mockEntity);
         when(mockBareConnection.update(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
-        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatusCode());
         String content = response.getBody();
         assertNotNull(content);
         assertTrue(content.contains(EXCEPTION_IS_EXPECTED));
@@ -268,63 +278,60 @@ public class UpdateAuthorityHandlerTest {
 
     @Test
     public void testUpdateAuthorityNonAuthorityResponse() throws Exception {
-        APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
-        requestEvent.setHttpMethod(HttpMethod.PUT);
+        Map<String, Object> requestEvent = new HashMap<>();
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
-        requestEvent.setPathParameters(pathParams);
+        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
-        requestEvent.setBody(st);
+        requestEvent.put(BODY_KEY, st);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
         InputStream inputStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_EMPTY_RESPONSE_JSON);
         when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(inputStream));
-        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
         Authority responseAuthority = new Gson().fromJson(response.getBody(), Authority.class);
-        assertEquals(Response.Status.NOT_FOUND, response.getStatus());
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatusCode());
         assertEquals(EMPTY_STRING, responseAuthority.getFeideId());
         assertEquals(EMPTY_STRING, responseAuthority.getOrcId());
     }
 
     @Test
     public void testUpdateAuthorityManyAuthorityResponse() throws Exception {
-        APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
-        requestEvent.setHttpMethod(HttpMethod.PUT);
+        Map<String, Object> requestEvent = new HashMap<>();
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
-        requestEvent.setPathParameters(pathParams);
+        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
-        requestEvent.setBody(st);
+        requestEvent.put(BODY_KEY, st);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
         InputStream stream1 = UpdateAuthorityHandlerTest.class.getResourceAsStream(BARE_MANY_AUTHORITY_RESPONSE_JSON);
         when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream1));
-        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
         GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatus(Response.Status.CONFLICT);
+        expectedResponse.setStatusCode(Response.Status.CONFLICT.getStatusCode());
         expectedResponse.setErrorBody(String.format(UpdateAuthorityHandler.TO_MANY_AUTHORITIES_FOUND, MOCK_SCN_VALUE));
-        assertEquals(expectedResponse.getStatus(), response.getStatus());
+        assertEquals(expectedResponse.getStatusCode(), response.getStatusCode());
         assertEquals(expectedResponse.getBody(), response.getBody());
     }
 
     @Test
     public void testUpdateAuthorityCommunicationErrors() throws IOException, URISyntaxException {
-        APIGatewayProxyRequestEvent requestEvent = new APIGatewayProxyRequestEvent();
-        requestEvent.setHttpMethod(HttpMethod.PUT);
+        Map<String, Object> requestEvent = new HashMap<>();
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
-        requestEvent.setPathParameters(pathParams);
+        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         InputStream asStream = UpdateAuthorityHandlerTest.class.getResourceAsStream(FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
-        requestEvent.setBody(st);
+        requestEvent.put(BODY_KEY, st);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
         when(mockBareConnection.connect(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
-        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent);
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
         GatewayResponse expectedResponse = new GatewayResponse();
-        expectedResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+        expectedResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         expectedResponse.setErrorBody(EXCEPTION_IS_EXPECTED);
-        assertEquals(expectedResponse.getStatus(), response.getStatus());
+        assertEquals(expectedResponse.getStatusCode(), response.getStatusCode());
         assertEquals(expectedResponse.getBody(), response.getBody());
     }
 

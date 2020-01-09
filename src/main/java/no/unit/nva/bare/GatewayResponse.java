@@ -19,6 +19,7 @@ public class GatewayResponse {
     public static final String CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME = "AllowOrigin";
 
     public static final String EMPTY_JSON = "{}";
+    public static final transient String ERROR_KEY = "error";
     private String body;
     private final Map<String, String> headers;
     private int statusCode;
@@ -35,8 +36,8 @@ public class GatewayResponse {
     /**
      * GatewayResponse convinience constructor to set response status and body with payload direct.
      */
-    public GatewayResponse(final String body, final Response.Status status) {
-        this.status = status;
+    public GatewayResponse(final String body, final int status) {
+        this.statusCode = status;
         this.body = body;
         this.headers = this.generateDefaultHeaders();
     }

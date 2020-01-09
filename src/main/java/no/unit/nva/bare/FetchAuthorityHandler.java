@@ -1,5 +1,7 @@
 package no.unit.nva.bare;
 
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -10,16 +12,17 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
 /**
  * Handler for requests to Lambda function.
  */
-public class FetchAuthorityHandler {
+public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
     public static final String EMPTY_STRING = "";
-    protected static final String MISSING_BODY_ELEMENTS = "Missing body paramters %s";
+    protected static final String MISSING_BODY = "Missing body";
     protected final transient GatewayResponse gatewayResponse = new GatewayResponse();
     protected final transient AuthorityConverter authorityConverter = new AuthorityConverter();
     protected final transient BareConnection bareConnection;
@@ -38,9 +41,11 @@ public class FetchAuthorityHandler {
      * @param input payload with identifying parameters
      * @return a GatewayResponse
      */
-    public GatewayResponse handleRequest(final String input) {
+    @Override
+    public GatewayResponse handleRequest(final Map<String, Object> input, Context context) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Authority inputAuthority = gson.fromJson(input, Authority.class);
+        String authoritySource = (String) input.get("body");
+        Authority inputAuthority = gson.fromJson(authoritySource, Authority.class);
         if (Objects.nonNull(inputAuthority)) {
             String authorityName = this.selectQueryParameter(inputAuthority);
             try {
@@ -48,15 +53,15 @@ public class FetchAuthorityHandler {
                 try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
                     final List<Authority> fetchedAuthority = authorityConverter.extractAuthoritiesFrom(streamReader);
                     gatewayResponse.setBody(gson.toJson(fetchedAuthority));
-                    gatewayResponse.setStatus(Response.Status.OK);
+                    gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
                 }
             } catch (IOException | URISyntaxException e) {
                 gatewayResponse.setErrorBody(e.getMessage());
-                gatewayResponse.setStatus(Response.Status.INTERNAL_SERVER_ERROR);
+                gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
             }
         } else {
-            gatewayResponse.setErrorBody(String.format(MISSING_BODY_ELEMENTS, input));
-            gatewayResponse.setStatus(Response.Status.BAD_REQUEST);
+            gatewayResponse.setErrorBody(MISSING_BODY);
+            gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
         }
         return gatewayResponse;
     }
