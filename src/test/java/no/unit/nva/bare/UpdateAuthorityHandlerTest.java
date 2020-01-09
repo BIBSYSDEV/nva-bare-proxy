@@ -56,6 +56,7 @@ public class UpdateAuthorityHandlerTest {
     public static final String MOCK_FEIDE_VALUE = "foo.bar@unit.no";
     public static final String PATH_PARAMETERS_KEY = "pathParameters";
     public static final String BODY_KEY = "body";
+    public static final String MOCK_BODY = "postRequestBody";
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
@@ -75,10 +76,10 @@ public class UpdateAuthorityHandlerTest {
     @Test
     public void testFailingRequestCauseEmptySCN() {
         Map<String, Object> requestEvent = new HashMap<>();
-        requestEvent.put("body", "postRequestBody");
+        requestEvent.put(BODY_KEY, MOCK_BODY);
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, EMPTY_STRING);
-        requestEvent.put("pathParameters", pathParams);
+        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
@@ -93,7 +94,7 @@ public class UpdateAuthorityHandlerTest {
         Map<String, Object> requestEvent = new HashMap<>();
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
-        requestEvent.put("pathParameters", pathParams);
+        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
@@ -106,9 +107,6 @@ public class UpdateAuthorityHandlerTest {
     @Test
     public void testFailingRequestCauseMissingPathParameters() {
         Map<String, Object> requestEvent = new HashMap<>();
-//        HashMap<String, String> pathParams = new HashMap<>();
-//        pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
-//        requestEvent.put("pathParameters", pathParams);
         UpdateAuthorityHandler updateAuthorityHandler = new UpdateAuthorityHandler();
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
@@ -123,8 +121,8 @@ public class UpdateAuthorityHandlerTest {
         Map<String, Object> requestEvent = new HashMap<>();
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityHandler.SCN_KEY, MOCK_SCN_VALUE);
-        requestEvent.put("pathParameters", pathParams);
-        requestEvent.put("body", EMPTY_JSON);
+        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
+        requestEvent.put(BODY_KEY, EMPTY_JSON);
         UpdateAuthorityHandler mockUpdateAuthorityHandler = new UpdateAuthorityHandler(mockBareConnection);
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());

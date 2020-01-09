@@ -1,8 +1,6 @@
 package no.unit.nva.bare;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,18 +19,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -50,6 +46,7 @@ public class FetchAuthorityHandlerTest {
     public static final String EMPTY_STRING = "";
     public static final String FAKE_FEIDE_ID = "bob@unit.no";
     public static final String FAKE_ORC_ID = "0000-0000-0000-0000";
+    public static final String BODY_KEY = "body";
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
@@ -69,8 +66,8 @@ public class FetchAuthorityHandlerTest {
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ALL_PARAMETERS);
-        Map<String, Object> event = new HashMap<String, Object>();
-        event.put("body", postRequestBody);
+        Map<String, Object> event = new HashMap<>();
+        event.put(BODY_KEY, postRequestBody);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
@@ -89,10 +86,8 @@ public class FetchAuthorityHandlerTest {
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_TWO_PARAMETERS);
-
         Map<String, Object> event = new HashMap<>();
-        event.put("body", postRequestBody);
-
+        event.put(BODY_KEY, postRequestBody);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
@@ -111,10 +106,8 @@ public class FetchAuthorityHandlerTest {
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ONE_PARAMETER);
-
-        Map<String, Object> event = new HashMap<String, Object>();
-        event.put("body", postRequestBody);
-
+        Map<String, Object> event = new HashMap<>();
+        event.put(BODY_KEY, postRequestBody);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
@@ -137,10 +130,8 @@ public class FetchAuthorityHandlerTest {
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ONE_PARAMETER);
-
         Map<String, Object> event = new HashMap<>();
-        event.put("body", postRequestBody);
-
+        event.put(BODY_KEY, postRequestBody);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
@@ -155,13 +146,10 @@ public class FetchAuthorityHandlerTest {
     @Test
     public void testFailingRequest() throws Exception {
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ALL_PARAMETERS);
-        String expectdExceptionMsg = "my mock throws an exception";
-        when(mockBareConnection.connect(any())).thenThrow(new IOException(expectdExceptionMsg));
+        when(mockBareConnection.connect(any())).thenThrow(new IOException(MY_MOCK_THROWS_AN_EXCEPTION));
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
-
         Map<String, Object> event = new HashMap<>();
-        event.put("body", postRequestBody);
-
+        event.put(BODY_KEY, postRequestBody);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), result.getStatusCode());

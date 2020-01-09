@@ -36,6 +36,7 @@ public class BareConnectionTest {
     public static final String COMPLETE_SINGLE_AUTHORITY_JSON = "/completeSingleAuthority.json";
     public static final String BARE_SINGLE_AUTHORITY_RESPONSE_WITH_ALL_IDS_JSON =
             "/bareSingleAuthorityResponseWithAllIds.json";
+    public static final String NONSENSE_URL = "http://iam.an.url";
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
@@ -56,8 +57,8 @@ public class BareConnectionTest {
     @Test(expected = IOException.class)
     public void testExceptionOnBareConnection() throws IOException {
         BareConnection bareConnection = new BareConnection();
-        URL emptUrl = new URL("http://iam.an.url");
-        bareConnection.connect(emptUrl);
+        URL emptyUrl = new URL(NONSENSE_URL);
+        bareConnection.connect(emptyUrl);
         Assert.fail();
     }
 
