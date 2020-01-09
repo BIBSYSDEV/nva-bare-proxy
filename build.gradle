@@ -25,7 +25,10 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.1.0'
 
-    shadowJar { zip64 true }
+    shadowJar {
+        archiveClassifier.set('')
+        zip64 true
+    }
 }
 
 
