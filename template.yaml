@@ -66,9 +66,9 @@ Resources:
             RestApiId: !Ref NvaBareProxyApi
             Path: /
             Method: post
-            RequestModel:
-              Model: Map<String, Object> # REQUIRED; must match the name of a model defined in the Models property of the AWS::Serverless::API
-              Required: true # OPTIONAL; boolean
+#            RequestModel:
+#              Model: Map<String, Object> # REQUIRED; must match the name of a model defined in the Models property of the AWS::Serverless::API
+#              Required: true # OPTIONAL; boolean
 
   NvaBareUpdateFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -92,9 +92,9 @@ Resources:
             RestApiId: !Ref NvaBareProxyApi
             Path: /{scn}
             Method: put
-            RequestModel:
-              Model: Map<String, Object> # REQUIRED; must match the name of a model defined in the Models property of the AWS::Serverless::API
-              Required: true # OPTIONAL; boolean
+#            RequestModel:
+#              Model: Map<String, Object> # REQUIRED; must match the name of a model defined in the Models property of the AWS::Serverless::API
+#              Required: true # OPTIONAL; boolean
 
   NvaBareProxyBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
