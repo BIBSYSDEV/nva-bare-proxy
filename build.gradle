@@ -44,7 +44,6 @@ jar.enabled = false
 project.tasks.build.dependsOn project.tasks.shadowJar
 
 pmd {
-    toolVersion = '6.20.0'
     ruleSetConfig = rootProject.resources.text.fromFile('config/pmd/ruleset.xml')
     ruleSets = []
     ignoreFailures = false

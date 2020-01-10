@@ -21,18 +21,20 @@ import java.nio.charset.StandardCharsets;
 public class BareConnection {
 
     public static final String HTTPS = "https";
-    public static final String BARE_HOST = System.getenv("bareHost");
-    public static final String BARE_PATH = "/authority/rest/functions/v2/query";
-    public static final String BARE_APIKEY = System.getenv("bareApiKey");
     public static final String APIKEY_KEY = "apikey";
     private final transient CloseableHttpClient httpClient;
 
-    public BareConnection(CloseableHttpClient httpClient) {
+    /**
+     * Constructor for testability reasons.
+     * @param httpClient HttpClient
+     */
+    public BareConnection(CloseableHttpClient httpClient)  {
         this.httpClient = httpClient;
     }
 
-    public BareConnection() {
+    public BareConnection()  {
         httpClient = HttpClients.createDefault();
+
     }
 
     protected InputStreamReader connect(URL url) throws IOException {
@@ -44,8 +46,8 @@ public class BareConnection {
         final String authoritytype = " authoritytype:person";
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
-                .setHost(BARE_HOST)
-                .setPath(BARE_PATH)
+                .setHost(Config.getInstance().getBareHost())
+                .setPath(Config.BARE_PATH)
                 .setParameter("q", URLEncoder.encode(authorityName + authoritytype, StandardCharsets.UTF_8.toString()))
                 .setParameter("start", "1")
                 .setParameter("max", "10")
@@ -64,12 +66,12 @@ public class BareConnection {
     public CloseableHttpResponse update(Authority authority) throws IOException, URISyntaxException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
-                .setHost(BARE_HOST)
-                .setPath(BARE_PATH)
+                .setHost(Config.getInstance().getBareHost())
+                .setPath(Config.BARE_PATH)
                 .setPath(authority.getScn())
                 .build();
         HttpPut putRequest = new HttpPut(uri);
-        putRequest.setHeader(APIKEY_KEY, BARE_APIKEY);
+        putRequest.setHeader(APIKEY_KEY, Config.getInstance().getBareApikey());
         putRequest.setEntity(new StringEntity(new Gson().toJson(authority, Authority.class)));
         return httpClient.execute(putRequest);
     }

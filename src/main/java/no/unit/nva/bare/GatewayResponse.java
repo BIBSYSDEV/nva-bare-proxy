@@ -17,14 +17,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GatewayResponse {
 
     public static final String CORS_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
-    public static final String CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME = "AllowOrigin";
-
     public static final String EMPTY_JSON = "{}";
     public static final transient String ERROR_KEY = "error";
     private String body;
     private transient Map<String, String> headers;
     private int statusCode;
-    private final transient String corsAllowDomain;
 
     /**
      * GatewayResponse contains response status, response headers and body with payload resp. error messages.
@@ -32,17 +29,6 @@ public class GatewayResponse {
     public GatewayResponse() {
         this.statusCode = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
         this.body = EMPTY_JSON;
-        this.corsAllowDomain = System.getenv(CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME);
-        this.generateDefaultHeaders();
-    }
-
-    /**
-     * GatewayResponse constructor for test purposes.
-     */
-    protected GatewayResponse(String allowCorsDomainHeaders) {
-        this.statusCode = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
-        this.body = EMPTY_JSON;
-        this.corsAllowDomain = allowCorsDomainHeaders;
         this.generateDefaultHeaders();
     }
 
@@ -52,7 +38,6 @@ public class GatewayResponse {
     public GatewayResponse(final String body, final int status) {
         this.statusCode = status;
         this.body = body;
-        this.corsAllowDomain = System.getenv(CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME);
         this.generateDefaultHeaders();
     }
 
@@ -90,6 +75,7 @@ public class GatewayResponse {
     private void generateDefaultHeaders() {
         Map<String, String> headers = new ConcurrentHashMap<>();
         headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        final String corsAllowDomain = Config.getInstance().getCorsHeader();
         if (StringUtils.isNotEmpty(corsAllowDomain)) {
             headers.put(CORS_ALLOW_ORIGIN_HEADER, corsAllowDomain);
         }

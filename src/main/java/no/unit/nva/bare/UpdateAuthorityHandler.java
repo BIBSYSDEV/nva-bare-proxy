@@ -37,7 +37,7 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
     public static final String FEIDEID_KEY = "feideId";
     public static final String ORCID_KEY = "orcId";
     public static final String BODY_KEY = "body";
-    protected final transient GatewayResponse gatewayResponse = new GatewayResponse();
+    protected transient GatewayResponse gatewayResponse;
     protected final transient AuthorityConverter authorityConverter = new AuthorityConverter();
     protected final transient BareConnection bareConnection;
 
@@ -58,6 +58,7 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
     @Override
     @SuppressWarnings("unchecked")
     public GatewayResponse handleRequest(final Map<String, Object> input, Context context) {
+        GatewayResponse gatewayResponse = new GatewayResponse();
         String bodyEvent = (String) input.get("body");
         Map<String, String> pathParameters = (Map<String, String>) input.get("pathParameters");
         if (Objects.isNull(pathParameters)) {
@@ -78,14 +79,15 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
                     gatewayResponse.setErrorBody(BODY_ARGS_MISSING);
                     gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
                 } else {
-                    updateFeideIdAndOrcId(scn, feideId, orcId);
+                    gatewayResponse = updateFeideIdAndOrcId(scn, feideId, orcId);
                 }
             }
         }
         return gatewayResponse;
     }
 
-    private void updateFeideIdAndOrcId(String scn, String feideId, String orcId) {
+    private GatewayResponse updateFeideIdAndOrcId(String scn, String feideId, String orcId) {
+        GatewayResponse gatewayResponse = new GatewayResponse();
         try {
             URL bareQueryUrl = bareConnection.generateQueryUrl(scn);
             try (InputStreamReader streamReader = bareConnection.connect(bareQueryUrl)) {
@@ -100,7 +102,7 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
                         if (!StringUtils.isEmpty(orcId)) {
                             authority.setOrcId(orcId);
                         }
-                        updateAuthorityOnBare(scn, authority);
+                        gatewayResponse = updateAuthorityOnBare(scn, authority);
                         break;
                     case 0:
                         gatewayResponse.setErrorBody(String.format(AUTHORITY_NOT_FOUND, scn));
@@ -116,9 +118,11 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
+        return gatewayResponse;
     }
 
-    private void updateAuthorityOnBare(String scn, Authority authority) {
+    private GatewayResponse updateAuthorityOnBare(String scn, Authority authority) {
+        GatewayResponse gatewayResponse = new GatewayResponse();
         try (CloseableHttpResponse response = bareConnection.update(authority)) {
             HttpEntity responseEntity = response.getEntity();
             List<Authority> updatedAuthority;
@@ -137,6 +141,7 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
+        return gatewayResponse;
     }
 
     protected String getValueFromJsonObject(String body, String key) {

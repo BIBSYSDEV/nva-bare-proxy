@@ -54,9 +54,15 @@ public class FetchAuthorityHandlerTest {
     @Mock
     BareConnection mockBareConnection;
 
+    /**
+     * Initialise mocks and Config.
+     */
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        final Config config = Config.getInstance();
+        config.setBareHost(Config.BARE_HOST_KEY);
+        config.setBareApikey(Config.BARE_APIKEY_KEY);
     }
 
     @Test

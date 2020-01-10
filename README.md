@@ -75,30 +75,68 @@ AWS$ curl http://localhost:3000/
 ```
 
 The application expects two environment variables:
- * `bareHost` defines the source of the Authority data (utvikle-a.bibsys.no for development, authority.bibsys.no for production)
- * `bareApiKey` should be defined in the AWS SecretsManager and is needed to for update/PUT functionality
+ * `BARE_HOST` defines the source of the Authority data (utvikle-a.bibsys.no for development, authority.bibsys.no for production)
+ * `BARE_API_KEY` should be defined in the AWS SecretsManager and is needed to for update/PUT functionality
 
 ```yaml
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
-          bareHost: "utvikle-a.bibsys.no"
-          bareApiKey: '{{resolve:ssm:bareApiKey:1}}'
+          BARE_HOST: "utvikle-a.bibsys.no"
+          BARE_API_KEY: '{{resolve:ssm:bareApiKey:1}}'
 ```
 
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
 
 ```yaml
+  NvaBareFetchFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          AllowOrigin: !Sub
+            - "${Domain}"
+            - Domain: !Ref  CorsOrigin
+      Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
       Events:
-        PostEvent:
+        NvaBareFetchEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /authority
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /
             Method: post
-        PutEvent:
+            RequestModel:
+              Model: Map<String, Object> # REQUIRED; must match the name of a model defined in the Models property of the AWS::Serverless::API
+              Required: true # OPTIONAL; boolean
+
+  NvaBareUpdateFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          AllowOrigin: !Sub
+          - "${Domain}"
+          - Domain: !Ref  CorsOrigin
+          BARE_HOST: "utvikle-a.bibsys.no"
+          BARE_API_KEY: '{{resolve:ssm:bareApiKey:1}}'
+      Handler: no.unit.nva.bare.UpdateAuthorityHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Events:
+        NvaBareUpdateEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /authority/{scn}
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}
             Method: put
+            RequestModel:
+              Model: Map<String, Object> # REQUIRED; must match the name of a model defined in the Models property of the AWS::Serverless::API
+              Required: true # OPTIONAL; boolean
 ```
 
 ## Add a resource to your application
