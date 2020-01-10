@@ -88,7 +88,9 @@ Resources:
           - "${Domain}"
           - Domain: !Ref  CorsOrigin
           BARE_HOST: !Ref BareHost
-          BARE_API_KEY: !Ref BareApiKey
+          BARE_API_KEY: !Sub
+          - "${key}"
+          - key: !Ref BareApiKey
       Handler: no.unit.nva.bare.UpdateAuthorityHandler::handleRequest
       Runtime: java8
       MemorySize: 512
