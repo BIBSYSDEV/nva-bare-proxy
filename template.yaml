@@ -32,6 +32,15 @@ Parameters:
   CorsOrigin:
     Type: String
     Description: Value to use for Cors 'Allow...' header if value is set
+  BareApiKey:
+    Type: String
+    Description: Key to access bare
+    Default: '{{resolve:ssm-secure:bareApiKey:1}}'
+    NoEcho: true
+  BareHost:
+    Type: String
+    Description: Address to bare
+    Default: '{{resolve:ssm:bareHost:1}}'
 
 Resources:
 
@@ -78,8 +87,8 @@ Resources:
           AllowOrigin: !Sub
           - "${Domain}"
           - Domain: !Ref  CorsOrigin
-          BARE_HOST: '{{resolve:ssm:bareHost:1}}'
-          BARE_API_KEY: '{{resolve:ssm-secure:bareApiKey:1}}'
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
       Handler: no.unit.nva.bare.UpdateAuthorityHandler::handleRequest
       Runtime: java8
       MemorySize: 512
