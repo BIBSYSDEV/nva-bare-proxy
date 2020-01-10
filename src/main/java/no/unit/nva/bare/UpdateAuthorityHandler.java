@@ -37,6 +37,7 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
     public static final String FEIDEID_KEY = "feideId";
     public static final String ORCID_KEY = "orcId";
     public static final String BODY_KEY = "body";
+    public static final String PATH_PARAMETERS_KEY = "pathParameters";
     protected transient GatewayResponse gatewayResponse;
     protected final transient AuthorityConverter authorityConverter = new AuthorityConverter();
     protected final transient BareConnection bareConnection;
@@ -59,31 +60,38 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
     @SuppressWarnings("unchecked")
     public GatewayResponse handleRequest(final Map<String, Object> input, Context context) {
         GatewayResponse gatewayResponse = new GatewayResponse();
-        String bodyEvent = (String) input.get("body");
-        Map<String, String> pathParameters = (Map<String, String>) input.get("pathParameters");
-        if (Objects.isNull(pathParameters)) {
-            gatewayResponse.setErrorBody(MISSING_PATH_PARAMETER_SCN);
+        try {
+            this.checkParameters(input);
+        } catch (RuntimeException e) {
+            gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
-        } else {
-            String scn = pathParameters.get(SCN_KEY);
-            if (StringUtils.isEmpty(scn)) {
-                gatewayResponse.setErrorBody(MISSING_PATH_PARAMETER_SCN);
-                gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
-            } else if (StringUtils.isEmpty(bodyEvent)) {
-                gatewayResponse.setErrorBody(MISSING_BODY_ELEMENT_EVENT);
-                gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
-            } else {
-                String feideId = getValueFromJsonObject(bodyEvent, FEIDEID_KEY);
-                String orcId = getValueFromJsonObject(bodyEvent, ORCID_KEY);
-                if (feideId.isEmpty() && orcId.isEmpty()) {
-                    gatewayResponse.setErrorBody(BODY_ARGS_MISSING);
-                    gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
-                } else {
-                    gatewayResponse = updateFeideIdAndOrcId(scn, feideId, orcId);
-                }
-            }
+            return gatewayResponse;
         }
-        return gatewayResponse;
+        String bodyEvent = (String) input.get(BODY_KEY);
+        Map<String, String> pathParameters = (Map<String, String>) input.get(PATH_PARAMETERS_KEY);
+        String scn = pathParameters.get(SCN_KEY);
+        String feideId = getValueFromJsonObject(bodyEvent, FEIDEID_KEY);
+        String orcId = getValueFromJsonObject(bodyEvent, ORCID_KEY);
+        return this.updateFeideIdAndOrcId(scn, feideId, orcId);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void checkParameters(Map<String, Object> input) {
+        Map<String, String> pathParameters = (Map<String, String>) input.get(PATH_PARAMETERS_KEY);
+        if (Objects.isNull(pathParameters)) {
+            throw new RuntimeException(MISSING_PATH_PARAMETER_SCN);
+        }
+        if (StringUtils.isEmpty(pathParameters.get(SCN_KEY))) {
+            throw new RuntimeException(MISSING_PATH_PARAMETER_SCN);
+        }
+        String bodyEvent = (String) input.get(BODY_KEY);
+        if (StringUtils.isEmpty(bodyEvent)) {
+            throw new RuntimeException(MISSING_BODY_ELEMENT_EVENT);
+        }
+        if (StringUtils.isEmpty(getValueFromJsonObject(bodyEvent, FEIDEID_KEY))
+                && StringUtils.isEmpty(getValueFromJsonObject(bodyEvent, ORCID_KEY))) {
+            throw new RuntimeException(BODY_ARGS_MISSING);
+        }
     }
 
     private GatewayResponse updateFeideIdAndOrcId(String scn, String feideId, String orcId) {
