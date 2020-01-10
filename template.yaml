@@ -35,7 +35,7 @@ Parameters:
   BareApiKey:
     Type: String
     Description: Key to access bare
-    Default: '{{resolve:ssm-secure:bareApiKey:1}}'
+    Default: '{{resolve:secretsmanager:bareApiKey:SecretString}}'
     NoEcho: true
   BareHost:
     Type: String
@@ -88,9 +88,7 @@ Resources:
           - "${Domain}"
           - Domain: !Ref  CorsOrigin
           BARE_HOST: !Ref BareHost
-          BARE_API_KEY: !Sub
-          - "${key}"
-          - key: !Ref BareApiKey
+          BARE_API_KEY: !Ref BareApiKey
       Handler: no.unit.nva.bare.UpdateAuthorityHandler::handleRequest
       Runtime: java8
       MemorySize: 512
