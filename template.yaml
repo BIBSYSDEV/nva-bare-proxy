@@ -78,8 +78,8 @@ Resources:
           AllowOrigin: !Sub
           - "${Domain}"
           - Domain: !Ref  CorsOrigin
-          BARE_HOST: "utvikle-a.bibsys.no"
-          BARE_API_KEY: '{{resolve:ssm:bareApiKey:1}}'
+          BARE_HOST: '{{resolve:ssm:bareHost:1}}'
+          BARE_API_KEY: '{{resolve:ssm-secure:bareApiKey:1}}'
       Handler: no.unit.nva.bare.UpdateAuthorityHandler::handleRequest
       Runtime: java8
       MemorySize: 512
