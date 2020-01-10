@@ -19,6 +19,7 @@ public class AuthorityConverter {
     public static final String SCN_KEY = "scn";
     public static final String FEIDE_KEY = "feide";
     public static final String ORCID_KEY = "orcid";
+    public static final String HANDLE_KEY = "handle";
     public static final String EMPTY_STRING = "";
 
 
@@ -32,11 +33,16 @@ public class AuthorityConverter {
     }
 
     private boolean isNonEmptyArray(JsonElement jsonElement) {
-        return Objects.nonNull(jsonElement) && jsonElement.getAsJsonArray().size() > 0;
+        return Objects.nonNull(jsonElement) && jsonElement.isJsonArray();
     }
 
     protected List<Authority> extractAuthoritiesFrom(InputStreamReader reader) {
         final BareResponse bareResponse = new Gson().fromJson(reader, BareResponse.class);
+        return Arrays.stream(bareResponse.results).map(this::asAuthority).collect(Collectors.toList());
+    }
+
+    protected List<Authority> extractAuthoritiesFrom(String json) {
+        final BareResponse bareResponse = new Gson().fromJson(json, BareResponse.class);
         return Arrays.stream(bareResponse.results).map(this::asAuthority).collect(Collectors.toList());
     }
 
@@ -50,23 +56,26 @@ public class AuthorityConverter {
         final String feideId = feideArray.orElse(new String[]{EMPTY_STRING})[0];
         Optional<String[]> orcIdArray = Optional.ofNullable(bareAuthority.identifiersMap.get(ORCID_KEY));
         final String orcId = orcIdArray.orElse(new String[]{EMPTY_STRING})[0];
+        Optional<String[]> handleArray = Optional.ofNullable(bareAuthority.identifiersMap.get(HANDLE_KEY));
+        final String handle = handleArray.orElse(new String[]{EMPTY_STRING})[0];
         Authority authority = new Authority();
         authority.setName(name);
         authority.setScn(scn);
         authority.setFeideId(feideId);
         authority.setOrcId(orcId);
         authority.setBirthDate(date);
+        authority.setHandle(handle);
         return authority;
     }
 
-    private String findValueIn(BareAuthority bareAuthority, String marcTagDatesAssociatedWithPersonalNameSubfieldCode) {
+    private String findValueIn(BareAuthority bareAuthority, String marcSubfieldTag) {
         List<String> values = Arrays.stream(bareAuthority.marcdata)
                 .filter(marc -> Arrays.asList(new String[]{MARC_TAG_PERSONAL_NAME_FIELD_CODE}).contains(marc.tag))
                 .flatMap(marc -> Arrays.stream(marc.subfields))
-                .filter(subfield -> marcTagDatesAssociatedWithPersonalNameSubfieldCode.equals(subfield.subcode))
+                .filter(subfield -> marcSubfieldTag.equals(subfield.subcode))
                 .map(subfield -> subfield.value)
                 .collect(Collectors.toList());
-        return Optional.ofNullable(values.get(0)).orElse(EMPTY_STRING);
+        return !values.isEmpty() ? values.get(0) : EMPTY_STRING;
     }
 
 

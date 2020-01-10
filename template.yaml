@@ -46,7 +46,7 @@ Resources:
       EndpointConfiguration: Regional
 
 
-  NvaBareProxyFunction:
+  NvaBareFetchFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Environment:
@@ -54,11 +54,11 @@ Resources:
           AllowOrigin: !Sub
             - "${Domain}"
             - Domain: !Ref  CorsOrigin
-      Handler: no.unit.nva.bare.AuthorityProxy::handleRequest
+      Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
       Runtime: java8
       MemorySize: 512
       Events:
-        NvaBareProxyEvent:
+        NvaBareFetchEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Auth:
@@ -66,6 +66,35 @@ Resources:
             RestApiId: !Ref NvaBareProxyApi
             Path: /
             Method: post
+            RequestModel:
+              Model: Map<String, Object> # REQUIRED; must match the name of a model defined in the Models property of the AWS::Serverless::API
+              Required: true # OPTIONAL; boolean
+
+  NvaBareUpdateFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          AllowOrigin: !Sub
+          - "${Domain}"
+          - Domain: !Ref  CorsOrigin
+          BARE_HOST: "utvikle-a.bibsys.no"
+          BARE_API_KEY: '{{resolve:ssm:bareApiKey:1}}'
+      Handler: no.unit.nva.bare.UpdateAuthorityHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Events:
+        NvaBareUpdateEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}
+            Method: put
+            RequestModel:
+              Model: Map<String, Object> # REQUIRED; must match the name of a model defined in the Models property of the AWS::Serverless::API
+              Required: true # OPTIONAL; boolean
 
   NvaBareProxyBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping

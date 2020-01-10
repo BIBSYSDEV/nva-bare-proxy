@@ -1,8 +1,6 @@
 package no.unit.nva.bare;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,24 +19,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AuthorityProxyTest {
+public class FetchAuthorityHandlerTest {
 
     public static final String BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE = "/bareSingleAuthorityResponse.json";
     public static final String BARE_EMPTY_RESPONSE_JSON_FILE = "/bareEmptyResponse.json";
@@ -46,29 +42,39 @@ public class AuthorityProxyTest {
     public static final String FETCH_AUTHORITY_EVENT_JSON_TWO_PARAMETERS = "/twoParamsFetchAuthorityEvent.json";
     public static final String FETCH_AUTHORITY_EVENT_JSON_ONE_PARAMETER = "/oneParamFetchAuthorityEvent.json";
     public static final String SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON = "/singleAuthorityGatewayResponseBody.json";
+    public static final String MY_MOCK_THROWS_AN_EXCEPTION = "my mock throws an exception";
+    public static final String EMPTY_STRING = "";
+    public static final String FAKE_FEIDE_ID = "bob@unit.no";
+    public static final String FAKE_ORC_ID = "0000-0000-0000-0000";
+    public static final String BODY_KEY = "body";
+
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
 
     @Mock
     BareConnection mockBareConnection;
 
+    /**
+     * Initialise mocks and Config.
+     */
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        final Config config = Config.getInstance();
+        config.setBareHost(Config.BARE_HOST_KEY);
+        config.setBareApikey(Config.BARE_APIKEY_KEY);
     }
 
     @Test
     public void testSuccessfulResponseWithNameParam() throws Exception {
-        InputStream asStream = AuthorityProxyTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE);
-        InputStreamReader bareResponseStreamReader = new InputStreamReader(asStream);
+        InputStream st = FetchAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE);
+        InputStreamReader bareResponseStreamReader = new InputStreamReader(st);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ALL_PARAMETERS);
-
-        Map<String, Object> event = new HashMap<String, Object>();
-        event.put("body", postRequestBody);
-
-        AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
+        Map<String, Object> event = new HashMap<>();
+        event.put(BODY_KEY, postRequestBody);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
@@ -80,17 +86,16 @@ public class AuthorityProxyTest {
 
     @Test
     public void testSuccessfulResponseWithFeideIdParam() throws Exception {
-        InputStream asStream = AuthorityProxyTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE);
+        InputStream asStream = FetchAuthorityHandlerTest.class.getResourceAsStream(
+                BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE);
         InputStreamReader bareResponseStreamReader = new InputStreamReader(asStream);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_TWO_PARAMETERS);
-
-        Map<String, Object> event = new HashMap<String, Object>();
-        event.put("body", postRequestBody);
-
-        AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
-        GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(event, null);
+        Map<String, Object> event = new HashMap<>();
+        event.put(BODY_KEY, postRequestBody);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
+        GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
@@ -101,17 +106,16 @@ public class AuthorityProxyTest {
 
     @Test
     public void testSuccessfulResponseWithOrcIdParam() throws Exception {
-        InputStream asStream = AuthorityProxyTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE);
+        InputStream asStream = FetchAuthorityHandlerTest.class.getResourceAsStream(
+                BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE);
         InputStreamReader bareResponseStreamReader = new InputStreamReader(asStream);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ONE_PARAMETER);
-
-        Map<String, Object> event = new HashMap<String, Object>();
-        event.put("body", postRequestBody);
-
-        AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
-        GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(event, null);
+        Map<String, Object> event = new HashMap<>();
+        event.put(BODY_KEY, postRequestBody);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
+        GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
@@ -122,21 +126,20 @@ public class AuthorityProxyTest {
         List<Authority> expectedResponseAuthority = new Gson().fromJson(postResponseBody, authorityListType);
         assertEquals(expectedResponseAuthority.get(0).getScn(), responseAuthority.get(0).getScn());
         assertEquals(expectedResponseAuthority.get(0).getBirthDate(), responseAuthority.get(0).getBirthDate());
+        assertEquals(expectedResponseAuthority.get(0).getHandle(), responseAuthority.get(0).getHandle());
     }
 
     @Test
     public void testEmptyHitListResponse() throws Exception {
-        InputStream inputStream = AuthorityProxyTest.class.getResourceAsStream(BARE_EMPTY_RESPONSE_JSON_FILE);
+        InputStream inputStream = FetchAuthorityHandlerTest.class.getResourceAsStream(BARE_EMPTY_RESPONSE_JSON_FILE);
         InputStreamReader bareResponseStreamReader = new InputStreamReader(inputStream);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ONE_PARAMETER);
-
-        Map<String, Object> event = new HashMap<String, Object>();
-        event.put("body", postRequestBody);
-
-        AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
-        GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(event, null);
+        Map<String, Object> event = new HashMap<>();
+        event.put(BODY_KEY, postRequestBody);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
+        GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
@@ -149,57 +152,66 @@ public class AuthorityProxyTest {
     @Test
     public void testFailingRequest() throws Exception {
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ALL_PARAMETERS);
-        String expectdExceptionMsg = "my mock throws an exception";
-        when(mockBareConnection.connect(any())).thenThrow(new IOException(expectdExceptionMsg));
+        when(mockBareConnection.connect(any())).thenThrow(new IOException(MY_MOCK_THROWS_AN_EXCEPTION));
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
-
-        Map<String, Object> event = new HashMap<String, Object>();
-        event.put("body", postRequestBody);
-
-        AuthorityProxy mockAuthorityProxy = new AuthorityProxy(mockBareConnection);
-        GatewayResponse result = (GatewayResponse) mockAuthorityProxy.handleRequest(event, null);
+        Map<String, Object> event = new HashMap<>();
+        event.put(BODY_KEY, postRequestBody);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
+        GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), result.getStatusCode());
         String content = result.getBody();
         assertNotNull(content);
-        assertTrue(content.contains(expectdExceptionMsg));
+        assertTrue(content.contains(MY_MOCK_THROWS_AN_EXCEPTION));
     }
 
     @Test
-    public void testGetValueFromJson() {
-        AuthorityConverter authorityConverter = new AuthorityConverter();
-        String testKey1 = "testKey1";
-        String testValue1 = "testValue1";
-        String testKey2 = "testKey2";
-        String testValue2 = "testValue2";
-        String testArray = "{\"" + testKey1 + "\": [\"" + testValue1 + "\"],"
-                + "\"" + testKey2 + "\": [\"" + testValue2 + "\"]}";
-        final JsonObject jsonObject = (JsonObject) JsonParser.parseString(testArray);
-        String value = authorityConverter.getValueFromJsonArray(jsonObject, testKey1);
-        assertEquals(testValue1, value);
-    }
-
-    @Test (expected = IOException.class)
-    public void testExceptionOnBareConnection() throws IOException {
-        BareConnection bareConnection = new BareConnection();
-        URL emptUrl = new URL("http://iam.an.url");
-        bareConnection.connect(emptUrl);
-        fail();
+    public void testNoBodyRequest() {
+        Map<String, Object> event = new HashMap<>();
+        FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler();
+        GatewayResponse result = fetchAuthorityHandler.handleRequest(event, null);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
+        String content = result.getBody();
+        assertNotNull(content);
+        assertTrue(content.contains(FetchAuthorityHandler.MISSING_BODY));
     }
 
     @Test
-    public void testErrorResponse() {
-        String expectedJson = "{\"error\":\"error\"}";
-        // calling real constructor (no need to mock as this is not talking to the internet)
-        // but helps code coverage
-        AuthorityProxy fetchDoiMetadata = new AuthorityProxy();
-        String errorJson = fetchDoiMetadata.getErrorAsJson("error");
-        assertEquals(expectedJson, errorJson);
+    public void testSelectQueryParameterIsFeideId() {
+        Authority authority = new Authority();
+        authority.setName(EMPTY_STRING);
+        authority.setFeideId(FAKE_FEIDE_ID);
+        authority.setOrcId(FAKE_ORC_ID);
+        FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler();
+        String queryParameter = fetchAuthorityHandler.selectQueryParameter(authority);
+        assertEquals(FAKE_FEIDE_ID, queryParameter);
+    }
+
+    @Test
+    public void testSelectQueryParameterIsOrcId() {
+        Authority authority = new Authority();
+        authority.setName(EMPTY_STRING);
+        authority.setFeideId(EMPTY_STRING);
+        authority.setOrcId(FAKE_ORC_ID);
+        FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler();
+        String queryParameter = fetchAuthorityHandler.selectQueryParameter(authority);
+        assertEquals(FAKE_ORC_ID, queryParameter);
+    }
+
+    @Test
+    public void testSelectQueryParameter_Non() {
+        Authority authority = new Authority();
+        authority.setName(EMPTY_STRING);
+        authority.setFeideId(EMPTY_STRING);
+        authority.setOrcId(EMPTY_STRING);
+        FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler();
+        String queryParameter = fetchAuthorityHandler.selectQueryParameter(authority);
+        assertEquals(EMPTY_STRING, queryParameter);
     }
 
     private String readJsonStringFromFile(String fetchAuthorityEventJsonAllParameters) {
-        InputStream inputStream = AuthorityProxyTest.class.getResourceAsStream(fetchAuthorityEventJsonAllParameters);
+        InputStream stream = FetchAuthorityHandlerTest.class.getResourceAsStream(fetchAuthorityEventJsonAllParameters);
         String postRequestBody;
-        try (Scanner scanner = new Scanner(inputStream, StandardCharsets.UTF_8.name())) {
+        try (Scanner scanner = new Scanner(stream, StandardCharsets.UTF_8.name())) {
             postRequestBody = scanner.useDelimiter("\\A").next();
         }
         return postRequestBody;

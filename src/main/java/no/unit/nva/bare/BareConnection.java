@@ -1,6 +1,13 @@
 package no.unit.nva.bare;
 
+import com.google.gson.Gson;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -14,8 +21,21 @@ import java.nio.charset.StandardCharsets;
 public class BareConnection {
 
     public static final String HTTPS = "https";
-    public static final String BARE_HOST = "authority.bibsys.no";
-    public static final String BARE_PATH = "/authority/rest/functions/v2/query";
+    public static final String APIKEY_KEY = "apikey";
+    private final transient CloseableHttpClient httpClient;
+
+    /**
+     * Constructor for testability reasons.
+     * @param httpClient HttpClient
+     */
+    public BareConnection(CloseableHttpClient httpClient)  {
+        this.httpClient = httpClient;
+    }
+
+    public BareConnection()  {
+        httpClient = HttpClients.createDefault();
+
+    }
 
     protected InputStreamReader connect(URL url) throws IOException {
         return new InputStreamReader(url.openStream());
@@ -26,8 +46,8 @@ public class BareConnection {
         final String authoritytype = " authoritytype:person";
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
-                .setHost(BARE_HOST)
-                .setPath(BARE_PATH)
+                .setHost(Config.getInstance().getBareHost())
+                .setPath(Config.BARE_PATH)
                 .setParameter("q", URLEncoder.encode(authorityName + authoritytype, StandardCharsets.UTF_8.toString()))
                 .setParameter("start", "1")
                 .setParameter("max", "10")
@@ -36,4 +56,23 @@ public class BareConnection {
         return uri.toURL();
     }
 
+    /**
+     * Updates metadata of the given authority to Bare.
+     * @param authority Authority to update
+     * @return CloseableHttpResponse
+     * @throws IOException communication error
+     * @throws URISyntaxException error while creating URI
+     */
+    public CloseableHttpResponse update(Authority authority) throws IOException, URISyntaxException {
+        URI uri = new URIBuilder()
+                .setScheme(HTTPS)
+                .setHost(Config.getInstance().getBareHost())
+                .setPath(Config.BARE_PATH)
+                .setPath(authority.getScn())
+                .build();
+        HttpPut putRequest = new HttpPut(uri);
+        putRequest.setHeader(APIKEY_KEY, Config.getInstance().getBareApikey());
+        putRequest.setEntity(new StringEntity(new Gson().toJson(authority, Authority.class)));
+        return httpClient.execute(putRequest);
+    }
 }

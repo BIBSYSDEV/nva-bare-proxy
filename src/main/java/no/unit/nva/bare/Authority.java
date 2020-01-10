@@ -2,18 +2,24 @@ package no.unit.nva.bare;
 
 public class Authority {
 
+    public static final String EMPTY_STRING = "";
     private String name;
     private String scn;
     private String feideId;
     private String orcId;
     private String birthDate;
+    private String handle;
 
+    /**
+     * POJO to hold authority metadata.
+     */
     public Authority() {
-        name = "";
-        scn = "";
-        feideId = "";
-        orcId = "";
-        birthDate = "";
+        name = EMPTY_STRING;
+        scn = EMPTY_STRING;
+        feideId = EMPTY_STRING;
+        orcId = EMPTY_STRING;
+        birthDate = EMPTY_STRING;
+        handle = EMPTY_STRING;
     }
 
     public String getName() {
@@ -36,6 +42,10 @@ public class Authority {
         return birthDate;
     }
 
+    public String getHandle() {
+        return handle;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -54,5 +64,9 @@ public class Authority {
 
     public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
+    }
+
+    public void setHandle(String handle) {
+        this.handle = handle;
     }
 }
