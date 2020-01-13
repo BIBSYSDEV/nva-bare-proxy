@@ -8,6 +8,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -70,6 +72,7 @@ public class BareConnection {
         System.out.println("uri="+uri);
         HttpPut putRequest = new HttpPut(uri);
         putRequest.setHeader(APIKEY_KEY, Config.getInstance().getBareApikey());
+        putRequest.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         putRequest.setEntity(new StringEntity(new Gson().toJson(authority, Authority.class)));
         System.out.println("putRequest="+putRequest);
         return httpClient.execute(putRequest);
