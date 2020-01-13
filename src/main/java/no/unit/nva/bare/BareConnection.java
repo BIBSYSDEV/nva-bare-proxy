@@ -71,6 +71,7 @@ public class BareConnection {
         HttpPut putRequest = new HttpPut(uri);
         putRequest.setHeader(APIKEY_KEY, Config.getInstance().getBareApikey());
         putRequest.setEntity(new StringEntity(new Gson().toJson(authority, Authority.class)));
+        System.out.println(putRequest);
         return httpClient.execute(putRequest);
     }
 }
