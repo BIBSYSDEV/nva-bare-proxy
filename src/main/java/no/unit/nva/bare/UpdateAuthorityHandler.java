@@ -38,7 +38,7 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
     public static final String ORCID_KEY = "orcId";
     public static final String BODY_KEY = "body";
     public static final String PATH_PARAMETERS_KEY = "pathParameters";
-    protected transient GatewayResponse gatewayResponse;
+    public static final String EMPTY_STRING = "";
     protected final transient AuthorityConverter authorityConverter = new AuthorityConverter();
     protected final transient BareConnection bareConnection;
 
@@ -53,6 +53,7 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
 
     /**
      * Main lambda function to update feideId or/and orcId on Bare authority metadata.
+     *
      * @param input payload with body-parameter containing the authority metadata
      * @return a GatewayResponse
      */
@@ -154,11 +155,8 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
 
     protected String getValueFromJsonObject(String body, String key) {
         JsonObject jsonObject = (JsonObject) JsonParser.parseString(body);
-        JsonElement jsonElement = jsonObject.get(BODY_KEY);
-        if (Objects.nonNull(jsonElement)) {
-            jsonElement = ((JsonObject) jsonElement).get(key);
-        }
-        return Objects.isNull(jsonElement) ? "" : jsonElement.getAsString();
+        JsonElement jsonElement = jsonObject.get(key);
+        return Objects.isNull(jsonElement) ? EMPTY_STRING : jsonElement.getAsString();
     }
 
 }

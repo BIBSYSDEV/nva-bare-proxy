@@ -1,6 +1,4 @@
 {
-  "body": {
-    "feideId": "foo.bar@unit.no",
-    "orcId": "0000-0000-0000-0000"
-  }
+  "feideId": "foo.bar@unit.no",
+  "orcId": "0000-0000-0000-0000"
 }
