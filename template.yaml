@@ -63,6 +63,8 @@ Resources:
           AllowOrigin: !Sub
             - "${Domain}"
             - Domain: !Ref  CorsOrigin
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
       Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
       Runtime: java8
       MemorySize: 512
