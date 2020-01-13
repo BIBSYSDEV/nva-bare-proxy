@@ -53,6 +53,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
             String authorityName = this.selectQueryParameter(inputAuthority);
             try {
                 URL bareUrl = bareConnection.generateQueryUrl(authorityName);
+                System.out.println(bareUrl.toString());
                 try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
                     final List<Authority> fetchedAuthority = authorityConverter.extractAuthoritiesFrom(streamReader);
                     System.out.println(gson.toJson(fetchedAuthority));
