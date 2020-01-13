@@ -65,8 +65,7 @@ public class BareConnection {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
-                .setPath(Config.BARE_PATH)
-                .setPath(authority.getScn())
+                .setPathSegments(Config.BARE_PATH, authority.getScn())
                 .build();
         System.out.println("uri="+uri);
         HttpPut putRequest = new HttpPut(uri);
