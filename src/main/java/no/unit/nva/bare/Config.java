@@ -13,6 +13,7 @@ public class Config {
     private String corsHeader;
 
     public static final String BARE_PATH = "/authority/rest/functions/v2/query";
+    public static final String BARE_UPDATE_PATH = "/authority/rest/authorities/v2";
 
     private Config() {
     }
