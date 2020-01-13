@@ -44,11 +44,14 @@ public class BareConnection {
     protected URL generateQueryUrl(String authorityName)
             throws MalformedURLException, UnsupportedEncodingException, URISyntaxException {
         final String authoritytype = " authoritytype:person";
+
+        String encodedQuery = URLEncoder.encode(authorityName + authoritytype, StandardCharsets.UTF_8.toString());
+        System.out.println("encodedQuery="+encodedQuery);
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
                 .setPath(Config.BARE_PATH)
-                .setParameter("q", URLEncoder.encode(authorityName + authoritytype, StandardCharsets.UTF_8.toString()))
+                .setParameter("q", encodedQuery)
                 .setParameter("start", "1")
                 .setParameter("max", "10")
                 .setParameter("format", "json")
