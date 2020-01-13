@@ -68,10 +68,11 @@ public class BareConnection {
                 .setPath(Config.BARE_PATH)
                 .setPath(authority.getScn())
                 .build();
+        System.out.println("uri="+uri);
         HttpPut putRequest = new HttpPut(uri);
         putRequest.setHeader(APIKEY_KEY, Config.getInstance().getBareApikey());
         putRequest.setEntity(new StringEntity(new Gson().toJson(authority, Authority.class)));
-        System.out.println(putRequest);
+        System.out.println("putRequest="+putRequest);
         return httpClient.execute(putRequest);
     }
 }
