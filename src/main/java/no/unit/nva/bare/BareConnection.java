@@ -76,6 +76,5 @@ public class BareConnection {
         putRequest.setEntity(new StringEntity(new Gson().toJson(authority, Authority.class)));
         System.out.println("putRequest="+putRequest);
         return httpClient.execute(putRequest);
-
-
+    }
 }
