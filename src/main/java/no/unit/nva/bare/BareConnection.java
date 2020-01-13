@@ -10,13 +10,10 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 public class BareConnection {
 
@@ -42,16 +39,14 @@ public class BareConnection {
     }
 
     protected URL generateQueryUrl(String authorityName)
-            throws MalformedURLException, UnsupportedEncodingException, URISyntaxException {
+            throws MalformedURLException, URISyntaxException {
         final String authoritytype = " authoritytype:person";
-
-        String encodedQuery = URLEncoder.encode(authorityName + authoritytype, StandardCharsets.UTF_8.toString());
-        System.out.println("encodedQuery="+encodedQuery);
+        String queryString = authorityName + authoritytype;
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
                 .setPath(Config.BARE_PATH)
-                .setParameter("q", encodedQuery)
+                .setParameter("q", queryString)
                 .setParameter("start", "1")
                 .setParameter("max", "10")
                 .setParameter("format", "json")
