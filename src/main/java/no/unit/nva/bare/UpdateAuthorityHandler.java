@@ -137,6 +137,7 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
             List<Authority> updatedAuthority;
             try (InputStream contentStream = responseEntity.getContent()) {
                 String content = IOUtils.toString(contentStream, StandardCharsets.UTF_8.name());
+                System.out.println("bareResponse content: " + content);
                 updatedAuthority = authorityConverter.extractAuthoritiesFrom(content);
             }
             if (!updatedAuthority.isEmpty()) {
