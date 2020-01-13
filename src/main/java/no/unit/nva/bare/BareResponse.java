@@ -10,11 +10,29 @@ public class BareResponse {
     public int numFound;
     public BareAuthority[] results;
 
+    public String getQuery() {
+        return query;
+    }
+
+    public int getNumFound() {
+        return numFound;
+    }
+
+    public void setQuery(String query) {
+        this.query = query;
+    }
+
+    public void setNumFound(int numFound) {
+        this.numFound = numFound;
+    }
+
     @Override
     public String toString() {
-        return "BareResponse{" +
-                "query='" + query + '\'' +
-                ", numFound=" + numFound +
-                '}';
+        return "BareResponse{"
+                + "query='"
+                + getQuery() + '\''
+                + ", numFound="
+                + getNumFound()
+                + '}';
     }
 }
