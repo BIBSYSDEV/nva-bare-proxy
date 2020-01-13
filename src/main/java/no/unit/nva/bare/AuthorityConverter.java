@@ -38,6 +38,7 @@ public class AuthorityConverter {
 
     protected List<Authority> extractAuthoritiesFrom(InputStreamReader reader) {
         final BareResponse bareResponse = new Gson().fromJson(reader, BareResponse.class);
+        System.out.println(bareResponse);
         return Arrays.stream(bareResponse.results).map(this::asAuthority).collect(Collectors.toList());
     }
 

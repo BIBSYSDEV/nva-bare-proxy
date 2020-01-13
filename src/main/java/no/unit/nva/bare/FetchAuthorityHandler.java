@@ -43,6 +43,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
      */
     @Override
     public GatewayResponse handleRequest(final Map<String, Object> input, Context context) {
+        System.out.println(input);
         Config.getInstance().checkProperties();
         GatewayResponse gatewayResponse  = new GatewayResponse();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -54,6 +55,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
                 URL bareUrl = bareConnection.generateQueryUrl(authorityName);
                 try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
                     final List<Authority> fetchedAuthority = authorityConverter.extractAuthoritiesFrom(streamReader);
+                    System.out.println(gson.toJson(fetchedAuthority));
                     gatewayResponse.setBody(gson.toJson(fetchedAuthority));
                     gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
                 }

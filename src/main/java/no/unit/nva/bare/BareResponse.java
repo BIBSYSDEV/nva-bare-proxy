@@ -9,4 +9,12 @@ public class BareResponse {
     public String maxRows;
     public int numFound;
     public BareAuthority[] results;
+
+    @Override
+    public String toString() {
+        return "BareResponse{" +
+                "query='" + query + '\'' +
+                ", numFound=" + numFound +
+                '}';
+    }
 }

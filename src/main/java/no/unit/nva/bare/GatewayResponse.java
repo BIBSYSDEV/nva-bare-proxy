@@ -54,6 +54,7 @@ public class GatewayResponse {
     }
 
     public void setBody(String body) {
+        System.out.println("GatewayResponse.setBody="+body);
         this.body = body;
     }
 
