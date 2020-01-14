@@ -28,11 +28,10 @@ public class AuthorityConverterTest {
     @Test
     public void testGetValueFromJsonWrongKey() {
         AuthorityConverter authorityConverter = new AuthorityConverter();
-        String wrongKey = WRONG_KEY;
         String testArray = String.format("{\"%s\": [\"%s\"],\"%s\": [\"%s\"]}", TEST_KEY_1, TEST_VALUE_1, TEST_KEY_2,
                 TEST_VALUE_2);
         final JsonObject jsonObject = (JsonObject) JsonParser.parseString(testArray);
-        String value = authorityConverter.getValueFromJsonArray(jsonObject, wrongKey);
+        String value = authorityConverter.getValueFromJsonArray(jsonObject, WRONG_KEY);
         assertEquals(EMPTY_STRING, value);
     }
 

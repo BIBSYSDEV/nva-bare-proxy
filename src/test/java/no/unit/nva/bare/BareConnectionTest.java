@@ -82,10 +82,7 @@ public class BareConnectionTest {
         when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
         when(mockHttpClient.execute(any())).thenReturn(mockCloseableHttpResponse);
 
-        InputStream stream = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
-        String st = IOUtils.toString(stream, Charset.defaultCharset());
-        Type authorityListType = new TypeToken<ArrayList<Authority>>(){}.getType();
-        List<Authority> mockAuthorityList = new Gson().fromJson(st, authorityListType);
+
         BareConnection mockBareConnection = new BareConnection(mockHttpClient);
 
         String scn = "scn";
@@ -101,6 +98,12 @@ public class BareConnectionTest {
         List<Authority> updatedAuthority = authorityConverter.extractAuthoritiesFrom(content);
 
         assertEquals(1, updatedAuthority.size());
+        InputStream stream =
+                AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
+        String st = IOUtils.toString(stream, Charset.defaultCharset());
+        Type authorityListType = new TypeToken<ArrayList<Authority>>() {
+        }.getType();
+        List<Authority> mockAuthorityList = new Gson().fromJson(st, authorityListType);
         assertEquals(mockAuthorityList.get(0).getScn(), updatedAuthority.get(0).getScn());
     }
 
@@ -117,7 +120,6 @@ public class BareConnectionTest {
         assertNotNull(url);
 
     }
-
 
 
 }

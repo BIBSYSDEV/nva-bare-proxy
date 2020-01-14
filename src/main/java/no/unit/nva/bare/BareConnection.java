@@ -75,7 +75,8 @@ public class BareConnection {
     /**
      * Updates metadata of the given authority to Bare.
      *
-     * @param authority Authority to update
+     * @param authoritySystemControlNumber Identifier of Authority to update
+     * @param authorityIdentifier New identifierpair to add to authority
      * @return CloseableHttpResponse
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
