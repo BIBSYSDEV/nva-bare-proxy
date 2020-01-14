@@ -16,11 +16,13 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Base64;
 
 public class BareConnection {
 
     public static final String HTTPS = "https";
     public static final String APIKEY_KEY = "apikey";
+    public static final String SPACE =  " ";
     private final transient CloseableHttpClient httpClient;
 
     /**
@@ -71,7 +73,9 @@ public class BareConnection {
                 .build();
         System.out.println("uri="+uri);
         HttpPut putRequest = new HttpPut(uri);
-        putRequest.setHeader(APIKEY_KEY, Config.getInstance().getBareApikey());
+
+        String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
+        putRequest.addHeader("Authorization", apiKeyAuth);
         putRequest.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         putRequest.setEntity(new StringEntity(new Gson().toJson(authority, Authority.class)));
         System.out.println("putRequest="+putRequest);
