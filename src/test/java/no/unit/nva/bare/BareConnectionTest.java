@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
@@ -74,20 +75,22 @@ public class BareConnectionTest {
 
     @Test
     public void testUpdate() throws Exception {
-        InputStream streamResp = UpdateAuthorityHandlerTest.class.getResourceAsStream(
+        InputStream streamResp = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(
                 BARE_SINGLE_AUTHORITY_RESPONSE_WITH_ALL_IDS_JSON);
         mockCloseableHttpResponse.setEntity(mockEntity);
         when(mockEntity.getContent()).thenReturn(streamResp);
         when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
         when(mockHttpClient.execute(any())).thenReturn(mockCloseableHttpResponse);
 
-        InputStream stream = UpdateAuthorityHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
+        InputStream stream = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
         String st = IOUtils.toString(stream, Charset.defaultCharset());
         Type authorityListType = new TypeToken<ArrayList<Authority>>(){}.getType();
         List<Authority> mockAuthorityList = new Gson().fromJson(st, authorityListType);
         BareConnection mockBareConnection = new BareConnection(mockHttpClient);
 
-        CloseableHttpResponse httpResponse = mockBareConnection.update(mockAuthorityList.get(0));
+        String scn = "scn";
+        AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier("feide", "feide");
+        CloseableHttpResponse httpResponse = mockBareConnection.addIdentifier(scn, authorityIdentifier);
 
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.getEntity());
@@ -100,5 +103,21 @@ public class BareConnectionTest {
         assertEquals(1, updatedAuthority.size());
         assertEquals(mockAuthorityList.get(0).getScn(), updatedAuthority.get(0).getScn());
     }
+
+    @Test
+    public void testGenerateGetUrl() throws IOException, URISyntaxException {
+        final URL url = new BareConnection().generateGetUrl("scn");
+        assertNotNull(url);
+
+    }
+
+    @Test
+    public void testGenerateQueryUrl() throws IOException, URISyntaxException {
+        final URL url = new BareConnection().generateQueryUrl("henrik ibsen");
+        assertNotNull(url);
+
+    }
+
+
 
 }

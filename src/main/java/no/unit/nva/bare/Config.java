@@ -8,12 +8,14 @@ public class Config {
     public static final String CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME = "AllowOrigin";
     public static final String BARE_APIKEY_KEY = "BARE_API_KEY";
     public static final String BARE_HOST_KEY = "BARE_HOST";
-    private String bareHost;
+    public static final String BARE_QUERY_PATH = "/authority/rest/functions/v2/query";
+    public static final String BARE_UPDATE_PATH = "/authority/rest/authorities/v2";
+    public static final String BARE_GET_PATH = "/authority/rest/authorities/v2";
+
     private String bareApikey;
     private String corsHeader;
+    private String bareHost;
 
-    public static final String BARE_PATH = "/authority/rest/functions/v2/query";
-    public static final String BARE_UPDATE_PATH = "/authority/rest/authorities/v2";
 
     private Config() {
     }
@@ -35,6 +37,7 @@ public class Config {
 
     /**
      * Checking if bareHost and bareApiKey are present.
+     *
      * @return true if both properties are present.
      */
     public boolean checkProperties() {

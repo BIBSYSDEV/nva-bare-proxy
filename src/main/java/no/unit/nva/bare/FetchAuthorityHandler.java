@@ -3,8 +3,6 @@ package no.unit.nva.bare;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -13,8 +11,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Handler for requests to Lambda function.
@@ -23,9 +19,14 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
 
     public static final String EMPTY_STRING = "";
     protected static final String MISSING_BODY = "Missing body";
+    protected static final String MISSING_PARAMETERS = "Missing parameters! Neither 'feideId' nor 'name' is set";
     public static final String BODY_KEY = "body";
     protected final transient AuthorityConverter authorityConverter = new AuthorityConverter();
     protected final transient BareConnection bareConnection;
+    public static final String QUERY_STRING_PARAMETERS_KEY = "queryStringParameters";
+    public static final String NAME_KEY = "name";
+    public static final String FEIDE_KEY = "feideId";
+    public static final String ORCID_KEY = "orcId";
 
 
     public FetchAuthorityHandler() {
@@ -46,16 +47,27 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
         System.out.println(input);
         Config.getInstance().checkProperties();
         GatewayResponse gatewayResponse  = new GatewayResponse();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String authoritySource = (String) input.get(BODY_KEY);
-        Authority inputAuthority = gson.fromJson(authoritySource, Authority.class);
-        if (Objects.nonNull(inputAuthority)) {
-            String authorityName = this.selectQueryParameter(inputAuthority);
+
+        String query = null;
+        if (input != null && input.containsKey(QUERY_STRING_PARAMETERS_KEY)) {
+            Map<String, String> queryStringParameters = (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
+            if (queryStringParameters.containsKey(FEIDE_KEY)) {
+                query = queryStringParameters.get(FEIDE_KEY);
+            } else if (queryStringParameters.containsKey(ORCID_KEY)) {
+                query = queryStringParameters.get(ORCID_KEY);
+            } else if (queryStringParameters.containsKey(NAME_KEY)) {
+                query = queryStringParameters.get(NAME_KEY);
+            } else {
+                gatewayResponse.setErrorBody(MISSING_PARAMETERS);
+                gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
+                return gatewayResponse;
+            }
             try {
-                URL bareUrl = bareConnection.generateQueryUrl(authorityName);
+                URL bareUrl = bareConnection.generateQueryUrl(query);
                 System.out.println(bareUrl.toString());
                 try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
                     final List<Authority> fetchedAuthority = authorityConverter.extractAuthoritiesFrom(streamReader);
+                    Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
                     System.out.println(gson.toJson(fetchedAuthority));
                     gatewayResponse.setBody(gson.toJson(fetchedAuthority));
                     gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
@@ -65,25 +77,11 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
                 gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
             }
         } else {
-            gatewayResponse.setErrorBody(MISSING_BODY);
+            gatewayResponse.setErrorBody(MISSING_PARAMETERS);
             gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
         }
-        return gatewayResponse;
-    }
 
-    protected String selectQueryParameter(Authority inputAuthority) {
-        String queryParam = EMPTY_STRING;
-        String name = Optional.ofNullable(inputAuthority.getName()).orElse(EMPTY_STRING);
-        String feideId = Optional.ofNullable(inputAuthority.getFeideId()).orElse(EMPTY_STRING);
-        String orcId = Optional.ofNullable(inputAuthority.getOrcId()).orElse(EMPTY_STRING);
-        if (StringUtils.isNotEmpty(name)) {
-            queryParam = name;
-        } else if (StringUtils.isNotEmpty(feideId)) {
-            queryParam = feideId;
-        } else if (StringUtils.isNotEmpty(orcId)) {
-            queryParam = orcId;
-        }
-        return queryParam;
+        return gatewayResponse;
     }
 
 }

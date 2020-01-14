@@ -21,18 +21,19 @@ public class BareConnection {
 
     public static final String HTTPS = "https";
     public static final String APIKEY_KEY = "apikey";
-    public static final String SPACE =  " ";
+    public static final String SPACE = " ";
     private final transient CloseableHttpClient httpClient;
 
     /**
      * Constructor for testability reasons.
+     *
      * @param httpClient HttpClient
      */
-    public BareConnection(CloseableHttpClient httpClient)  {
+    public BareConnection(CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
     }
 
-    public BareConnection()  {
+    public BareConnection() {
         httpClient = HttpClients.createDefault();
 
     }
@@ -48,7 +49,7 @@ public class BareConnection {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
-                .setPath(Config.BARE_PATH)
+                .setPath(Config.BARE_QUERY_PATH)
                 .setParameter("q", queryString)
                 .setParameter("start", "1")
                 .setParameter("max", "10")
@@ -57,27 +58,47 @@ public class BareConnection {
         return uri.toURL();
     }
 
-    /**
-     * Updates metadata of the given authority to Bare.
-     * @param authority Authority to update
-     * @return CloseableHttpResponse
-     * @throws IOException communication error
-     * @throws URISyntaxException error while creating URI
-     */
-    public CloseableHttpResponse update(Authority authority) throws IOException, URISyntaxException {
+    protected URL generateGetUrl(String systemControlNumber)
+            throws MalformedURLException, URISyntaxException {
+
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
-                .setPathSegments("authority","rest","authorities","v2", authority.getScn())
+                .setPath(Config.BARE_GET_PATH)
+                .setPathSegments(systemControlNumber)
+                .setParameter("format", "json")
                 .build();
-        System.out.println("uri="+uri);
+        return uri.toURL();
+    }
+
+
+    /**
+     * Updates metadata of the given authority to Bare.
+     *
+     * @param authority Authority to update
+     * @return CloseableHttpResponse
+     * @throws IOException        communication error
+     * @throws URISyntaxException error while creating URI
+     */
+
+    public CloseableHttpResponse addIdentifier(String authoritySystemControlNumber,
+                                               AuthorityIdentifier authorityIdentifier) throws IOException,
+            URISyntaxException {
+        URI uri = new URIBuilder()
+                .setScheme(HTTPS)
+                .setHost(Config.getInstance().getBareHost())
+                .setPathSegments("authority", "rest", "authorities", "v2", authoritySystemControlNumber, "identifiers")
+                .build();
+        System.out.println("uri=" + uri);
         HttpPut putRequest = new HttpPut(uri);
 
         String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
         putRequest.addHeader("Authorization", apiKeyAuth);
         putRequest.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        putRequest.setEntity(new StringEntity(new Gson().toJson(authority, Authority.class)));
-        System.out.println("putRequest="+putRequest);
+        putRequest.setEntity(new StringEntity(new Gson().toJson(authorityIdentifier, AuthorityIdentifier.class)));
+        System.out.println("putRequest=" + putRequest);
         return httpClient.execute(putRequest);
     }
+
+
 }

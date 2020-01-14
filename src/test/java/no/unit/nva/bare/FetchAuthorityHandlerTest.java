@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import static no.unit.nva.bare.FetchAuthorityHandler.QUERY_STRING_PARAMETERS_KEY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -73,7 +74,11 @@ public class FetchAuthorityHandlerTest {
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ALL_PARAMETERS);
         Map<String, Object> event = new HashMap<>();
-        event.put(BODY_KEY, postRequestBody);
+
+        Map<String, String> queryParameters = new HashMap<>();
+        queryParameters.put("name", "destroyer");
+        event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
+
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
@@ -91,9 +96,10 @@ public class FetchAuthorityHandlerTest {
         InputStreamReader bareResponseStreamReader = new InputStreamReader(asStream);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
-        String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_TWO_PARAMETERS);
         Map<String, Object> event = new HashMap<>();
-        event.put(BODY_KEY, postRequestBody);
+        Map<String, String> queryParameters = new HashMap<>();
+        queryParameters.put("feideId", "sarah.serussi@unit.no");
+        event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
@@ -113,7 +119,11 @@ public class FetchAuthorityHandlerTest {
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ONE_PARAMETER);
         Map<String, Object> event = new HashMap<>();
-        event.put(BODY_KEY, postRequestBody);
+
+        Map<String, String> queryParameters = new HashMap<>();
+        queryParameters.put("orcId", "0000-1111-2222-3333");
+        event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
+
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
@@ -126,7 +136,7 @@ public class FetchAuthorityHandlerTest {
         List<Authority> expectedResponseAuthority = new Gson().fromJson(postResponseBody, authorityListType);
         assertEquals(expectedResponseAuthority.get(0).getScn(), responseAuthority.get(0).getScn());
         assertEquals(expectedResponseAuthority.get(0).getBirthDate(), responseAuthority.get(0).getBirthDate());
-        assertEquals(expectedResponseAuthority.get(0).getHandle(), responseAuthority.get(0).getHandle());
+        assertEquals(expectedResponseAuthority.get(0).getHandles(), responseAuthority.get(0).getHandles());
     }
 
     @Test
@@ -135,9 +145,13 @@ public class FetchAuthorityHandlerTest {
         InputStreamReader bareResponseStreamReader = new InputStreamReader(inputStream);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
-        String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ONE_PARAMETER);
         Map<String, Object> event = new HashMap<>();
-        event.put(BODY_KEY, postRequestBody);
+
+        Map<String, String> queryParameters = new HashMap<>();
+        queryParameters.put("feideId", "sarha.suressi@unit.no");
+
+        event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
+
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
@@ -155,7 +169,9 @@ public class FetchAuthorityHandlerTest {
         when(mockBareConnection.connect(any())).thenThrow(new IOException(MY_MOCK_THROWS_AN_EXCEPTION));
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         Map<String, Object> event = new HashMap<>();
-        event.put(BODY_KEY, postRequestBody);
+        Map<String, String> queryParameters = new HashMap<>();
+        queryParameters.put("feideId", "sarha.suressi@unit.no");
+        event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), result.getStatusCode());
@@ -172,41 +188,10 @@ public class FetchAuthorityHandlerTest {
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
         String content = result.getBody();
         assertNotNull(content);
-        assertTrue(content.contains(FetchAuthorityHandler.MISSING_BODY));
+        assertTrue(content.contains(FetchAuthorityHandler.MISSING_PARAMETERS));
     }
 
-    @Test
-    public void testSelectQueryParameterIsFeideId() {
-        Authority authority = new Authority();
-        authority.setName(EMPTY_STRING);
-        authority.setFeideId(FAKE_FEIDE_ID);
-        authority.setOrcId(FAKE_ORC_ID);
-        FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler();
-        String queryParameter = fetchAuthorityHandler.selectQueryParameter(authority);
-        assertEquals(FAKE_FEIDE_ID, queryParameter);
-    }
 
-    @Test
-    public void testSelectQueryParameterIsOrcId() {
-        Authority authority = new Authority();
-        authority.setName(EMPTY_STRING);
-        authority.setFeideId(EMPTY_STRING);
-        authority.setOrcId(FAKE_ORC_ID);
-        FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler();
-        String queryParameter = fetchAuthorityHandler.selectQueryParameter(authority);
-        assertEquals(FAKE_ORC_ID, queryParameter);
-    }
-
-    @Test
-    public void testSelectQueryParameter_Non() {
-        Authority authority = new Authority();
-        authority.setName(EMPTY_STRING);
-        authority.setFeideId(EMPTY_STRING);
-        authority.setOrcId(EMPTY_STRING);
-        FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler();
-        String queryParameter = fetchAuthorityHandler.selectQueryParameter(authority);
-        assertEquals(EMPTY_STRING, queryParameter);
-    }
 
     private String readJsonStringFromFile(String fetchAuthorityEventJsonAllParameters) {
         InputStream stream = FetchAuthorityHandlerTest.class.getResourceAsStream(fetchAuthorityEventJsonAllParameters);

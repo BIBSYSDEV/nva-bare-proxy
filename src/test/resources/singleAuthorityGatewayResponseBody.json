@@ -2,9 +2,11 @@
   {
     "name": "Moser, May-Britt",
     "scn": "90517730",
-    "feideId": "",
-    "orcId": "",
+    "feideIds": [],
+    "orcIds": [],
     "birthDate": "1963-",
-    "handle": "http://hdl.handle.net/11250/1969546"
+    "handles": [
+      "http://hdl.handle.net/11250/1969546"
+    ]
   }
 ]

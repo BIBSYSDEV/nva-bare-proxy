@@ -75,11 +75,13 @@ Resources:
             Auth:
               Authorizer: MyCognitoAuthorizer
             RestApiId: !Ref NvaBareProxyApi
+            Method: get
             Path: /
-            Method: post
-#            RequestModel:
-#              Model: Map<String, Object> # REQUIRED; must match the name of a model defined in the Models property of the AWS::Serverless::API
-#              Required: true # OPTIONAL; boolean
+            RequestParameters:
+              - method.request.querystring.name:
+                  Required: false
+              - method.request.querystring.feideid:
+                  Required: false
 
   NvaBareUpdateFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -91,7 +93,7 @@ Resources:
           - Domain: !Ref  CorsOrigin
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
-      Handler: no.unit.nva.bare.UpdateAuthorityHandler::handleRequest
+      Handler: no.unit.nva.bare.AddAuthorityIdentifierHandler::handleRequest
       Runtime: java8
       MemorySize: 512
       Events:

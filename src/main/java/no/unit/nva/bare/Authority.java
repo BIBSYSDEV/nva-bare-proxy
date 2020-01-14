@@ -1,14 +1,18 @@
 package no.unit.nva.bare;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 public class Authority {
 
     public static final String EMPTY_STRING = "";
     private String name;
     private String scn;
-    private String feideId;
-    private String orcId;
+    private final Set<String> feideIds;
+    private final Set<String> orcIds;
     private String birthDate;
-    private String handle;
+    private final Set<String> handles;
 
     /**
      * POJO to hold authority metadata.
@@ -16,22 +20,22 @@ public class Authority {
     public Authority() {
         name = EMPTY_STRING;
         scn = EMPTY_STRING;
-        feideId = EMPTY_STRING;
-        orcId = EMPTY_STRING;
+        feideIds = new HashSet<>();
+        orcIds = new HashSet<>();
         birthDate = EMPTY_STRING;
-        handle = EMPTY_STRING;
+        handles = new HashSet<>();
     }
 
     public String getName() {
         return name;
     }
 
-    public String getFeideId() {
-        return feideId;
+    public Set<String> getFeideIds() {
+        return feideIds;
     }
 
-    public String getOrcId() {
-        return orcId;
+    public Set<String> getOrcIds() {
+        return orcIds;
     }
 
     public String getScn() {
@@ -42,8 +46,8 @@ public class Authority {
         return birthDate;
     }
 
-    public String getHandle() {
-        return handle;
+    public Set<String> getHandles() {
+        return handles;
     }
 
     public void setName(String name) {
@@ -54,19 +58,21 @@ public class Authority {
         this.scn = scn;
     }
 
-    public void setFeideId(String feideId) {
-        this.feideId = feideId;
-    }
-
-    public void setOrcId(String orcId) {
-        this.orcId = orcId;
-    }
-
     public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
     }
 
-    public void setHandle(String handle) {
-        this.handle = handle;
+    public void setFeideIds(Collection<String> feideIds) {
+        this.feideIds.addAll(feideIds);
+    }
+
+    public void setOrcIds(Collection<String> orcIds) {
+        this.orcIds.addAll(orcIds);
+    }
+
+    public void setHandles(Collection<String> handles) {
+        if (!(handles == null || handles.isEmpty())) {
+            this.handles.addAll(handles);
+        }
     }
 }

@@ -122,7 +122,7 @@ The SAM CLI reads the application template to determine the API's routes and the
           - Domain: !Ref  CorsOrigin
           BARE_HOST: "utvikle-a.bibsys.no"
           BARE_API_KEY: '{{resolve:ssm:bareApiKey:1}}'
-      Handler: no.unit.nva.bare.UpdateAuthorityHandler::handleRequest
+      Handler: no.unit.nva.bare.AddAuthorityIdentifierHandler::handleRequest
       Runtime: java8
       MemorySize: 512
       Events:

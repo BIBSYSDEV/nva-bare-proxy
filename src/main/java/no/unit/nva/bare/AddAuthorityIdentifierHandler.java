@@ -6,18 +6,14 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,7 +21,7 @@ import java.util.Objects;
 /**
  * Handler for requests to Lambda function.
  */
-public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
+public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
     public static final String AUTHORITY_NOT_FOUND = "Authority not found for 'scn = %s'";
     public static final String TO_MANY_AUTHORITIES_FOUND = "To many authorities found for 'scn = %s'";
@@ -43,11 +39,11 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
     protected final transient BareConnection bareConnection;
 
 
-    public UpdateAuthorityHandler() {
+    public AddAuthorityIdentifierHandler() {
         this.bareConnection = new BareConnection();
     }
 
-    public UpdateAuthorityHandler(BareConnection bareConnection) {
+    public AddAuthorityIdentifierHandler(BareConnection bareConnection) {
         this.bareConnection = bareConnection;
     }
 
@@ -105,13 +101,14 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
                 switch (numOfAuthoritiesFound) {
                     case 1:
                         Authority authority = fetchedAuthority.get(0);
-                        if (!StringUtils.isEmpty(feideId)) {
-                            authority.setFeideId(feideId);
+                        AuthorityIdentifier authorityIdentifier = null;
+                        if (!StringUtils.isEmpty(feideId) && !authority.getFeideIds().contains(feideId)) {
+                            authorityIdentifier = new AuthorityIdentifier("feide", feideId);
                         }
-                        if (!StringUtils.isEmpty(orcId)) {
-                            authority.setOrcId(orcId);
+                        if (!StringUtils.isEmpty(orcId) && !authority.getOrcIds().contains(orcId)) {
+                            authorityIdentifier = new AuthorityIdentifier("orcid", orcId);
                         }
-                        gatewayResponse = updateAuthorityOnBare(scn, authority);
+                        gatewayResponse = updateAuthorityOnBare(scn, authorityIdentifier);
                         break;
                     case 0:
                         gatewayResponse.setErrorBody(String.format(AUTHORITY_NOT_FOUND, scn));
@@ -130,22 +127,30 @@ public class UpdateAuthorityHandler implements RequestHandler<Map<String, Object
         return gatewayResponse;
     }
 
-    private GatewayResponse updateAuthorityOnBare(String scn, Authority authority) {
+    private GatewayResponse updateAuthorityOnBare(String scn, AuthorityIdentifier authority) {
         GatewayResponse gatewayResponse = new GatewayResponse();
-        try (CloseableHttpResponse response = bareConnection.update(authority)) {
-            HttpEntity responseEntity = response.getEntity();
-            List<Authority> updatedAuthority;
-            try (InputStream contentStream = responseEntity.getContent()) {
-                String content = IOUtils.toString(contentStream, StandardCharsets.UTF_8.name());
-                System.out.println("bareResponse content: " + content);
-                updatedAuthority = authorityConverter.extractAuthoritiesFrom(content);
-            }
-            if (!updatedAuthority.isEmpty()) {
-                gatewayResponse.setBody(new Gson().toJson(updatedAuthority.get(0)));
-                gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
+        try (CloseableHttpResponse response = bareConnection.addIdentifier(scn, authority)) {
+            int responseCode = response.getStatusLine().getStatusCode();
+            // Somewhat strange code (204) returned from bare when OK
+            if (responseCode == Response.Status.NO_CONTENT.getStatusCode()) {
+                URL getUrl = bareConnection.generateGetUrl(scn);
+                try (InputStreamReader inputStreamReader = bareConnection.connect(getUrl)) {
+
+                    final List<Authority> updatedAuthority =
+                            authorityConverter.extractAuthoritiesFrom(inputStreamReader);
+
+                    if (!updatedAuthority.isEmpty()) {
+                        gatewayResponse.setBody(new Gson().toJson(updatedAuthority.get(0)));
+                        gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
+                    } else {
+                        gatewayResponse.setErrorBody(String.format(COMMUNICATION_ERROR_WHILE_UPDATING, scn));
+                        gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+                    }
+                }
+
             } else {
-                gatewayResponse.setErrorBody(String.format(COMMUNICATION_ERROR_WHILE_UPDATING, scn));
-                gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+                gatewayResponse.setErrorBody(response.getStatusLine().getReasonPhrase());
+                gatewayResponse.setStatusCode(responseCode);
             }
         } catch (IOException | URISyntaxException e) {
             gatewayResponse.setErrorBody(e.getMessage());

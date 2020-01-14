@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -51,21 +52,17 @@ public class AuthorityConverter {
         final String name = this.findValueIn(bareAuthority, MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE);
         final String date = this.findValueIn(bareAuthority, MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE);
         final String id = bareAuthority.systemControlNumber;
-        Optional<String[]> scnArray = Optional.ofNullable(bareAuthority.identifiersMap.get(SCN_KEY));
-        final String scn = scnArray.orElse(new String[]{id})[0];
-        Optional<String[]> feideArray = Optional.ofNullable(bareAuthority.identifiersMap.get(FEIDE_KEY));
-        final String feideId = feideArray.orElse(new String[]{EMPTY_STRING})[0];
-        Optional<String[]> orcIdArray = Optional.ofNullable(bareAuthority.identifiersMap.get(ORCID_KEY));
-        final String orcId = orcIdArray.orElse(new String[]{EMPTY_STRING})[0];
-        Optional<String[]> handleArray = Optional.ofNullable(bareAuthority.identifiersMap.get(HANDLE_KEY));
-        final String handle = handleArray.orElse(new String[]{EMPTY_STRING})[0];
+        Optional<List<String>> feideArray = Optional.ofNullable(bareAuthority.identifiersMap.get(FEIDE_KEY));
+        Optional<List<String>> orcIdArray = Optional.ofNullable(bareAuthority.identifiersMap.get(ORCID_KEY));
+        Optional<List<String>> handleArray = Optional.ofNullable(bareAuthority.identifiersMap.get(HANDLE_KEY));
         Authority authority = new Authority();
         authority.setName(name);
-        authority.setScn(scn);
-        authority.setFeideId(feideId);
-        authority.setOrcId(orcId);
         authority.setBirthDate(date);
-        authority.setHandle(handle);
+        authority.setScn(id);
+        authority.setFeideIds(feideArray.orElse(Collections.EMPTY_LIST));
+        authority.setOrcIds(orcIdArray.orElse(Collections.EMPTY_LIST));
+        List handles = handleArray.orElse(Collections.EMPTY_LIST);
+        authority.setHandles(handles);
         return authority;
     }
 
