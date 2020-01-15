@@ -99,7 +99,7 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         try (InputStreamReader streamReader = bareConnection.get(scn)) {
             final BareAuthority fetchedAuthority = new Gson().fromJson(streamReader, BareAuthority.class);
             if (Objects.nonNull(fetchedAuthority)) {
-                System.out.println("fetchedAuthority="+fetchedAuthority);
+                System.out.println("fetchedAuthority=" + fetchedAuthority);
                 if (!fetchedAuthority.hasIdentifier(authorityIdentifier)) {
                     gatewayResponse = updateAuthorityOnBare(scn, authorityIdentifier);
                 } else {
@@ -111,7 +111,7 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
                 gatewayResponse.setStatusCode(Response.Status.NOT_FOUND.getStatusCode());
             }
         } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
+            System.out.println(e);
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
