@@ -11,7 +11,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Objects;
@@ -96,8 +95,8 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
 
     protected GatewayResponse addIdentifier(String scn, AuthorityIdentifier authorityIdentifier) {
         GatewayResponse gatewayResponse = new GatewayResponse();
-        try (InputStreamReader streamReader = bareConnection.get(scn)) {
-            final BareAuthority fetchedAuthority = new Gson().fromJson(streamReader, BareAuthority.class);
+        try {
+            BareAuthority fetchedAuthority = bareConnection.get(scn);
             if (Objects.nonNull(fetchedAuthority)) {
                 System.out.println("fetchedAuthority=" + fetchedAuthority);
                 if (!fetchedAuthority.hasIdentifier(authorityIdentifier)) {
@@ -124,8 +123,9 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
             int responseCode = response.getStatusLine().getStatusCode();
             // Somewhat strange code (204) returned from bare when OK
             if (responseCode == Response.Status.NO_CONTENT.getStatusCode()) {
-                try (InputStreamReader inputStreamReader = bareConnection.get(scn)) {
-                    final BareAuthority updatedAuthority = new Gson().fromJson(inputStreamReader, BareAuthority.class);
+                try {
+                    final BareAuthority updatedAuthority = bareConnection.get(scn);
+
                     if (Objects.nonNull(updatedAuthority)) {
                         gatewayResponse.setBody(new Gson().toJson(updatedAuthority));
                         gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
@@ -133,6 +133,9 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
                         gatewayResponse.setErrorBody(String.format(COMMUNICATION_ERROR_WHILE_UPDATING, scn));
                         gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                     }
+                } catch (IOException | URISyntaxException e) {
+                    gatewayResponse.setErrorBody(e.getMessage());
+                    gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                 }
             } else {
                 gatewayResponse.setErrorBody(response.getStatusLine().getReasonPhrase());

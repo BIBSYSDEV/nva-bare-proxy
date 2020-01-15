@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -81,17 +82,22 @@ public class BareConnection {
      * @throws IOException some communication mishap
      * @throws URISyntaxException error in configuration
      */
-    public InputStreamReader get(String systemControlNumber) throws URISyntaxException, IOException {
+    public BareAuthority get(String systemControlNumber) throws URISyntaxException, IOException {
         final URI getUrl = generateGetUrl(systemControlNumber);
         System.out.println("bareConnection.get(" + getUrl + ")");
         HttpGet httpGet = new HttpGet(getUrl);
         try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
             if (response.getStatusLine().getStatusCode() == Response.Status.OK.getStatusCode()) {
-                return new InputStreamReader(response.getEntity().getContent());
+                try (Reader streamReader = new InputStreamReader(response.getEntity().getContent())) {
+                    BareAuthority fetchedAuthority = new Gson().fromJson(streamReader, BareAuthority.class);
+                    return fetchedAuthority;
+                }
             }
             throw new IOException(response.getStatusLine().getReasonPhrase());
         }
     }
+
+
 
     /**
      * Updates metadata of the given authority to Bare.

@@ -133,13 +133,15 @@ public class BareConnectionTest {
         when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.OK.getStatusCode());
         when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
         when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
-        String fakeInput = "This is the string that your fake input stream will return";
-        StringReader reader = new StringReader(fakeInput);
-        InputStream fakeStream = new ReaderInputStream(reader, Charset.defaultCharset());
+
+        String fakeInput = BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON;
+        InputStream fakeStream =
+                AddAuthorityIdentifierHandlerTest.class
+                        .getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON);
         when(mockEntity.getContent()).thenReturn(fakeStream);
         when(mockHttpClient.execute(any())).thenReturn(mockCloseableHttpResponse);
-        final InputStreamReader inputStreamReader = bareConnection.get(SCN);
-        assertNotNull(inputStreamReader);
+        final BareAuthority bareAuthority = bareConnection.get(SCN);
+        assertNotNull(bareAuthority);
     }
 
     @Test(expected = IOException.class)
@@ -149,7 +151,7 @@ public class BareConnectionTest {
         when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.NOT_ACCEPTABLE.getStatusCode());
         when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
         when(mockHttpClient.execute(any())).thenReturn(mockCloseableHttpResponse);
-        final InputStreamReader inputStreamReader = bareConnection.get(SCN);
+        final BareAuthority inputStreamReader = bareConnection.get(SCN);
         fail("where is my Exception?");
     }
 
