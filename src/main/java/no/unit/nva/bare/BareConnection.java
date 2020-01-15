@@ -84,6 +84,7 @@ public class BareConnection {
      */
     public InputStreamReader get(String systemControlNumber) throws URISyntaxException, IOException {
         final URI getUrl = generateGetUrl(systemControlNumber);
+        System.out.println("bareConnection.get("+getUrl+")");
         HttpGet httpGet = new HttpGet(getUrl);
         try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
             if (response.getStatusLine().getStatusCode() == Response.Status.OK.getStatusCode()) {

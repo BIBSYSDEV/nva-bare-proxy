@@ -70,7 +70,7 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         }
         String orcId = getValueFromJsonObject(bodyEvent, ORCID_KEY);
         if (StringUtils.isNotEmpty(orcId)) {
-            gatewayResponse = addIdentifier(scn, new AuthorityIdentifier(BareConnection.ORCID, feideId));
+            gatewayResponse = addIdentifier(scn, new AuthorityIdentifier(BareConnection.ORCID, orcId));
         }
         return gatewayResponse;
     }
@@ -99,6 +99,7 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         try (InputStreamReader streamReader = bareConnection.get(scn)) {
             final BareAuthority fetchedAuthority = new Gson().fromJson(streamReader, BareAuthority.class);
             if (Objects.nonNull(fetchedAuthority)) {
+                System.out.println("fetchedAuthority="+fetchedAuthority);
                 if (!fetchedAuthority.hasIdentifier(authorityIdentifier)) {
                     gatewayResponse = updateAuthorityOnBare(scn, authorityIdentifier);
                 } else {
@@ -110,6 +111,7 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
                 gatewayResponse.setStatusCode(Response.Status.NOT_FOUND.getStatusCode());
             }
         } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
