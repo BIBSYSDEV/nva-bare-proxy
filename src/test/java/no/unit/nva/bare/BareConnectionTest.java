@@ -3,7 +3,6 @@ package no.unit.nva.bare;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -22,7 +21,6 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -107,9 +105,9 @@ public class BareConnectionTest {
         Type authorityListType = new TypeToken<ArrayList<Authority>>() {
         }.getType();
         List<Authority> mockAuthorityList = new Gson().fromJson(st, authorityListType);
-        assertEquals(mockAuthorityList.get(0).getScn(), updatedAuthority.getScn());
-        assertNotNull(updatedAuthority.getFeideIds());
-        assertNotNull(updatedAuthority.getOrcIds());
+        assertEquals(mockAuthorityList.get(0).getSystemControlNumber(), updatedAuthority.getSystemControlNumber());
+        assertNotNull(updatedAuthority.getFeideids());
+        assertNotNull(updatedAuthority.getOrcids());
     }
 
     @Test

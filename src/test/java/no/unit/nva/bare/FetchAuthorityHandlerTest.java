@@ -48,6 +48,7 @@ public class FetchAuthorityHandlerTest {
     public static final String FAKE_FEIDE_ID = "bob@unit.no";
     public static final String FAKE_ORC_ID = "0000-0000-0000-0000";
     public static final String BODY_KEY = "body";
+    public static final String FEIDEID = "feideid";
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
@@ -98,7 +99,7 @@ public class FetchAuthorityHandlerTest {
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         Map<String, Object> event = new HashMap<>();
         Map<String, String> queryParameters = new HashMap<>();
-        queryParameters.put("feideId", "sarah.serussi@unit.no");
+        queryParameters.put(FEIDEID, "sarah.serussi@unit.no");
         event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
@@ -120,7 +121,7 @@ public class FetchAuthorityHandlerTest {
         Map<String, Object> event = new HashMap<>();
 
         Map<String, String> queryParameters = new HashMap<>();
-        queryParameters.put("orcId", "0000-1111-2222-3333");
+        queryParameters.put("orcid", "0000-1111-2222-3333");
         event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
 
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
@@ -133,7 +134,8 @@ public class FetchAuthorityHandlerTest {
         List<Authority> responseAuthority = new Gson().fromJson(content, authorityListType);
         String postResponseBody = this.readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
         List<Authority> expectedResponseAuthority = new Gson().fromJson(postResponseBody, authorityListType);
-        assertEquals(expectedResponseAuthority.get(0).getScn(), responseAuthority.get(0).getScn());
+        assertEquals(expectedResponseAuthority.get(0).getSystemControlNumber(),
+                responseAuthority.get(0).getSystemControlNumber());
         assertEquals(expectedResponseAuthority.get(0).getBirthDate(), responseAuthority.get(0).getBirthDate());
         assertEquals(expectedResponseAuthority.get(0).getHandles(), responseAuthority.get(0).getHandles());
     }
@@ -164,7 +166,7 @@ public class FetchAuthorityHandlerTest {
         Map<String, Object> event = new HashMap<>();
 
         Map<String, String> queryParameters = new HashMap<>();
-        queryParameters.put("feideId", "sarha.suressi@unit.no");
+        queryParameters.put(FEIDEID, "sarha.suressi@unit.no");
 
         event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
 
@@ -186,7 +188,7 @@ public class FetchAuthorityHandlerTest {
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         Map<String, Object> event = new HashMap<>();
         Map<String, String> queryParameters = new HashMap<>();
-        queryParameters.put("feideId", "sarha.suressi@unit.no");
+        queryParameters.put(FEIDEID, "sarha.suressi@unit.no");
         event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);

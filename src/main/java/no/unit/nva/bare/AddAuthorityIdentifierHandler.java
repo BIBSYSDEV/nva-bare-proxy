@@ -21,14 +21,14 @@ import java.util.Objects;
 public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
     public static final String AUTHORITY_NOT_FOUND = "Authority not found for 'scn = %s'";
-    public static final String BODY_ARGS_MISSING = "Nothing to update. 'feideId' and 'orcId' are missing.";
+    public static final String BODY_ARGS_MISSING = "Nothing to update. 'feideid' and 'orcid' are missing.";
     public static final String MISSING_BODY_ELEMENT_EVENT = "Missing body element 'event'.";
     public static final String MISSING_PATH_PARAMETER_SCN = "Missing path parameter 'scn'.";
     public static final String COMMUNICATION_ERROR_WHILE_UPDATING = "Communication failure while updating authority %s";
     private static final String NOTHING_TO_DO = "Nothing to do. Identifier exists.";
     public static final String SCN_KEY = "scn";
-    public static final String FEIDEID_KEY = "feideId";
-    public static final String ORCID_KEY = "orcId";
+    public static final String FEIDEID_KEY = "feideid";
+    public static final String ORCID_KEY = "orcid";
     public static final String BODY_KEY = "body";
     public static final String PATH_PARAMETERS_KEY = "pathParameters";
     public static final String EMPTY_STRING = "";

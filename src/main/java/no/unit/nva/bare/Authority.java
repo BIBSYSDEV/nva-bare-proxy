@@ -8,9 +8,9 @@ public class Authority {
 
     public static final String EMPTY_STRING = "";
     private String name;
-    private String scn;
-    private final Set<String> feideIds;
-    private final Set<String> orcIds;
+    private String systemControlNumber;
+    private final Set<String> feideids;
+    private final Set<String> orcids;
     private String birthDate;
     private final Set<String> handles;
 
@@ -19,9 +19,9 @@ public class Authority {
      */
     public Authority() {
         name = EMPTY_STRING;
-        scn = EMPTY_STRING;
-        feideIds = new HashSet<>();
-        orcIds = new HashSet<>();
+        systemControlNumber = EMPTY_STRING;
+        feideids = new HashSet<>();
+        orcids = new HashSet<>();
         birthDate = EMPTY_STRING;
         handles = new HashSet<>();
     }
@@ -30,16 +30,16 @@ public class Authority {
         return name;
     }
 
-    public Set<String> getFeideIds() {
-        return feideIds;
+    public Set<String> getFeideids() {
+        return feideids;
     }
 
-    public Set<String> getOrcIds() {
-        return orcIds;
+    public Set<String> getOrcids() {
+        return orcids;
     }
 
-    public String getScn() {
-        return scn;
+    public String getSystemControlNumber() {
+        return systemControlNumber;
     }
 
     public String getBirthDate() {
@@ -54,20 +54,20 @@ public class Authority {
         this.name = name;
     }
 
-    public void setScn(String scn) {
-        this.scn = scn;
+    public void setSystemControlNumber(String systemControlNumber) {
+        this.systemControlNumber = systemControlNumber;
     }
 
     public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
     }
 
-    public void setFeideIds(Collection<String> feideIds) {
-        this.feideIds.addAll(feideIds);
+    public void setFeideids(Collection<String> feideids) {
+        this.feideids.addAll(feideids);
     }
 
-    public void setOrcIds(Collection<String> orcIds) {
-        this.orcIds.addAll(orcIds);
+    public void setOrcids(Collection<String> orcids) {
+        this.orcids.addAll(orcids);
     }
 
     public void setHandles(Collection<String> handles) {

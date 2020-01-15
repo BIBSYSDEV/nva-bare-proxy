@@ -45,9 +45,9 @@ public class AuthorityConverter {
         Authority authority = new Authority();
         authority.setName(name);
         authority.setBirthDate(date);
-        authority.setScn(id);
-        authority.setFeideIds(feideArray.orElse(Collections.EMPTY_LIST));
-        authority.setOrcIds(orcIdArray.orElse(Collections.EMPTY_LIST));
+        authority.setSystemControlNumber(id);
+        authority.setFeideids(feideArray.orElse(Collections.EMPTY_LIST));
+        authority.setOrcids(orcIdArray.orElse(Collections.EMPTY_LIST));
         authority.setHandles(handleArray.orElse(Collections.EMPTY_LIST));
         return authority;
     }

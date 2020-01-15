@@ -22,8 +22,8 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
     protected final transient BareConnection bareConnection;
     public static final String QUERY_STRING_PARAMETERS_KEY = "queryStringParameters";
     public static final String NAME_KEY = "name";
-    public static final String FEIDE_KEY = "feideId";
-    public static final String ORCID_KEY = "orcId";
+    public static final String FEIDE_KEY = "feideid";
+    public static final String ORCID_KEY = "orcid";
 
 
     public FetchAuthorityHandler() {
