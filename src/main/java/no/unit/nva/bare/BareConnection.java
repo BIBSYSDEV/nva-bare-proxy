@@ -68,8 +68,7 @@ public class BareConnection {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
-                .setPath(Config.BARE_GET_PATH)
-                .setPathSegments(systemControlNumber)
+                .setPath(Config.BARE_GET_PATH + "/" + systemControlNumber)
                 .setParameter("format", "json")
                 .build();
         return uri;
