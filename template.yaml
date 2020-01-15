@@ -40,7 +40,7 @@ Parameters:
   BareHost:
     Type: String
     Description: Address to bare
-    Default: '{{resolve:ssm:bareHost:1}}'
+    Default: '{{resolve:ssm:bareHost}}'
 
 Resources:
 
@@ -83,7 +83,7 @@ Resources:
               - method.request.querystring.feideid:
                   Required: false
 
-  NvaBareUpdateFunction:
+  NvaBareAddIdentifierFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Environment:
@@ -97,7 +97,7 @@ Resources:
       Runtime: java8
       MemorySize: 512
       Events:
-        NvaBareUpdateEvent:
+        NvaBareAddIdentifierEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Auth:
@@ -105,9 +105,6 @@ Resources:
             RestApiId: !Ref NvaBareProxyApi
             Path: /{scn}
             Method: put
-#            RequestModel:
-#              Model: Map<String, Object> # REQUIRED; must match the name of a model defined in the Models property of the AWS::Serverless::API
-#              Required: true # OPTIONAL; boolean
 
   NvaBareProxyBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
