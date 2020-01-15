@@ -1,7 +1,7 @@
 # Nva Bare Proxy
 
-The purpose of this project is to fetch authority-metadata by given parameters like name or/and feideId (POST request).
-As well it is expected that authority-metadata can be updated by a PUT request updating/adding feideId or/and orcId to an existing authority identified by its scn (aka. System Control Number).
+The purpose of this project is to fetch authority-metadata by given parameters like name or/and feideId (GET request).
+As well it is expected that authority-metadata can be updated by a POST request updating/adding feideId or orcId to an existing authority identified by its scn (aka. System Control Number).
  
 The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
@@ -174,16 +174,13 @@ AWS$ aws s3 rb s3://BUCKET_NAME
 
 ## Example
 
-* POST to /authority with body
+* GET to 
 
-     ```json
-        {
-          "name": "Moser, May-Britt",
-          "feideId": "may-britt.moser@ntnu.no",
-          "orcId": "0000-0001-7884-3049"
-        }
-     ```
-     (the body has to contain a value for to at least one of the following parameters: name, feideId, orcId.)
+        /authority/?name=[name] 
+
+        /authority/?feideId=[feideId] 
+        
+        /authority/?orcId=[orcId]
         
      Response:
      ```json
@@ -191,26 +188,28 @@ AWS$ aws s3 rb s3://BUCKET_NAME
           {
             "name": "Moser, May-Britt",
             "scn": "90517730",
-            "feideId": "",
-            "orcId": "",
+            "feideId": [""],
+            "orcId": [""],
             "birthDate": "1963-",
-            "handle": "http://hdl.handle.net/11250/1969546"
+            "handle": ["http://hdl.handle.net/11250/1969546"]
           }
         ]
      ```
 
 
 
-* PUT to /authority/90517730 with body
+* POST to /authority/90517730 with body
 
     ```json
        {
-          "name": "Moser, May-Britt",
-          "scn": "90517730",
-          "feideId": "may-britt.moser@ntnu.no",
-          "orcId": "0000-0001-7884-3049",
-          "birthDate": "1963-",
-          "handle": "http://hdl.handle.net/11250/1969546"
+          "feideId": "may-britt.moser@ntnu.no"
+       }
+    ```
+  or
+  
+    ```json
+       {
+          "orcId": "0000-0001-7884-3049"
        }
     ```
   (the body has to contain at least a value for at least one of the parameters: feideId, orcId.)
@@ -221,10 +220,10 @@ AWS$ aws s3 rb s3://BUCKET_NAME
         {
           "name": "Moser, May-Britt",
           "scn": "90517730",
-          "feideId": "may-britt.moser@ntnu.no",
-          "orcId": "0000-0001-7884-3049",
+          "feideId": ["may-britt.moser@ntnu.no"],
+          "orcId": ["0000-0001-7884-3049"],
           "birthDate": "1963-",
-          "handle": "http://hdl.handle.net/11250/1969546"
+          "handle": ["http://hdl.handle.net/11250/1969546"]
         }
       ]
     ```
