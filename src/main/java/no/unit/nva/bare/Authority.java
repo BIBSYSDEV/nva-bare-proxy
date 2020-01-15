@@ -71,8 +71,6 @@ public class Authority {
     }
 
     public void setHandles(Collection<String> handles) {
-        if (!(handles == null || handles.isEmpty())) {
-            this.handles.addAll(handles);
-        }
+        this.handles.addAll(handles);
     }
 }

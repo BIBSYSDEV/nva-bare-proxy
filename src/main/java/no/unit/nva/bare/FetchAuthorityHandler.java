@@ -17,10 +17,7 @@ import java.util.Map;
  */
 public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
-    public static final String EMPTY_STRING = "";
-    protected static final String MISSING_BODY = "Missing body";
     protected static final String MISSING_PARAMETERS = "Missing parameters! Neither 'feideId' nor 'name' is set";
-    public static final String BODY_KEY = "body";
     protected final transient AuthorityConverter authorityConverter = new AuthorityConverter();
     protected final transient BareConnection bareConnection;
     public static final String QUERY_STRING_PARAMETERS_KEY = "queryStringParameters";
@@ -43,13 +40,14 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
      * @return a GatewayResponse
      */
     @Override
+    @SuppressWarnings("unchecked")
     public GatewayResponse handleRequest(final Map<String, Object> input, Context context) {
         System.out.println(input);
         Config.getInstance().checkProperties();
         GatewayResponse gatewayResponse  = new GatewayResponse();
 
-        String query = null;
         if (input != null && input.containsKey(QUERY_STRING_PARAMETERS_KEY)) {
+            String query;
             Map<String, String> queryStringParameters = (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
             if (queryStringParameters.containsKey(FEIDE_KEY)) {
                 query = queryStringParameters.get(FEIDE_KEY);

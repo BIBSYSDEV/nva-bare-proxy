@@ -1,0 +1,63 @@
+{
+  "authorityType": "PERSON",
+  "status": "kat3",
+  "origin": "adabas",
+  "deleted": false,
+  "systemControlNumber": "90517730",
+  "lastUpdateDate": "2018-11-01 08:38:24.594",
+  "createdDate": "1996-09-18 00:00:00.000",
+  "replacedBy": "0",
+  "marcdata": [
+    {
+      "tag": "043",
+      "ind1": "",
+      "ind2": "",
+      "subfields": [
+        {
+          "subcode": "c",
+          "value": "no"
+        }
+      ]
+    },
+    {
+      "tag": "100",
+      "ind1": "1",
+      "ind2": " ",
+      "subfields": [
+        {
+          "subcode": "a",
+          "value": "Moser, May-Britt"
+        },
+        {
+          "subcode": "d",
+          "value": "1963-"
+        }
+      ]
+    },
+    {
+      "tag": "375",
+      "ind1": " ",
+      "ind2": " ",
+      "subfields": [
+        {
+          "subcode": "a",
+          "value": "f"
+        }
+      ]
+    }
+  ],
+  "identifiersMap": {
+    "autid": [
+      "x90517730"
+    ],
+    "handle": [
+      "http://hdl.handle.net/11250/1969546"
+    ],
+    "scn": [
+      "90517730"
+    ],
+    "viaf": [
+      "http://viaf.org/viaf/148145970255032251939"
+    ]
+  }
+}

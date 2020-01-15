@@ -2,7 +2,8 @@ package no.unit.nva.bare;
 
 import com.google.gson.Gson;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -10,6 +11,7 @@ import org.apache.http.impl.client.HttpClients;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -22,6 +24,8 @@ public class BareConnection {
     public static final String HTTPS = "https";
     public static final String APIKEY_KEY = "apikey";
     public static final String SPACE = " ";
+    public static final String FEIDE = "feide";
+    public static final String ORCID = "orcid";
     private final transient CloseableHttpClient httpClient;
 
     /**
@@ -58,8 +62,8 @@ public class BareConnection {
         return uri.toURL();
     }
 
-    protected URL generateGetUrl(String systemControlNumber)
-            throws MalformedURLException, URISyntaxException {
+    protected URI generateGetUrl(String systemControlNumber)
+            throws URISyntaxException {
 
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
@@ -68,20 +72,36 @@ public class BareConnection {
                 .setPathSegments(systemControlNumber)
                 .setParameter("format", "json")
                 .build();
-        return uri.toURL();
+        return uri;
     }
 
+    /**
+     * Get an authority from Bare by given systemControlNumber.
+     * @param systemControlNumber scn
+     * @return InputStreamReader containing the authority payload
+     * @throws IOException some communication mishap
+     * @throws URISyntaxException error in configuration
+     */
+    public InputStreamReader get(String systemControlNumber) throws URISyntaxException, IOException {
+        final URI getUrl = generateGetUrl(systemControlNumber);
+        HttpGet httpGet = new HttpGet(getUrl);
+        try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
+            if (response.getStatusLine().getStatusCode() == Response.Status.OK.getStatusCode()) {
+                return new InputStreamReader(response.getEntity().getContent());
+            }
+            throw new IOException(response.getStatusLine().getReasonPhrase());
+        }
+    }
 
     /**
      * Updates metadata of the given authority to Bare.
      *
      * @param authoritySystemControlNumber Identifier of Authority to update
-     * @param authorityIdentifier New identifierpair to add to authority
+     * @param authorityIdentifier New identifier pair to add to authority
      * @return CloseableHttpResponse
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
      */
-
     public CloseableHttpResponse addIdentifier(String authoritySystemControlNumber,
                                                AuthorityIdentifier authorityIdentifier) throws IOException,
             URISyntaxException {
@@ -91,14 +111,14 @@ public class BareConnection {
                 .setPathSegments("authority", "rest", "authorities", "v2", authoritySystemControlNumber, "identifiers")
                 .build();
         System.out.println("uri=" + uri);
-        HttpPut putRequest = new HttpPut(uri);
+        HttpPost httpPost = new HttpPost(uri);
 
         String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
-        putRequest.addHeader("Authorization", apiKeyAuth);
-        putRequest.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        putRequest.setEntity(new StringEntity(new Gson().toJson(authorityIdentifier, AuthorityIdentifier.class)));
-        System.out.println("putRequest=" + putRequest);
-        return httpClient.execute(putRequest);
+        httpPost.addHeader("Authorization", apiKeyAuth);
+        httpPost.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        httpPost.setEntity(new StringEntity(new Gson().toJson(authorityIdentifier, AuthorityIdentifier.class)));
+        System.out.println("httpPost=" + httpPost);
+        return httpClient.execute(httpPost);
     }
 
 

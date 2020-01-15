@@ -117,7 +117,6 @@ public class FetchAuthorityHandlerTest {
         InputStreamReader bareResponseStreamReader = new InputStreamReader(asStream);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
-        String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ONE_PARAMETER);
         Map<String, Object> event = new HashMap<>();
 
         Map<String, String> queryParameters = new HashMap<>();
@@ -137,6 +136,23 @@ public class FetchAuthorityHandlerTest {
         assertEquals(expectedResponseAuthority.get(0).getScn(), responseAuthority.get(0).getScn());
         assertEquals(expectedResponseAuthority.get(0).getBirthDate(), responseAuthority.get(0).getBirthDate());
         assertEquals(expectedResponseAuthority.get(0).getHandles(), responseAuthority.get(0).getHandles());
+    }
+
+    @Test
+    public void testResponseWithoutQueryParams()  {
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
+        GatewayResponse result = mockAuthorityProxy.handleRequest(null, null);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
+
+        Map<String, Object> event = new HashMap<>();
+        result = mockAuthorityProxy.handleRequest(event, null);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
+
+
+        Map<String, String> queryParameters = new HashMap<>();
+        event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
+        result = mockAuthorityProxy.handleRequest(event, null);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
     }
 
     @Test

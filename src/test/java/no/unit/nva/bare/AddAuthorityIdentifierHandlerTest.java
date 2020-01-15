@@ -2,6 +2,7 @@ package no.unit.nva.bare;
 
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -19,8 +20,8 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,22 +40,14 @@ public class AddAuthorityIdentifierHandlerTest {
     public static final String EMPTY_JSON = "{}";
     public static final String EMPTY_STRING = "";
     public static final String MOCK_SCN_VALUE = "scn";
-    public static final String FULL_UPDATE_AUTHORITY_EVENT_JSON = "/fullUpdateAuthorityEvent.json";
     public static final String FOOBAR_UPDATE_AUTHORITY_EVENT_JSON = "/fooBarUpdateAuthorityEvent.json";
     public static final String ORCID_UPDATE_AUTHORITY_EVENT_JSON = "/orcidUpdateAuthorityEvent.json";
     public static final String FEIDEID_UPDATE_AUTHORITY_EVENT_JSON = "/feideidUpdateAuthorityEvent.json";
+    public static final String BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON =
+            "/bareSingleAuthorityGetResponseWithAllIds.json";
     public static final String EMPTY_UPDATE_AUTHORITY_EVENT_JSON = "{\"body\": { }}";
-    public static final String BARE_SINGLE_AUTHORITY_RESPONSE_JSON = "/bareSingleAuthorityResponse.json";
-    public static final String BARE_SINGLE_AUTHORITY_RESPONSE_JUST_ORCID_JSON =
-            "/bareSingleAuthorityResponseJustOrcid.json";
-    public static final String BARE_SINGLE_AUTHORITY_RESPONSE_JUST_FEIDEID_JSON =
-            "/bareSingleAuthorityResponseJustFeideid.json";
-    public static final String BARE_SINGLE_AUTHORITY_RESPONSE_WITH_ALL_IDS_JSON =
-            "/bareSingleAuthorityResponseWithAllIds.json";
-    public static final String BARE_EMPTY_RESPONSE_JSON = "/bareEmptyResponse.json";
-    public static final String BARE_MANY_AUTHORITY_RESPONSE_JSON = "/bareManyAuthorityResponse.json";
+    public static final String BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON = "/bareSingleAuthorityGetResponse.json";
     public static final String EXCEPTION_IS_EXPECTED = "Exception is expected.";
-    public static final String MOCK_FEIDE_VALUE = "foo.bar@unit.no";
     public static final String PATH_PARAMETERS_KEY = "pathParameters";
     public static final String BODY_KEY = "body";
     public static final String MOCK_BODY = "postRequestBody";
@@ -136,42 +129,9 @@ public class AddAuthorityIdentifierHandlerTest {
         assertEquals(expectedResponse.getBody(), response.getBody());
     }
 
-    //    @Test
-    public void testUpdateAuthoritySingleAuthorityResponse() throws Exception {
-        Map<String, Object> requestEvent = new HashMap<>();
-        HashMap<String, String> pathParams = new HashMap<>();
-        pathParams.put(AddAuthorityIdentifierHandler.SCN_KEY, MOCK_SCN_VALUE);
-        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
-        InputStream asStream =
-                AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(FULL_UPDATE_AUTHORITY_EVENT_JSON);
-        String st = IOUtils.toString(asStream, Charset.defaultCharset());
-        requestEvent.put(BODY_KEY, st);
-        InputStream stream1 =
-                AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON);
-        when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream1));
-        InputStream stream = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(
-                BARE_SINGLE_AUTHORITY_RESPONSE_WITH_ALL_IDS_JSON);
-        mockCloseableHttpResponse.setEntity(mockEntity);
-        when(mockEntity.getContent()).thenReturn(stream);
-        when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
-        when(mockBareConnection.addIdentifier(any(),
-                any())).thenReturn(mockCloseableHttpResponse);
-        AddAuthorityIdentifierHandler mockUpdateAuthorityHandler =
-                new AddAuthorityIdentifierHandler(mockBareConnection);
-        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
-        Authority responseAuthority = new Gson().fromJson(response.getBody(), Authority.class);
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatusCode());
-        String mockFeideId = mockUpdateAuthorityHandler.getValueFromJsonObject(st,
-                AddAuthorityIdentifierHandler.FEIDEID_KEY);
-        String mockOrcId = mockUpdateAuthorityHandler.getValueFromJsonObject(st,
-                AddAuthorityIdentifierHandler.ORCID_KEY);
-        assertEquals(mockFeideId, responseAuthority.getFeideIds());
-        assertEquals(mockOrcId, responseAuthority.getOrcIds());
-    }
-
     private InputStreamReader createInputStreamReader() {
         InputStream stream1 =
-                AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON);
+                AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
         return new InputStreamReader(stream1);
     }
 
@@ -185,7 +145,7 @@ public class AddAuthorityIdentifierHandlerTest {
                 FEIDEID_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
         requestEvent.put(BODY_KEY, st);
-        when(mockBareConnection.connect(any())).thenAnswer(i -> createInputStreamReader());
+        when(mockBareConnection.get(any())).thenAnswer(i -> createInputStreamReader());
         StatusLine mockStatusLine = mock(StatusLine.class);
         when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.NO_CONTENT.getStatusCode());
         when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
@@ -208,7 +168,7 @@ public class AddAuthorityIdentifierHandlerTest {
                 ORCID_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
         requestEvent.put(BODY_KEY, st);
-        when(mockBareConnection.connect(any())).thenAnswer(i -> createInputStreamReader());
+        when(mockBareConnection.get(any())).thenAnswer(i -> createInputStreamReader());
         StatusLine mockStatusLine = mock(StatusLine.class);
         when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.NO_CONTENT.getStatusCode());
         when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
@@ -238,7 +198,7 @@ public class AddAuthorityIdentifierHandlerTest {
         assertEquals(expectedResponse.getBody(), response.getBody());
     }
 
-    //    @Test
+    @Test
     public void testUpdateAuthoritySingleAuthorityEmptyResponse() throws Exception {
         Map<String, Object> requestEvent = new HashMap<>();
         HashMap<String, String> pathParams = new HashMap<>();
@@ -249,14 +209,9 @@ public class AddAuthorityIdentifierHandlerTest {
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
         requestEvent.put(BODY_KEY, st);
         InputStream stream1 =
-                AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_RESPONSE_JSON);
-        URL queryUrl = new BareConnection().generateQueryUrl("may-britt.moser@ntnu.no");
-        URL getUrl = new BareConnection().generateGetUrl("90517730");
+                AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
 
-        when(mockBareConnection.connect(queryUrl)).thenReturn(new InputStreamReader(stream1));
-
-        InputStream stream = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(BARE_EMPTY_RESPONSE_JSON);
-        when(mockBareConnection.connect(getUrl)).thenReturn(new InputStreamReader(stream));
+        when(mockBareConnection.get(anyString())).thenReturn(new InputStreamReader(stream1));
 
         StatusLine mockStatusLine = mock(StatusLine.class);
         when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.NO_CONTENT.getStatusCode());
@@ -284,7 +239,7 @@ public class AddAuthorityIdentifierHandlerTest {
                 AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(ORCID_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
         requestEvent.put(BODY_KEY, st);
-        when(mockBareConnection.connect(any())).thenAnswer(i -> createInputStreamReader());
+        when(mockBareConnection.get(any())).thenAnswer(i -> createInputStreamReader());
         when(mockBareConnection.addIdentifier(any(), any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
         AddAuthorityIdentifierHandler mockUpdateAuthorityHandler =
                 new AddAuthorityIdentifierHandler(mockBareConnection);
@@ -294,52 +249,6 @@ public class AddAuthorityIdentifierHandlerTest {
         assertNotNull(content);
         assertTrue(content.contains(EXCEPTION_IS_EXPECTED));
     }
-
-//    @Test
-//    public void testUpdateAuthorityNonAuthorityResponse() throws Exception {
-//        Map<String, Object> requestEvent = new HashMap<>();
-//        HashMap<String, String> pathParams = new HashMap<>();
-//        pathParams.put(AddAuthorityIdentifierHandler.SCN_KEY, MOCK_SCN_VALUE);
-//        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
-//        InputStream asStream = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream
-//        (FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
-//        String st = IOUtils.toString(asStream, Charset.defaultCharset());
-//        requestEvent.put(BODY_KEY, st);
-//        AddAuthorityIdentifierHandler mockUpdateAuthorityHandler = new AddAuthorityIdentifierHandler
-//        (mockBareConnection);
-//        InputStream inputStream = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream
-//        (BARE_EMPTY_RESPONSE_JSON);
-//        when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(inputStream));
-//        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
-//        Authority responseAuthority = new Gson().fromJson(response.getBody(), Authority.class);
-//        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatusCode());
-//        assertEquals(EMPTY_STRING, responseAuthority.getFeideIds());
-//        assertEquals(EMPTY_STRING, responseAuthority.getOrcIds());
-//    }
-//
-//    @Test
-//    public void testUpdateAuthorityManyAuthorityResponse() throws Exception {
-//        Map<String, Object> requestEvent = new HashMap<>();
-//        HashMap<String, String> pathParams = new HashMap<>();
-//        pathParams.put(AddAuthorityIdentifierHandler.SCN_KEY, MOCK_SCN_VALUE);
-//        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
-//        InputStream asStream = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream
-//        (FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
-//        String st = IOUtils.toString(asStream, Charset.defaultCharset());
-//        requestEvent.put(BODY_KEY, st);
-//        AddAuthorityIdentifierHandler mockUpdateAuthorityHandler = new AddAuthorityIdentifierHandler
-//        (mockBareConnection);
-//        InputStream stream1 = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream
-//        (BARE_MANY_AUTHORITY_RESPONSE_JSON);
-//        when(mockBareConnection.connect(any())).thenReturn(new InputStreamReader(stream1));
-//        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
-//        GatewayResponse expectedResponse = new GatewayResponse();
-//        expectedResponse.setStatusCode(Response.Status.CONFLICT.getStatusCode());
-//        expectedResponse.setErrorBody(String.format(AddAuthorityIdentifierHandler.TO_MANY_AUTHORITIES_FOUND,
-//        MOCK_SCN_VALUE));
-//        assertEquals(expectedResponse.getStatusCode(), response.getStatusCode());
-//        assertEquals(expectedResponse.getBody(), response.getBody());
-//    }
 
     @Test
     public void testUpdateAuthorityCommunicationErrors() throws IOException, URISyntaxException {
@@ -353,8 +262,7 @@ public class AddAuthorityIdentifierHandlerTest {
         requestEvent.put(BODY_KEY, st);
         AddAuthorityIdentifierHandler mockUpdateAuthorityHandler =
                 new AddAuthorityIdentifierHandler(mockBareConnection);
-        when(mockBareConnection.connect(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
-        when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
+        when(mockBareConnection.get(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
         GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
@@ -364,15 +272,45 @@ public class AddAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testParseJsonBodyEvent() throws Exception {
-        InputStream asStream =
-                AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(FOOBAR_UPDATE_AUTHORITY_EVENT_JSON);
-        String jsonString = IOUtils.toString(asStream, Charset.defaultCharset());
-        AddAuthorityIdentifierHandler updateAuthorityHandler = new AddAuthorityIdentifierHandler(new BareConnection());
-        String feideId = updateAuthorityHandler.getValueFromJsonObject(jsonString,
-                AddAuthorityIdentifierHandler.FEIDEID_KEY);
-        assertEquals(MOCK_FEIDE_VALUE, feideId);
+    public void testResponseFromBareWhereStatusCodeBadRequest() throws IOException, URISyntaxException {
+        AddAuthorityIdentifierHandler handler = new AddAuthorityIdentifierHandler(mockBareConnection);
+        AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(BareConnection.FEIDE, "feide");
 
+
+        StatusLine mockStatusLine = mock(StatusLine.class);
+        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.BAD_REQUEST.getStatusCode());
+        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
+        when(mockBareConnection.addIdentifier(MOCK_SCN_VALUE, authorityIdentifier))
+                .thenReturn(mockCloseableHttpResponse);
+        final GatewayResponse gatewayResponse = handler.updateAuthorityOnBare(MOCK_SCN_VALUE, authorityIdentifier);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), gatewayResponse.getStatusCode());
+    }
+
+    @Test
+    public void testEmptyResponseFromBare() throws IOException, URISyntaxException {
+        AddAuthorityIdentifierHandler handler = new AddAuthorityIdentifierHandler(mockBareConnection);
+        AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(BareConnection.FEIDE, "feide");
+
+        StringReader reader = new StringReader(EMPTY_STRING);
+        InputStream fakeStream = new ReaderInputStream(reader, Charset.defaultCharset());
+        when(mockBareConnection.get(anyString())).thenReturn(new InputStreamReader(fakeStream));
+        final GatewayResponse gatewayResponse = handler.addIdentifier(MOCK_SCN_VALUE, authorityIdentifier);
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), gatewayResponse.getStatusCode());
+    }
+
+    @Test
+    public void testTryToAddExistingIdentifier() throws IOException, URISyntaxException {
+        AddAuthorityIdentifierHandler handler = new AddAuthorityIdentifierHandler(mockBareConnection);
+        InputStream streamResp = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(
+            BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON);
+
+        when(mockBareConnection.get(any())).thenReturn(new InputStreamReader(streamResp));
+
+        AuthorityIdentifier authorityIdentifier =
+                new AuthorityIdentifier(BareConnection.FEIDE, "may-britt.moser@ntnu.no");
+
+        final GatewayResponse gatewayResponse = handler.addIdentifier(MOCK_SCN_VALUE, authorityIdentifier);
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), gatewayResponse.getStatusCode());
     }
 
 }

@@ -2,7 +2,7 @@ package no.unit.nva.bare;
 
 import com.google.gson.annotations.SerializedName;
 
-public class BareResponse {
+public class BareQueryResponse {
     @SerializedName(value = "q", alternate = "query")
     public String query;
     public String startRow;
@@ -28,7 +28,7 @@ public class BareResponse {
 
     @Override
     public String toString() {
-        return "BareResponse{"
+        return "BareQueryResponse{"
                 + "query='"
                 + getQuery() + '\''
                 + ", numFound="
