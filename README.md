@@ -81,8 +81,8 @@ The application expects two environment variables:
 ```yaml
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
-          BARE_HOST: "utvikle-a.bibsys.no"
-          BARE_API_KEY: '{{resolve:ssm:bareApiKey:1}}'
+          BARE_HOST: "{{resolve:ssm:bareHost:[VERSION]]}}"
+          BARE_API_KEY: '{{resolve:secretsmanager:bareApiKey:SecretString}}'
 ```
 
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
@@ -178,18 +178,21 @@ AWS$ aws s3 rb s3://BUCKET_NAME
 
         /authority/?name=[name] 
 
-        /authority/?feideId=[feideId] 
+        /authority/?feideid=[feideId] 
         
-        /authority/?orcId=[orcId]
+        /authority/?orcid=[orcId]
+        
+        /authority/?orgunitid=[orgUnitId]
         
      Response:
      ```json
         [
           {
             "name": "Moser, May-Britt",
-            "scn": "90517730",
-            "feideId": [""],
-            "orcId": [""],
+            "systemControlNumber": "90517730",
+            "feideid": [""],
+            "orcid": [""],
+            "orgunitid": [""],
             "birthDate": "1963-",
             "handle": ["http://hdl.handle.net/11250/1969546"]
           }
@@ -202,16 +205,23 @@ AWS$ aws s3 rb s3://BUCKET_NAME
 
     ```json
        {
-          "feideId": "may-britt.moser@ntnu.no"
+          "feideid": "may-britt.moser@ntnu.no"
        }
     ```
   or
   
     ```json
        {
-          "orcId": "0000-0001-7884-3049"
+          "orcid": "0000-0001-7884-3049"
        }
     ```
+    or
+    
+      ```json
+         {
+            "orgunitid": "194.0.0.0"
+         }
+      ```
   (the body has to contain at least a value for at least one of the parameters: feideId, orcId.)
     
   Response:
@@ -219,9 +229,10 @@ AWS$ aws s3 rb s3://BUCKET_NAME
       [
         {
           "name": "Moser, May-Britt",
-          "scn": "90517730",
-          "feideId": ["may-britt.moser@ntnu.no"],
-          "orcId": ["0000-0001-7884-3049"],
+          "systemControlNumber": "90517730",
+          "feideid": ["may-britt.moser@ntnu.no"],
+          "orcid": ["0000-0001-7884-3049"],
+          "orgunitid": ["194.0.0.0"],
           "birthDate": "1963-",
           "handle": ["http://hdl.handle.net/11250/1969546"]
         }
