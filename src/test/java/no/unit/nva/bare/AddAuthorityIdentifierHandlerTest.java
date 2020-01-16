@@ -42,6 +42,7 @@ public class AddAuthorityIdentifierHandlerTest {
     public static final String MOCK_SCN_VALUE = "scn";
     public static final String FOOBAR_UPDATE_AUTHORITY_EVENT_JSON = "/fooBarUpdateAuthorityEvent.json";
     public static final String ORCID_UPDATE_AUTHORITY_EVENT_JSON = "/orcidUpdateAuthorityEvent.json";
+    public static final String ORGUNITID_UPDATE_AUTHORITY_EVENT_JSON = "/orgunitidUpdateAuthorityEvent.json";
     public static final String FEIDEID_UPDATE_AUTHORITY_EVENT_JSON = "/feideidUpdateAuthorityEvent.json";
     public static final String BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON =
             "/bareSingleAuthorityGetResponseWithAllIds.json";
@@ -172,6 +173,34 @@ public class AddAuthorityIdentifierHandlerTest {
         requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         InputStream asStream = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(
                 ORCID_UPDATE_AUTHORITY_EVENT_JSON);
+        String st = IOUtils.toString(asStream, Charset.defaultCharset());
+        requestEvent.put(BODY_KEY, st);
+
+
+        InputStream stream1 =
+                AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
+        final BareAuthority bareAuthority = new Gson().fromJson(new InputStreamReader(stream1), BareAuthority.class);
+        when(mockBareConnection.get(anyString())).thenReturn(bareAuthority);
+
+        StatusLine mockStatusLine = mock(StatusLine.class);
+        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.NO_CONTENT.getStatusCode());
+        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
+        when(mockBareConnection.addIdentifier(any(), any())).thenReturn(mockCloseableHttpResponse);
+        AddAuthorityIdentifierHandler mockUpdateAuthorityHandler =
+                new AddAuthorityIdentifierHandler(mockBareConnection);
+        GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
+        Authority responseAuthority = new Gson().fromJson(response.getBody(), Authority.class);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatusCode());
+    }
+
+    @Test
+    public void testUpdateAuthoritySingleAuthorityResponseOnlyOrgUnitId() throws Exception {
+        Map<String, Object> requestEvent = new HashMap<>();
+        HashMap<String, String> pathParams = new HashMap<>();
+        pathParams.put(AddAuthorityIdentifierHandler.SCN_KEY, MOCK_SCN_VALUE);
+        requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
+        InputStream asStream = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(
+                ORGUNITID_UPDATE_AUTHORITY_EVENT_JSON);
         String st = IOUtils.toString(asStream, Charset.defaultCharset());
         requestEvent.put(BODY_KEY, st);
 
