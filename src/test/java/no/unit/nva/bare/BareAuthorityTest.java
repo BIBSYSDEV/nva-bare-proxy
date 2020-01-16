@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 public class BareAuthorityTest {
 
-    public static final String FEIDE = "feide";
+    public static final ValidIdentifierSource FEIDE = ValidIdentifierSource.FEIDE;
     public static final String DUMMY = "dummy";
 
     @Test
@@ -25,7 +25,7 @@ public class BareAuthorityTest {
     @Test
     public void testHasIdentifiers() {
         BareAuthority bareAuthority = new BareAuthority();
-        AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(FEIDE, DUMMY);
+        AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(FEIDE.asString(), DUMMY);
         assertFalse(bareAuthority.hasIdentifier(authorityIdentifier));
 
         final HashMap<String, List<String>> identifiersMap = new HashMap<>();
@@ -34,7 +34,7 @@ public class BareAuthorityTest {
 
         final ArrayList<String> value = new ArrayList<>();
         value.add(DUMMY);
-        identifiersMap.put(FEIDE, value);
+        identifiersMap.put(FEIDE.asString(), value);
         assertTrue(bareAuthority.hasIdentifier(authorityIdentifier));
         assertNotNull(bareAuthority.getIdentifiersMap());
     }

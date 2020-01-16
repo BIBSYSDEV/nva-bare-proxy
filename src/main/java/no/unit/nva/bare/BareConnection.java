@@ -25,9 +25,6 @@ public class BareConnection {
     public static final String HTTPS = "https";
     public static final String APIKEY_KEY = "apikey";
     public static final String SPACE = " ";
-    public static final String FEIDE = "feide";
-    public static final String ORCID = "orcid";
-    public static final String ORGUNITID = "orgunitid";
     private final transient CloseableHttpClient httpClient;
 
     /**

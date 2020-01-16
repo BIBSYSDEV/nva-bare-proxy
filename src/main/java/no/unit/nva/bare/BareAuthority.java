@@ -36,9 +36,9 @@ public class BareAuthority {
      * @param source key for identifying system
      * @return List of identifiers
      */
-    public List<String> getIdentifiers(String source) {
-        if (Objects.nonNull(identifiersMap) && identifiersMap.containsKey(source)) {
-            return identifiersMap.get(source);
+    public List<String> getIdentifiers(ValidIdentifierSource source) {
+        if (Objects.nonNull(identifiersMap) && identifiersMap.containsKey(source.asString())) {
+            return identifiersMap.get(source.asString());
         }
         return Collections.emptyList();
     }

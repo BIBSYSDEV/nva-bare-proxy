@@ -22,14 +22,14 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
 
     public static final String AUTHORITY_NOT_FOUND = "Authority not found for 'scn = %s'";
     public static final String BODY_ARGS_MISSING = "Nothing to update. 'feideid' and 'orcid' are missing.";
-    public static final String MISSING_BODY_ELEMENT_EVENT = "Missing body element 'event'.";
+    public static final String MISSING_EVENT_ELEMENT_BODY = "Missing event element 'body'.";
     public static final String MISSING_PATH_PARAMETER_SCN = "Missing path parameter 'scn'.";
     public static final String COMMUNICATION_ERROR_WHILE_UPDATING = "Communication failure while updating authority %s";
     private static final String NOTHING_TO_DO = "Nothing to do. Identifier exists.";
     public static final String SCN_KEY = "scn";
-    public static final String FEIDEID_KEY = "feideid";
-    public static final String ORCID_KEY = "orcid";
-    public static final String ORGUNITID_KEY = "orgunitid";
+    public static final String FEIDEID_KEY = ValidIdentifierKey.FEIDEID.asString();
+    public static final String ORCID_KEY = ValidIdentifierKey.ORCID.asString();
+    public static final String ORGUNITID_KEY = ValidIdentifierKey.ORGUNITID.asString();
     public static final String BODY_KEY = "body";
     public static final String PATH_PARAMETERS_KEY = "pathParameters";
     public static final String EMPTY_STRING = "";
@@ -66,15 +66,18 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         String scn = pathParameters.get(SCN_KEY);
         String feideId = getValueFromJsonObject(bodyEvent, FEIDEID_KEY);
         if (StringUtils.isNotEmpty(feideId)) {
-            gatewayResponse = addIdentifier(scn, new AuthorityIdentifier(BareConnection.FEIDE, feideId));
+            gatewayResponse =
+                    addIdentifier(scn, new AuthorityIdentifier(ValidIdentifierSource.FEIDE.asString(), feideId));
         }
         String orcId = getValueFromJsonObject(bodyEvent, ORCID_KEY);
         if (StringUtils.isNotEmpty(orcId)) {
-            gatewayResponse = addIdentifier(scn, new AuthorityIdentifier(BareConnection.ORCID, orcId));
+            gatewayResponse =
+                    addIdentifier(scn, new AuthorityIdentifier(ValidIdentifierSource.ORCID.asString(), orcId));
         }
         String orgUnitId = getValueFromJsonObject(bodyEvent, ORGUNITID_KEY);
         if (StringUtils.isNotEmpty(orgUnitId)) {
-            gatewayResponse = addIdentifier(scn, new AuthorityIdentifier(BareConnection.ORGUNITID, orgUnitId));
+            gatewayResponse =
+                    addIdentifier(scn, new AuthorityIdentifier(ValidIdentifierSource.ORGUNITID.asString(), orgUnitId));
         }
         return gatewayResponse;
     }
@@ -88,12 +91,13 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         if (StringUtils.isEmpty(pathParameters.get(SCN_KEY))) {
             throw new RuntimeException(MISSING_PATH_PARAMETER_SCN);
         }
-        String bodyEvent = (String) input.get(BODY_KEY);
-        if (StringUtils.isEmpty(bodyEvent)) {
-            throw new RuntimeException(MISSING_BODY_ELEMENT_EVENT);
+        String eventBody = (String) input.get(BODY_KEY);
+        if (StringUtils.isEmpty(eventBody)) {
+            throw new RuntimeException(MISSING_EVENT_ELEMENT_BODY);
         }
-        if (StringUtils.isEmpty(getValueFromJsonObject(bodyEvent, FEIDEID_KEY))
-                && StringUtils.isEmpty(getValueFromJsonObject(bodyEvent, ORCID_KEY))) {
+        if (StringUtils.isEmpty(getValueFromJsonObject(eventBody, ValidIdentifierKey.FEIDEID.asString()))
+                && StringUtils.isEmpty(getValueFromJsonObject(eventBody, ValidIdentifierKey.ORCID.asString()))
+                && StringUtils.isEmpty(getValueFromJsonObject(eventBody, ValidIdentifierKey.ORGUNITID.asString()))) {
             throw new RuntimeException(BODY_ARGS_MISSING);
         }
     }

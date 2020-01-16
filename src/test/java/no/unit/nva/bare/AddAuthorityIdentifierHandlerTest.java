@@ -95,7 +95,7 @@ public class AddAuthorityIdentifierHandlerTest {
                 new AddAuthorityIdentifierHandler(mockBareConnection);
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
-        expectedResponse.setErrorBody(AddAuthorityIdentifierHandler.MISSING_BODY_ELEMENT_EVENT);
+        expectedResponse.setErrorBody(AddAuthorityIdentifierHandler.MISSING_EVENT_ELEMENT_BODY);
         GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
         assertEquals(expectedResponse.getStatusCode(), response.getStatusCode());
         assertEquals(expectedResponse.getBody(), response.getBody());
@@ -289,7 +289,8 @@ public class AddAuthorityIdentifierHandlerTest {
     @Test
     public void testResponseFromBareWhereStatusCodeBadRequest() throws IOException, URISyntaxException {
         AddAuthorityIdentifierHandler handler = new AddAuthorityIdentifierHandler(mockBareConnection);
-        AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(BareConnection.FEIDE, "feide");
+        AuthorityIdentifier authorityIdentifier =
+                new AuthorityIdentifier(ValidIdentifierSource.FEIDE.asString(), "feide");
 
 
         StatusLine mockStatusLine = mock(StatusLine.class);
@@ -304,7 +305,8 @@ public class AddAuthorityIdentifierHandlerTest {
     @Test
     public void testEmptyResponseFromBare() throws IOException, URISyntaxException {
         AddAuthorityIdentifierHandler handler = new AddAuthorityIdentifierHandler(mockBareConnection);
-        AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(BareConnection.FEIDE, "feide");
+        AuthorityIdentifier authorityIdentifier =
+                new AuthorityIdentifier(ValidIdentifierSource.FEIDE.asString(), "feide");
 
         StringReader reader = new StringReader(EMPTY_STRING);
         InputStream fakeStream = new ReaderInputStream(reader, Charset.defaultCharset());
@@ -327,7 +329,7 @@ public class AddAuthorityIdentifierHandlerTest {
 
 
         AuthorityIdentifier authorityIdentifier =
-                new AuthorityIdentifier(BareConnection.FEIDE, "may-britt.moser@ntnu.no");
+                new AuthorityIdentifier(ValidIdentifierSource.FEIDE.asString(), "may-britt.moser@ntnu.no");
 
         final GatewayResponse gatewayResponse = handler.addIdentifier(MOCK_SCN_VALUE, authorityIdentifier);
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), gatewayResponse.getStatusCode());

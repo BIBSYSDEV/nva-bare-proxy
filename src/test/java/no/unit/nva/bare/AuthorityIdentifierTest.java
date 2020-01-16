@@ -10,26 +10,26 @@ import java.io.IOException;
 
 public class AuthorityIdentifierTest {
 
-    public static final String SOURCE = "source";
+    public static final ValidIdentifierSource SOURCE = ValidIdentifierSource.FEIDE;
     public static final String IDENTIFIER = "identifier";
 
     @Test
     public void testEmptyConstructor() throws IOException {
         AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier();
         authorityIdentifier.setIdentifier(IDENTIFIER);
-        authorityIdentifier.setSource(SOURCE);
+        authorityIdentifier.setSource(SOURCE.asString());
         assertNotNull(authorityIdentifier);
 
         String identifier = authorityIdentifier.getIdentifier();
         final String source = authorityIdentifier.getSource();
 
         assertEquals(IDENTIFIER, identifier);
-        assertEquals(SOURCE, source);
+        assertEquals(SOURCE.asString(), source);
     }
 
     @Test
     public void testConstructorWithParameters() throws IOException {
-        AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(SOURCE, IDENTIFIER);
+        AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(SOURCE.asString(), IDENTIFIER);
 
         assertNotNull(authorityIdentifier);
 
@@ -37,7 +37,7 @@ public class AuthorityIdentifierTest {
         final String source = authorityIdentifier.getSource();
 
         assertEquals(IDENTIFIER, identifier);
-        assertEquals(SOURCE, source);
+        assertEquals(SOURCE.asString(), source);
     }
 
 

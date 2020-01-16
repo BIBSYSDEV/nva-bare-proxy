@@ -14,10 +14,10 @@ public class AuthorityConverter {
     public static final String MARC_TAG_PERSONAL_NAME_FIELD_CODE = "100";
     public static final String MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE = "a";
     public static final String MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE = "d";
-    public static final String FEIDE_KEY = "feide";
-    public static final String ORCID_KEY = "orcid";
-    public static final String ORGUNITID_KEY = "orgunitid";
-    public static final String HANDLE_KEY = "handle";
+    public static final ValidIdentifierSource FEIDE_KEY = ValidIdentifierSource.FEIDE;
+    public static final ValidIdentifierSource ORCID_KEY = ValidIdentifierSource.ORCID;
+    public static final ValidIdentifierSource ORGUNITID_KEY = ValidIdentifierSource.ORGUNITID;
+    public static final ValidIdentifierSource HANDLE_KEY = ValidIdentifierSource.HANDLE;
     public static final String EMPTY_STRING = "";
 
 

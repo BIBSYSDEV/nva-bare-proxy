@@ -1,30 +1,31 @@
 package no.unit.nva.bare;
 
+import java.util.Locale;
+
 public class AuthorityIdentifier {
 
     public static final String EMPTY_STRING = "";
-    private String source;
+    private ValidIdentifierSource source;
     private String identifier;
 
     /**
      * POJO to hold authority identifier.
      */
     public AuthorityIdentifier() {
-        source = EMPTY_STRING;
         identifier = EMPTY_STRING;
     }
 
     public AuthorityIdentifier(String source, String identifier) {
-        this.source = source;
+        this.source = ValidIdentifierSource.valueOf(source.toUpperCase(Locale.getDefault()));
         this.identifier = identifier;
     }
 
     public String getSource() {
-        return source;
+        return source.asString();
     }
 
     public void setSource(String source) {
-        this.source = source;
+        this.source = ValidIdentifierSource.valueOf(source.toUpperCase(Locale.getDefault()));
     }
 
     public String getIdentifier() {

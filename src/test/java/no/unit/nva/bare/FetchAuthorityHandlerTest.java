@@ -40,15 +40,11 @@ public class FetchAuthorityHandlerTest {
     public static final String BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE = "/bareSingleAuthorityResponse.json";
     public static final String BARE_EMPTY_RESPONSE_JSON_FILE = "/bareEmptyResponse.json";
     public static final String FETCH_AUTHORITY_EVENT_JSON_ALL_PARAMETERS = "/fullFetchAuthorityEvent.json";
-    public static final String FETCH_AUTHORITY_EVENT_JSON_TWO_PARAMETERS = "/twoParamsFetchAuthorityEvent.json";
-    public static final String FETCH_AUTHORITY_EVENT_JSON_ONE_PARAMETER = "/oneParamFetchAuthorityEvent.json";
     public static final String SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON = "/singleAuthorityGatewayResponseBody.json";
     public static final String MY_MOCK_THROWS_AN_EXCEPTION = "my mock throws an exception";
-    public static final String EMPTY_STRING = "";
-    public static final String FAKE_FEIDE_ID = "bob@unit.no";
-    public static final String FAKE_ORC_ID = "0000-0000-0000-0000";
-    public static final String BODY_KEY = "body";
-    public static final String FEIDEID = "feideid";
+    public static final String NAME_KEY = "name";
+    public static final String FEIDEID_KEY = ValidIdentifierKey.FEIDEID.asString();
+    public static final String ORCID_KEY = ValidIdentifierKey.ORCID.asString();
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
@@ -77,7 +73,7 @@ public class FetchAuthorityHandlerTest {
         Map<String, Object> event = new HashMap<>();
 
         Map<String, String> queryParameters = new HashMap<>();
-        queryParameters.put("name", "destroyer");
+        queryParameters.put(NAME_KEY, "destroyer");
         event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
 
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
@@ -99,7 +95,7 @@ public class FetchAuthorityHandlerTest {
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         Map<String, Object> event = new HashMap<>();
         Map<String, String> queryParameters = new HashMap<>();
-        queryParameters.put(FEIDEID, "sarah.serussi@unit.no");
+        queryParameters.put(FEIDEID_KEY, "sarah.serussi@unit.no");
         event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
@@ -121,7 +117,7 @@ public class FetchAuthorityHandlerTest {
         Map<String, Object> event = new HashMap<>();
 
         Map<String, String> queryParameters = new HashMap<>();
-        queryParameters.put("orcid", "0000-1111-2222-3333");
+        queryParameters.put(ORCID_KEY, "0000-1111-2222-3333");
         event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
 
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
@@ -166,7 +162,7 @@ public class FetchAuthorityHandlerTest {
         Map<String, Object> event = new HashMap<>();
 
         Map<String, String> queryParameters = new HashMap<>();
-        queryParameters.put(FEIDEID, "sarha.suressi@unit.no");
+        queryParameters.put(FEIDEID_KEY, "sarha.suressi@unit.no");
 
         event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
 
@@ -188,7 +184,7 @@ public class FetchAuthorityHandlerTest {
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         Map<String, Object> event = new HashMap<>();
         Map<String, String> queryParameters = new HashMap<>();
-        queryParameters.put(FEIDEID, "sarha.suressi@unit.no");
+        queryParameters.put(FEIDEID_KEY, "sarha.suressi@unit.no");
         event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
