@@ -108,6 +108,7 @@ public class BareConnectionTest {
         assertEquals(mockAuthorityList.get(0).getSystemControlNumber(), updatedAuthority.getSystemControlNumber());
         assertNotNull(updatedAuthority.getFeideids());
         assertNotNull(updatedAuthority.getOrcids());
+        assertNotNull(updatedAuthority.getOrgunitids());
     }
 
     private Authority extractAuthorityFrom(Reader reader) {

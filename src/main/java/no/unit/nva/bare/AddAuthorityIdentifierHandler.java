@@ -29,6 +29,7 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
     public static final String SCN_KEY = "scn";
     public static final String FEIDEID_KEY = "feideid";
     public static final String ORCID_KEY = "orcid";
+    public static final String ORGUNITID_KEY = "orgunitid";
     public static final String BODY_KEY = "body";
     public static final String PATH_PARAMETERS_KEY = "pathParameters";
     public static final String EMPTY_STRING = "";
@@ -70,6 +71,10 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         String orcId = getValueFromJsonObject(bodyEvent, ORCID_KEY);
         if (StringUtils.isNotEmpty(orcId)) {
             gatewayResponse = addIdentifier(scn, new AuthorityIdentifier(BareConnection.ORCID, orcId));
+        }
+        String orgUnitId = getValueFromJsonObject(bodyEvent, ORGUNITID_KEY);
+        if (StringUtils.isNotEmpty(orgUnitId)) {
+            gatewayResponse = addIdentifier(scn, new AuthorityIdentifier(BareConnection.ORGUNITID, orgUnitId));
         }
         return gatewayResponse;
     }

@@ -16,6 +16,7 @@ public class AuthorityConverter {
     public static final String MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE = "d";
     public static final String FEIDE_KEY = "feide";
     public static final String ORCID_KEY = "orcid";
+    public static final String ORGUNITID_KEY = "orgunitid";
     public static final String HANDLE_KEY = "handle";
     public static final String EMPTY_STRING = "";
 
@@ -33,6 +34,7 @@ public class AuthorityConverter {
         final String id = bareAuthority.systemControlNumber;
         Optional<List<String>> feideArray = Optional.ofNullable(bareAuthority.getIdentifiers(FEIDE_KEY));
         Optional<List<String>> orcIdArray = Optional.ofNullable(bareAuthority.getIdentifiers(ORCID_KEY));
+        Optional<List<String>> orgUnitIdArray = Optional.ofNullable(bareAuthority.getIdentifiers(ORGUNITID_KEY));
         Optional<List<String>> handleArray = Optional.ofNullable(bareAuthority.getIdentifiers(HANDLE_KEY));
         Authority authority = new Authority();
         authority.setName(name);
@@ -40,6 +42,7 @@ public class AuthorityConverter {
         authority.setSystemControlNumber(id);
         authority.setFeideids(feideArray.orElse(Collections.EMPTY_LIST));
         authority.setOrcids(orcIdArray.orElse(Collections.EMPTY_LIST));
+        authority.setOrgunitids(orgUnitIdArray.orElse(Collections.EMPTY_LIST));
         authority.setHandles(handleArray.orElse(Collections.EMPTY_LIST));
         return authority;
     }

@@ -11,6 +11,7 @@ public class Authority {
     private String systemControlNumber;
     private final Set<String> feideids;
     private final Set<String> orcids;
+    private final Set<String> orgunitids;
     private String birthDate;
     private final Set<String> handles;
 
@@ -22,6 +23,7 @@ public class Authority {
         systemControlNumber = EMPTY_STRING;
         feideids = new HashSet<>();
         orcids = new HashSet<>();
+        orgunitids = new HashSet<>();
         birthDate = EMPTY_STRING;
         handles = new HashSet<>();
     }
@@ -36,6 +38,10 @@ public class Authority {
 
     public Set<String> getOrcids() {
         return orcids;
+    }
+
+    public Set<String> getOrgunitids() {
+        return orgunitids;
     }
 
     public String getSystemControlNumber() {
@@ -68,6 +74,10 @@ public class Authority {
 
     public void setOrcids(Collection<String> orcids) {
         this.orcids.addAll(orcids);
+    }
+
+    public void setOrgunitids(Collection<String> orgunitids) {
+        this.orgunitids.addAll(orgunitids);
     }
 
     public void setHandles(Collection<String> handles) {
