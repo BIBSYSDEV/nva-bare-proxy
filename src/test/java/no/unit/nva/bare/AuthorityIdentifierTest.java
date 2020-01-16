@@ -10,7 +10,7 @@ import java.io.IOException;
 
 public class AuthorityIdentifierTest {
 
-    public static final ValidIdentifierSource SOURCE = ValidIdentifierSource.FEIDE;
+    public static final ValidIdentifierSource SOURCE = ValidIdentifierSource.feide;
     public static final String IDENTIFIER = "identifier";
 
     @Test

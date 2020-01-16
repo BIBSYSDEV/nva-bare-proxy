@@ -290,7 +290,7 @@ public class AddAuthorityIdentifierHandlerTest {
     public void testResponseFromBareWhereStatusCodeBadRequest() throws IOException, URISyntaxException {
         AddAuthorityIdentifierHandler handler = new AddAuthorityIdentifierHandler(mockBareConnection);
         AuthorityIdentifier authorityIdentifier =
-                new AuthorityIdentifier(ValidIdentifierSource.FEIDE.asString(), "feide");
+                new AuthorityIdentifier(ValidIdentifierSource.feide.asString(), "feide");
 
 
         StatusLine mockStatusLine = mock(StatusLine.class);
@@ -306,7 +306,7 @@ public class AddAuthorityIdentifierHandlerTest {
     public void testEmptyResponseFromBare() throws IOException, URISyntaxException {
         AddAuthorityIdentifierHandler handler = new AddAuthorityIdentifierHandler(mockBareConnection);
         AuthorityIdentifier authorityIdentifier =
-                new AuthorityIdentifier(ValidIdentifierSource.FEIDE.asString(), "feide");
+                new AuthorityIdentifier(ValidIdentifierSource.feide.asString(), "feide");
 
         StringReader reader = new StringReader(EMPTY_STRING);
         InputStream fakeStream = new ReaderInputStream(reader, Charset.defaultCharset());
@@ -329,7 +329,7 @@ public class AddAuthorityIdentifierHandlerTest {
 
 
         AuthorityIdentifier authorityIdentifier =
-                new AuthorityIdentifier(ValidIdentifierSource.FEIDE.asString(), "may-britt.moser@ntnu.no");
+                new AuthorityIdentifier(ValidIdentifierSource.feide.asString(), "may-britt.moser@ntnu.no");
 
         final GatewayResponse gatewayResponse = handler.addIdentifier(MOCK_SCN_VALUE, authorityIdentifier);
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), gatewayResponse.getStatusCode());

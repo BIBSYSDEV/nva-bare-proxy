@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 public class BareAuthorityTest {
 
-    public static final ValidIdentifierSource FEIDE = ValidIdentifierSource.FEIDE;
+    public static final ValidIdentifierSource FEIDE = ValidIdentifierSource.feide;
     public static final String DUMMY = "dummy";
 
     @Test

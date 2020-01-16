@@ -67,17 +67,17 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         String feideId = getValueFromJsonObject(bodyEvent, FEIDEID_KEY);
         if (StringUtils.isNotEmpty(feideId)) {
             gatewayResponse =
-                    addIdentifier(scn, new AuthorityIdentifier(ValidIdentifierSource.FEIDE.asString(), feideId));
+                    addIdentifier(scn, new AuthorityIdentifier(ValidIdentifierSource.feide.asString(), feideId));
         }
         String orcId = getValueFromJsonObject(bodyEvent, ORCID_KEY);
         if (StringUtils.isNotEmpty(orcId)) {
             gatewayResponse =
-                    addIdentifier(scn, new AuthorityIdentifier(ValidIdentifierSource.ORCID.asString(), orcId));
+                    addIdentifier(scn, new AuthorityIdentifier(ValidIdentifierSource.orcid.asString(), orcId));
         }
         String orgUnitId = getValueFromJsonObject(bodyEvent, ORGUNITID_KEY);
         if (StringUtils.isNotEmpty(orgUnitId)) {
             gatewayResponse =
-                    addIdentifier(scn, new AuthorityIdentifier(ValidIdentifierSource.ORGUNITID.asString(), orgUnitId));
+                    addIdentifier(scn, new AuthorityIdentifier(ValidIdentifierSource.orgunitid.asString(), orgUnitId));
         }
         return gatewayResponse;
     }

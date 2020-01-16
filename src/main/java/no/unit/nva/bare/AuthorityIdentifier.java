@@ -1,6 +1,5 @@
 package no.unit.nva.bare;
 
-import java.util.Locale;
 
 public class AuthorityIdentifier {
 
@@ -16,7 +15,7 @@ public class AuthorityIdentifier {
     }
 
     public AuthorityIdentifier(String source, String identifier) {
-        this.source = ValidIdentifierSource.valueOf(source.toUpperCase(Locale.getDefault()));
+        this.source = ValidIdentifierSource.valueOf(source);
         this.identifier = identifier;
     }
 
@@ -25,7 +24,7 @@ public class AuthorityIdentifier {
     }
 
     public void setSource(String source) {
-        this.source = ValidIdentifierSource.valueOf(source.toUpperCase(Locale.getDefault()));
+        this.source = ValidIdentifierSource.valueOf(source);
     }
 
     public String getIdentifier() {

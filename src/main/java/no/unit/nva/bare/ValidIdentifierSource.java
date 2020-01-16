@@ -2,10 +2,10 @@ package no.unit.nva.bare;
 
 public enum ValidIdentifierSource {
 
-    FEIDE("feide"),
-    ORCID("orcid"),
-    ORGUNITID("orgunitid"),
-    HANDLE("handle");
+    feide("feide"),
+    orcid("orcid"),
+    orgunitid("orgunitid"),
+    handle("handle");
 
     private final String source;
 
