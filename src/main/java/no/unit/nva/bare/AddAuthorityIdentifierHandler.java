@@ -117,9 +117,9 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         return gatewayResponse;
     }
 
-    protected GatewayResponse updateAuthorityOnBare(String scn, AuthorityIdentifier authority) {
+    protected GatewayResponse updateAuthorityOnBare(String scn, AuthorityIdentifier authorityIdentifier) {
         GatewayResponse gatewayResponse = new GatewayResponse();
-        try (CloseableHttpResponse response = bareConnection.addIdentifier(scn, authority)) {
+        try (CloseableHttpResponse response = bareConnection.addIdentifier(scn, authorityIdentifier)) {
             int responseCode = response.getStatusLine().getStatusCode();
             // Somewhat strange code (204) returned from bare when OK
             if (responseCode == Response.Status.NO_CONTENT.getStatusCode()) {
@@ -127,7 +127,9 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
                     final BareAuthority updatedAuthority = bareConnection.get(scn);
 
                     if (Objects.nonNull(updatedAuthority)) {
-                        gatewayResponse.setBody(new Gson().toJson(updatedAuthority));
+                        AuthorityConverter authorityConverter = new AuthorityConverter();
+                        final Authority authority = authorityConverter.asAuthority(updatedAuthority);
+                        gatewayResponse.setBody(new Gson().toJson(authority));
                         gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
                     } else {
                         gatewayResponse.setErrorBody(String.format(COMMUNICATION_ERROR_WHILE_UPDATING, scn));

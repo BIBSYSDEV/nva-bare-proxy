@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -96,8 +97,7 @@ public class BareConnectionTest {
         assertNotNull(httpResponse.getEntity());
 
         InputStream inputStream = httpResponse.getEntity().getContent();
-        AuthorityConverter authorityConverter = new AuthorityConverter();
-        Authority updatedAuthority = authorityConverter.extractAuthorityFrom(new InputStreamReader(inputStream));
+        Authority updatedAuthority = extractAuthorityFrom(new InputStreamReader(inputStream));
 
         InputStream stream =
                 AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
@@ -109,6 +109,14 @@ public class BareConnectionTest {
         assertNotNull(updatedAuthority.getFeideids());
         assertNotNull(updatedAuthority.getOrcids());
     }
+
+    private Authority extractAuthorityFrom(Reader reader) {
+        AuthorityConverter authorityConverter = new AuthorityConverter();
+        final BareAuthority bareAuthority = new Gson().fromJson(reader, BareAuthority.class);
+        System.out.println(bareAuthority);
+        return authorityConverter.asAuthority(bareAuthority);
+    }
+
 
     @Test
     public void testGenerateGetUri() throws URISyntaxException {

@@ -3,7 +3,6 @@ package no.unit.nva.bare;
 import com.google.gson.Gson;
 
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -15,18 +14,11 @@ public class AuthorityConverter {
     public static final String MARC_TAG_PERSONAL_NAME_FIELD_CODE = "100";
     public static final String MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE = "a";
     public static final String MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE = "d";
-    public static final String SCN_KEY = "scn";
     public static final String FEIDE_KEY = "feide";
     public static final String ORCID_KEY = "orcid";
     public static final String HANDLE_KEY = "handle";
     public static final String EMPTY_STRING = "";
 
-
-    protected Authority extractAuthorityFrom(Reader reader) {
-        final BareAuthority bareAuthority = new Gson().fromJson(reader, BareAuthority.class);
-        System.out.println(bareAuthority);
-        return asAuthority(bareAuthority);
-    }
 
     protected List<Authority> extractAuthoritiesFrom(InputStreamReader reader) {
         final BareQueryResponse bareQueryResponse = new Gson().fromJson(reader, BareQueryResponse.class);
@@ -35,7 +27,7 @@ public class AuthorityConverter {
     }
 
     @SuppressWarnings("unchecked")
-    private Authority asAuthority(BareAuthority bareAuthority) {
+    protected Authority asAuthority(BareAuthority bareAuthority) {
         final String name = this.findValueIn(bareAuthority, MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE);
         final String date = this.findValueIn(bareAuthority, MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE);
         final String id = bareAuthority.systemControlNumber;
