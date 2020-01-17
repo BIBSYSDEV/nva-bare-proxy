@@ -54,6 +54,17 @@ Resources:
           MyCognitoAuthorizer:
             UserPoolArn: !Ref CognitoAuthorizerArn
       EndpointConfiguration: Regional
+      Models:
+        AddIdentifierEventModel:
+          type: object
+          properties:
+            feideid:
+              type: string
+            orcid:
+              type: string
+            orgunitid:
+              type: string
+
 
 
   NvaBareFetchFunction:
@@ -106,6 +117,10 @@ Resources:
             RestApiId: !Ref NvaBareProxyApi
             Path: /{scn}
             Method: put
+            RequestModel:
+              Model: AddIdentifierEventModel
+
+
 
   NvaBareProxyBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
