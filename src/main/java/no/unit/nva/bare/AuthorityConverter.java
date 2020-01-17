@@ -29,6 +29,7 @@ public class AuthorityConverter {
 
     @SuppressWarnings("unchecked")
     protected Authority asAuthority(BareAuthority bareAuthority) {
+        System.out.println("AuthorityConverter.asAuthority incoming bareAuthorty=" + bareAuthority);
         final String name = this.findValueIn(bareAuthority, MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE);
         final String date = this.findValueIn(bareAuthority, MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE);
         final String id = bareAuthority.systemControlNumber;
@@ -44,6 +45,7 @@ public class AuthorityConverter {
         authority.setOrcids(orcIdArray.orElse(Collections.EMPTY_LIST));
         authority.setOrgunitids(orgUnitIdArray.orElse(Collections.EMPTY_LIST));
         authority.setHandles(handleArray.orElse(Collections.EMPTY_LIST));
+        System.out.println("AuthorityConverter.asAuthority:authority.scn=" + authority.getSystemControlNumber());
         return authority;
     }
 

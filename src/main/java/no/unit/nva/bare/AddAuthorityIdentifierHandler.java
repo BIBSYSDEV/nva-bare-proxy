@@ -144,6 +144,7 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
                         gatewayResponse.setBody(new Gson().toJson(authority));
                         gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
                     } else {
+                        System.out.println(String.format(COMMUNICATION_ERROR_WHILE_UPDATING, scn));
                         gatewayResponse.setErrorBody(String.format(COMMUNICATION_ERROR_WHILE_UPDATING, scn));
                         gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                     }
