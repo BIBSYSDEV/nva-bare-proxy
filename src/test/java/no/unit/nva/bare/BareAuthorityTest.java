@@ -8,6 +8,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class BareAuthorityTest {
@@ -36,6 +37,13 @@ public class BareAuthorityTest {
         value.add(DUMMY);
         identifiersMap.put(FEIDE.asString(), value);
         assertTrue(bareAuthority.hasIdentifier(authorityIdentifier));
+
+        bareAuthority.setSystemControlNumber(DUMMY);
+//        bareAuthority.setMarcdata(null);
+//        assertNull(bareAuthority.getMarcdata());
         assertNotNull(bareAuthority.getIdentifiersMap());
+        assertNotNull(bareAuthority.getSystemControlNumber());
+
+
     }
 }

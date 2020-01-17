@@ -14,6 +14,22 @@ public class BareAuthority {
         return identifiersMap;
     }
 
+    public String getSystemControlNumber() {
+        return systemControlNumber;
+    }
+
+    public void setSystemControlNumber(String systemControlNumber) {
+        this.systemControlNumber = systemControlNumber;
+    }
+
+//    public Marc21[] getMarcdata() {
+//        return marcdata;
+//    }
+//
+//    public void setMarcdata(Marc21[] marcdata) {
+//        this.marcdata = marcdata;
+//    }
+
     public void setIdentifiersMap(Map<String, List<String>> identifiersMap) {
         this.identifiersMap = identifiersMap;
     }
@@ -41,5 +57,12 @@ public class BareAuthority {
             return identifiersMap.get(source.asString());
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public String toString() {
+        return "BareAuthority{"
+                + "systemControlNumber='" + systemControlNumber + '\''
+                + ", identifiersMap=" + identifiersMap + '}';
     }
 }
