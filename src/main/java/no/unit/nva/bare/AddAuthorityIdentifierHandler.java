@@ -57,6 +57,7 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         try {
             this.checkParameters(input);
         } catch (RuntimeException e) {
+            System.out.println(e);
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
             return gatewayResponse;
@@ -111,10 +112,12 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
                 if (!fetchedAuthority.hasIdentifier(authorityIdentifier)) {
                     gatewayResponse = updateAuthorityOnBare(scn, authorityIdentifier);
                 } else {
+                    System.out.println(NOTHING_TO_DO);
                     gatewayResponse.setErrorBody(NOTHING_TO_DO);
                     gatewayResponse.setStatusCode(Response.Status.NO_CONTENT.getStatusCode());
                 }
             } else {
+                System.out.println(String.format(AUTHORITY_NOT_FOUND, scn));
                 gatewayResponse.setErrorBody(String.format(AUTHORITY_NOT_FOUND, scn));
                 gatewayResponse.setStatusCode(Response.Status.NOT_FOUND.getStatusCode());
             }

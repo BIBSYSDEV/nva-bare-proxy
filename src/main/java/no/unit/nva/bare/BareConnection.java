@@ -90,8 +90,10 @@ public class BareConnection {
                     BareAuthority fetchedAuthority = new Gson().fromJson(streamReader, BareAuthority.class);
                     return fetchedAuthority;
                 }
+            } else {
+                System.out.println("Error..? " + response.getStatusLine().getReasonPhrase());
+                throw new IOException(response.getStatusLine().getReasonPhrase());
             }
-            throw new IOException(response.getStatusLine().getReasonPhrase());
         }
     }
 

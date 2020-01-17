@@ -45,6 +45,8 @@ public class FetchAuthorityHandlerTest {
     public static final String NAME_KEY = "name";
     public static final String FEIDEID_KEY = ValidIdentifierKey.FEIDEID.asString();
     public static final String ORCID_KEY = ValidIdentifierKey.ORCID.asString();
+    public static final String SAMPLE_IDENTIFIER = "0000-1111-2222-3333";
+    public static final String SAMPLE_SYSTEM_CONTROL_NUMBER = "1573559857787";
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
@@ -117,7 +119,7 @@ public class FetchAuthorityHandlerTest {
         Map<String, Object> event = new HashMap<>();
 
         Map<String, String> queryParameters = new HashMap<>();
-        queryParameters.put(ORCID_KEY, "0000-1111-2222-3333");
+        queryParameters.put(ORCID_KEY, SAMPLE_IDENTIFIER);
         event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
 
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
@@ -204,6 +206,9 @@ public class FetchAuthorityHandlerTest {
         assertNotNull(content);
         assertTrue(content.contains(FetchAuthorityHandler.MISSING_PARAMETERS));
     }
+
+
+
 
 
 
