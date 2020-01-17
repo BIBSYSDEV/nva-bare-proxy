@@ -117,6 +117,9 @@ Resources:
             RestApiId: !Ref NvaBareProxyApi
             Path: /{scn}
             Method: put
+            RequestParameters:
+              - method.request.path.scn:
+                  Required: true
             RequestModel:
               Model: AddIdentifierEventModel
 
