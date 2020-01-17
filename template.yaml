@@ -16,7 +16,7 @@ Globals:
         - "'${Domain}'"
         - Domain: !Ref  CorsOrigin
       AllowMethods: "'OPTIONS, GET, PUT'"
-      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+#      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
 
 
 Parameters:
@@ -32,6 +32,7 @@ Parameters:
   CorsOrigin:
     Type: String
     Description: Value to use for Cors 'Allow...' header if value is set
+    Default: "'*'"
   BareApiKey:
     Type: String
     Description: Key to access bare
