@@ -148,14 +148,17 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
                         gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                     }
                 } catch (IOException | URISyntaxException e) {
+                    System.out.println(e);
                     gatewayResponse.setErrorBody(e.getMessage());
                     gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                 }
             } else {
+                System.out.println("Error... " + response.getStatusLine().getReasonPhrase());
                 gatewayResponse.setErrorBody(response.getStatusLine().getReasonPhrase());
                 gatewayResponse.setStatusCode(responseCode);
             }
         } catch (IOException | URISyntaxException e) {
+            System.out.println(e);
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }
