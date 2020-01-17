@@ -154,7 +154,8 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
                     gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                 }
             } else {
-                System.out.println("Error... " + response.getStatusLine().getReasonPhrase());
+                System.out.println("updateAuthorityOnBare - ErrorCode=" + response.getStatusLine().getStatusCode()
+                        + ",  reasonPhrase=" + response.getStatusLine().getReasonPhrase());
                 gatewayResponse.setErrorBody(response.getStatusLine().getReasonPhrase());
                 gatewayResponse.setStatusCode(responseCode);
             }
