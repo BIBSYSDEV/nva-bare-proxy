@@ -16,7 +16,7 @@ Globals:
         - "'${Domain}'"
         - Domain: !Ref  CorsOrigin
       AllowMethods: "'OPTIONS, GET, PUT'"
-#      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
 
 
 Parameters:
