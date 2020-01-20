@@ -32,7 +32,7 @@ Parameters:
   CorsOrigin:
     Type: String
     Description: Value to use for Cors 'Allow...' header if value is set
-    Default: '{{resolve:ssm:DefaultCorsOrigin:2}}'
+    Default: '{{resolve:secretsmanager:DefaultCorsOrigin:SecretString}}'
   BareApiKey:
     Type: String
     Description: Key to access bare
