@@ -299,7 +299,7 @@ public class AddAuthorityIdentifierHandlerTest {
         when(mockBareConnection.addIdentifier(MOCK_SCN_VALUE, authorityIdentifier))
                 .thenReturn(mockCloseableHttpResponse);
         final GatewayResponse gatewayResponse = handler.updateAuthorityOnBare(MOCK_SCN_VALUE, authorityIdentifier);
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), gatewayResponse.getStatusCode());
+        assertEquals(AddAuthorityIdentifierHandler.ERROR_CALLING_REMOTE_SERVER, gatewayResponse.getStatusCode());
     }
 
     @Test
