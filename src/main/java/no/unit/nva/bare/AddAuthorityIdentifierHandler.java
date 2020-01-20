@@ -33,6 +33,8 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
     public static final String BODY_KEY = "body";
     public static final String PATH_PARAMETERS_KEY = "pathParameters";
     public static final String EMPTY_STRING = "";
+    public static final int ERROR_CALLING_REMOTE_SERVER = Response.Status.BAD_GATEWAY.getStatusCode();
+    public static final String REMOTE_SERVER_ERRORMESSAGE = "remote server errormessage: ";
     protected final transient BareConnection bareConnection;
 
 
@@ -157,8 +159,8 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
             } else {
                 System.out.println("updateAuthorityOnBare - ErrorCode=" + response.getStatusLine().getStatusCode()
                         + ",  reasonPhrase=" + response.getStatusLine().getReasonPhrase());
-                gatewayResponse.setErrorBody(response.getStatusLine().getReasonPhrase());
-                gatewayResponse.setStatusCode(responseCode);
+                gatewayResponse.setErrorBody(REMOTE_SERVER_ERRORMESSAGE + response.getStatusLine().getReasonPhrase());
+                gatewayResponse.setStatusCode(ERROR_CALLING_REMOTE_SERVER);
             }
         } catch (IOException | URISyntaxException e) {
             System.out.println(e);
