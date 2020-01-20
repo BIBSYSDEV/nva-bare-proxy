@@ -133,6 +133,7 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         GatewayResponse gatewayResponse = new GatewayResponse();
         try (CloseableHttpResponse response = bareConnection.addIdentifier(scn, authorityIdentifier)) {
             int responseCode = response.getStatusLine().getStatusCode();
+            System.out.println("response (from bareConnection)=" + response);
             // Somewhat strange code (204) returned from bare when OK
             if (responseCode == Response.Status.NO_CONTENT.getStatusCode()) {
                 try {
