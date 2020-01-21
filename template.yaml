@@ -13,7 +13,7 @@ Globals:
     Cors:
       AllowCredentials: true
       AllowOrigin: !Sub
-        - '"${Domain}"'
+        - "'${Domain}'"
         - Domain: !Ref  CorsOrigin
       AllowMethods: "'OPTIONS, GET, PUT'"
       AllowHeaders: !Ref CorsAllowHeaders
