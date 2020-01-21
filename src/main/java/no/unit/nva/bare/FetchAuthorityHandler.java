@@ -11,6 +11,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Handler for requests to Lambda function.
@@ -49,11 +50,11 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
         if (input != null && input.containsKey(QUERY_STRING_PARAMETERS_KEY)) {
             String query;
             Map<String, String> queryStringParameters = (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
-            if (queryStringParameters.containsKey(FEIDE_KEY)) {
+            if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(FEIDE_KEY)) {
                 query = queryStringParameters.get(FEIDE_KEY);
-            } else if (queryStringParameters.containsKey(ORCID_KEY)) {
+            } else if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(ORCID_KEY)) {
                 query = queryStringParameters.get(ORCID_KEY);
-            } else if (queryStringParameters.containsKey(NAME_KEY)) {
+            } else if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(NAME_KEY)) {
                 query = queryStringParameters.get(NAME_KEY);
             } else {
                 gatewayResponse.setErrorBody(MISSING_PARAMETERS);

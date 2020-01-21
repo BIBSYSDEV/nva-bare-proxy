@@ -39,8 +39,6 @@ public class BareAuthorityTest {
         assertTrue(bareAuthority.hasIdentifier(authorityIdentifier));
 
         bareAuthority.setSystemControlNumber(DUMMY);
-//        bareAuthority.setMarcdata(null);
-//        assertNull(bareAuthority.getMarcdata());
         assertNotNull(bareAuthority.getIdentifiersMap());
         assertNotNull(bareAuthority.getSystemControlNumber());
 

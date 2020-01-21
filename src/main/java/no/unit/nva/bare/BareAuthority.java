@@ -14,24 +14,16 @@ public class BareAuthority {
         return identifiersMap;
     }
 
+    public void setIdentifiersMap(Map<String, List<String>> identifiersMap) {
+        this.identifiersMap = identifiersMap;
+    }
+
     public String getSystemControlNumber() {
         return systemControlNumber;
     }
 
     public void setSystemControlNumber(String systemControlNumber) {
         this.systemControlNumber = systemControlNumber;
-    }
-
-//    public Marc21[] getMarcdata() {
-//        return marcdata;
-//    }
-//
-//    public void setMarcdata(Marc21[] marcdata) {
-//        this.marcdata = marcdata;
-//    }
-
-    public void setIdentifiersMap(Map<String, List<String>> identifiersMap) {
-        this.identifiersMap = identifiersMap;
     }
 
     /**
@@ -49,6 +41,7 @@ public class BareAuthority {
 
     /**
      * Help method to get identifiers.
+     *
      * @param source key for identifying system
      * @return List of identifiers
      */
