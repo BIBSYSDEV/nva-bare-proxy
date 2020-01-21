@@ -13,7 +13,7 @@ Globals:
     Cors:
       AllowCredentials: true
       AllowOrigin: !Sub
-        - "${Domain}"
+        - "'${Domain}'"
         - Domain: !Ref  CorsOrigin
       AllowMethods: "'OPTIONS, GET, PUT'"
       AllowHeaders: !Ref CorsAllowHeaders
@@ -77,7 +77,7 @@ Resources:
       Environment:
         Variables:
           AllowOrigin: !Sub
-            - "${Domain}"
+            - "'${Domain}'"
             - Domain: !Ref  CorsOrigin
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
@@ -105,7 +105,7 @@ Resources:
       Environment:
         Variables:
           AllowOrigin: !Sub
-          - "${Domain}"
+          - "'${Domain}'"
           - Domain: !Ref  CorsOrigin
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
