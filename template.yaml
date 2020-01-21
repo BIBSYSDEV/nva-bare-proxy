@@ -76,9 +76,7 @@ Resources:
     Properties:
       Environment:
         Variables:
-          AllowOrigin: !Sub
-            - "${Domain}"
-            - Domain: !Ref  CorsOrigin
+          AllowOrigin: !Ref  CorsOrigin
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
       Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
@@ -104,9 +102,7 @@ Resources:
     Properties:
       Environment:
         Variables:
-          AllowOrigin: !Sub
-          - "${Domain}"
-          - Domain: !Ref  CorsOrigin
+          AllowOrigin: !Ref  CorsOrigin
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
       Handler: no.unit.nva.bare.AddAuthorityIdentifierHandler::handleRequest
