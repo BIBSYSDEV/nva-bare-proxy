@@ -15,7 +15,7 @@ Globals:
       AllowOrigin: !Sub
         - "'${Domain}'"
         - Domain: !Ref  CorsOrigin
-      AllowMethods: "'OPTIONS, GET, PUT'"
+      AllowMethods: "'OPTIONS, GET, PUT, POST'"
       AllowHeaders: !Ref CorsAllowHeaders
 
 
@@ -122,6 +122,33 @@ Resources:
                   Required: true
             RequestModel:
               Model: AddIdentifierEventModel
+
+
+  NvaBareCreateAuthorityFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          AllowOrigin: !Ref  CorsOrigin
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+      Handler: no.unit.nva.bare.CreateAuthorityHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Events:
+        NvaBareCreateAuthorityEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /
+            Method: post
+            RequestParameters:
+              - method.request.querystring.name:
+              Required: true
+            RequestModel:
+              Model: CreateAuthorityEventModel
 
 
 
