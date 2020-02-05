@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
@@ -13,7 +14,10 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Type;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -68,8 +72,11 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
                     BareAuthority createdAuthority = new Gson().fromJson(streamReader, BareAuthority.class);
                     if (Objects.nonNull(createdAuthority)) {
                         final Authority authority = authorityConverter.asAuthority(createdAuthority);
+                        List<Authority> authorities = new ArrayList<>();
+                        authorities.add(authority);
+                        Type authorityListType = new TypeToken<ArrayList<Authority>>(){}.getType();
                         Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
-                        gatewayResponse.setBody(gson.toJson(authority));
+                        gatewayResponse.setBody(gson.toJson(authorities, authorityListType));
                         gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
                     } else {
                         System.out.println(String.format(COMMUNICATION_ERROR_WHILE_CREATING, name));
