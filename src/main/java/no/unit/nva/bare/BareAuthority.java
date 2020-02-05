@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.Objects;
 
 public class BareAuthority {
+
+    public final String authorityType = "PERSON";
+    public String status;
     public String systemControlNumber;
     public Marc21[] marcdata;
     private Map<String, List<String>> identifiersMap;

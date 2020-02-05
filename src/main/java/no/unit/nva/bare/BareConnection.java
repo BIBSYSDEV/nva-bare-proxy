@@ -128,4 +128,7 @@ public class BareConnection {
     }
 
 
+    public CloseableHttpResponse createAuthority(BareAuthority bareAuthority) throws IOException {
+        return null;
+    }
 }

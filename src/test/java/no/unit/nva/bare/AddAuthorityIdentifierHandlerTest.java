@@ -130,11 +130,6 @@ public class AddAuthorityIdentifierHandlerTest {
         assertEquals(expectedResponse.getBody(), response.getBody());
     }
 
-    private InputStreamReader createInputStreamReader() {
-        InputStream stream1 =
-                AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
-        return new InputStreamReader(stream1);
-    }
 
     @Test
     public void testUpdateAuthoritySingleAuthorityResponseOnlyFeideId() throws Exception {
