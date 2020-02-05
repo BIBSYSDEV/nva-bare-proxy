@@ -3,7 +3,6 @@ package no.unit.nva.bare;
 import com.google.gson.Gson;
 
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

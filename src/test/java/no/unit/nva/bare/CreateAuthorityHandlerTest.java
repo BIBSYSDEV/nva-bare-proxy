@@ -15,6 +15,7 @@ import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public class CreateAuthorityHandlerTest {
     HttpEntity mockEntity;
 
     @Test
-    public void testCreateAuthority() throws IOException {
+    public void testCreateAuthority() throws IOException, URISyntaxException {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
         StatusLine mockStatusLine = mock(StatusLine.class);
@@ -68,7 +69,7 @@ public class CreateAuthorityHandlerTest {
     }
 
     @Test
-    public void testCreateAuthority_FailingToReadAuthorityFromResponseStream() throws IOException {
+    public void testCreateAuthority_FailingToReadAuthorityFromResponseStream() throws IOException, URISyntaxException {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
         StatusLine mockStatusLine = mock(StatusLine.class);
@@ -88,7 +89,7 @@ public class CreateAuthorityHandlerTest {
     }
 
     @Test
-    public void testCreateAuthority_FailingToCreateAuthorityOnBare() throws IOException {
+    public void testCreateAuthority_FailingToCreateAuthorityOnBare() throws IOException, URISyntaxException {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
         StatusLine mockStatusLine = mock(StatusLine.class);
@@ -104,7 +105,7 @@ public class CreateAuthorityHandlerTest {
     }
 
     @Test
-    public void testCreateAuthority_ExceptionFromBare() throws IOException {
+    public void testCreateAuthority_ExceptionFromBare() throws IOException, URISyntaxException {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
         when(mockBareConnection.createAuthority(any())).thenThrow(new IOException(MOCK_ERROR_MESSAGE));

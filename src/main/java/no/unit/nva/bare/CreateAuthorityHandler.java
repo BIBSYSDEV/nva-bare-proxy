@@ -13,6 +13,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Objects;
 
@@ -81,7 +82,7 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
                 gatewayResponse.setErrorBody(response.getStatusLine().getReasonPhrase());
                 gatewayResponse.setStatusCode(response.getStatusLine().getStatusCode());
             }
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             System.out.println(e);
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());

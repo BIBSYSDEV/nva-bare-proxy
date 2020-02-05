@@ -9,7 +9,7 @@ public class Config {
     public static final String BARE_APIKEY_KEY = "BARE_API_KEY";
     public static final String BARE_HOST_KEY = "BARE_HOST";
     public static final String BARE_QUERY_PATH = "/authority/rest/functions/v2/query";
-    public static final String BARE_UPDATE_PATH = "/authority/rest/authorities/v2";
+    public static final String BARE_CREATE_PATH = "/authority/rest/authorities/v2";
     public static final String BARE_GET_PATH = "/authority/rest/authorities/v2";
 
     private String bareApikey;
