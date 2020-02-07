@@ -145,8 +145,10 @@ public class BareConnection {
         String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
         httpPost.addHeader("Authorization", apiKeyAuth);
         httpPost.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        httpPost.setEntity(new StringEntity(new Gson().toJson(bareAuthority, BareAuthority.class)));
+        final String payload = new Gson().toJson(bareAuthority, BareAuthority.class);
+        httpPost.setEntity(new StringEntity(payload));
         System.out.println("httpPost=" + httpPost);
+        System.out.println("payload: " + payload);
         return httpClient.execute(httpPost);
     }
 }
