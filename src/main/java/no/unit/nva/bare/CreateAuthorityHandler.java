@@ -85,9 +85,11 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
                     }
                 }
             } else {
-                System.out.println("Error..? " + response.getStatusLine().getReasonPhrase());
-                gatewayResponse.setErrorBody(response.getStatusLine().getReasonPhrase());
-                gatewayResponse.setStatusCode(response.getStatusLine().getStatusCode());
+                System.out.println("Error: " + response.getStatusLine().getReasonPhrase());
+                System.out.println("new authority looked like this: \n" + new Gson().toJson(bareAuthority));
+                gatewayResponse.setErrorBody(response.getStatusLine().getStatusCode() + ": "
+                        + response.getStatusLine().getReasonPhrase());
+                gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
             }
         } catch (IOException | URISyntaxException e) {
             System.out.println(e);
