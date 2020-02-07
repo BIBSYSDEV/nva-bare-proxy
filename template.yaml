@@ -68,6 +68,11 @@ Resources:
               type: string
             orgunitid:
               type: string
+        CreateAuthorityEventModel:
+          type: object
+          properties:
+            name:
+              type: string
 
 
 
