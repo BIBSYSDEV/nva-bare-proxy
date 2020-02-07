@@ -87,7 +87,7 @@ public class BareConnectionTest {
         BareConnection bareConnection = new BareConnection();
         final InputStreamReader connect = bareConnection.connect(invalidUrl);
         assertNotNull(connect);
-        assertTrue(testFile.delete());
+        testFile.deleteOnExit();
     }
 
     @Test
