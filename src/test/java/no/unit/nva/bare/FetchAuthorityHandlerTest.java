@@ -107,6 +107,18 @@ public class FetchAuthorityHandlerTest {
     }
 
     @Test
+    public void testHandlerWithNull_QueryParams() throws Exception {
+        Map<String, Object> event = new HashMap<>();
+        event.put(QUERY_STRING_PARAMETERS_KEY, null);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
+        GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
+        String content = result.getBody();
+        assertNotNull(content);
+        assertTrue(content.contains(FetchAuthorityHandler.MISSING_PARAMETERS));
+    }
+
+    @Test
     public void testSuccessfulResponseWithOrcIdParam() throws Exception {
         InputStream asStream = FetchAuthorityHandlerTest.class.getResourceAsStream(
                 BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE);
