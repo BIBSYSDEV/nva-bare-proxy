@@ -18,7 +18,6 @@ import org.mockito.junit.MockitoRule;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,14 +27,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -74,20 +70,6 @@ public class BareConnectionTest {
         URL emptyUrl = new URL(NONSENSE_URL);
         bareConnection.connect(emptyUrl);
         fail();
-    }
-
-    @Test
-    public void testConnect() throws IOException {
-        String test = "/dev/null";
-        File testFile = new File(test);
-        if (!testFile.exists()) {
-            Files.createDirectories(Paths.get(test));
-        }
-        URL invalidUrl = Paths.get(test).toUri().toURL();
-        BareConnection bareConnection = new BareConnection();
-        final InputStreamReader connect = bareConnection.connect(invalidUrl);
-        assertNotNull(connect);
-        testFile.deleteOnExit();
     }
 
     @Test
