@@ -100,7 +100,7 @@ public class CreateAuthorityHandlerTest {
         CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection);
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
-        assertEquals(Response.Status.NOT_ACCEPTABLE.getStatusCode(), response.getStatusCode());
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatusCode());
         assertTrue(response.getBody().contains(MOCK_ERROR_MESSAGE));
     }
 
