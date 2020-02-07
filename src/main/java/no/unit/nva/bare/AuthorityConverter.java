@@ -19,6 +19,7 @@ public class AuthorityConverter {
     public static final ValidIdentifierSource ORGUNITID_KEY = ValidIdentifierSource.orgunitid;
     public static final ValidIdentifierSource HANDLE_KEY = ValidIdentifierSource.handle;
     public static final String EMPTY_STRING = "";
+    public static final String BLANK = " ";
     public static final String KAT1 = "kat1";
     public static final String IND_1 = "1";
     public static final String MARCTAG_100 = "100";
@@ -59,7 +60,7 @@ public class AuthorityConverter {
         Marc21 marcdata = new Marc21();
         marcdata.tag = MARCTAG_100;
         marcdata.ind1 = IND_1;
-        marcdata.ind2 = EMPTY_STRING;
+        marcdata.ind2 = BLANK;
         Subfield subfield = new Subfield();
         subfield.subcode = SUBCODE_A;
         subfield.value = name;
