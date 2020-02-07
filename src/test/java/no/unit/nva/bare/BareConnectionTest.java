@@ -63,6 +63,14 @@ public class BareConnectionTest {
         MockitoAnnotations.initMocks(this);
     }
 
+    @Test
+    public void testConnect() throws IOException {
+        final URL localFileUrl = BareConnectionTest.class.getResource(BARE_SINGLE_AUTHORITY_CREATE_RESPONSE_JSON);
+        BareConnection bareConnection = new BareConnection();
+        final InputStreamReader streamReader = bareConnection.connect(localFileUrl);
+        assertNotNull(streamReader);
+        streamReader.close();
+    }
 
     @Test(expected = IOException.class)
     public void testExceptionOnBareConnection() throws IOException {
