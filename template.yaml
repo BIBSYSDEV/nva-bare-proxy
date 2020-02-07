@@ -149,9 +149,6 @@ Resources:
             RestApiId: !Ref NvaBareProxyApi
             Path: /
             Method: post
-            RequestParameters:
-              - method.request.querystring.name:
-                  Required: true
             RequestModel:
               Model: CreateAuthorityEventModel
 
