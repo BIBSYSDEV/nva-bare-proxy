@@ -146,7 +146,7 @@ Resources:
             Method: post
             RequestParameters:
               - method.request.querystring.name:
-              Required: true
+                  Required: true
             RequestModel:
               Model: CreateAuthorityEventModel
 
