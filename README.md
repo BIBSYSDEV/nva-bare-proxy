@@ -244,9 +244,11 @@ AWS$ aws s3 rb s3://BUCKET_NAME
 
     ```json
        {
-          "name": "Unit, DotNo"
+          "invertedname": "Unit, DotNo"
        }
     ```
+    
+    The 'invertedname' parameter value must contain a comma.
     
   Response:
    ```json
