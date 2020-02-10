@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class BareAuthority {
 
-    public static final String authorityType = "PERSON";
+    public String authorityType = "PERSON";
     public String status;
     public String systemControlNumber;
     public Marc21[] marcdata;
