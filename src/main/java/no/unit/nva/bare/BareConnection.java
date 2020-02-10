@@ -2,8 +2,10 @@ package no.unit.nva.bare;
 
 import com.google.gson.Gson;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -150,5 +152,84 @@ public class BareConnection {
         System.out.println("httpPost=" + httpPost);
         System.out.println("payload: " + payload);
         return httpClient.execute(httpPost);
+    }
+
+    /**
+     * Add an identifier for a specific qualifier to a given authority in ARP.
+     *
+     * @param systemControlNumber System control number (identifier) of authority
+     * @param qualifier Qualifier for identifier to add to authority
+     * @param identifier Identifier to add to authority
+     * @return CloseableHttpResponse
+     * @throws IOException        communication error
+     * @throws URISyntaxException error while creating URI
+     */
+    public CloseableHttpResponse addIdentifier(String systemControlNumber, String qualifier, String identifier) throws IOException,
+            URISyntaxException {
+        URI uri = new URIBuilder()
+                .setScheme(HTTPS)
+                .setHost(Config.getInstance().getBareHost())
+                .setPathSegments("authority", "rest", "authorities", "v2", systemControlNumber, "identifiers", qualifier, identifier)
+                .build();
+        System.out.println("uri=" + uri);
+        HttpPost httpPost = new HttpPost(uri);
+
+        String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
+        httpPost.addHeader("Authorization", apiKeyAuth);
+
+        return httpClient.execute(httpPost);
+    }
+
+    /**
+     * Delete an identifier for a specific qualifier in a given authority in ARP.
+     *
+     * @param systemControlNumber System control number (identifier) of authority
+     * @param qualifier Qualifier for identifier to delete from authority
+     * @param identifier Identifier to delete from authority
+     * @return CloseableHttpResponse
+     * @throws IOException        communication error
+     * @throws URISyntaxException error while creating URI
+     */
+    public CloseableHttpResponse deleteIdentifier(String systemControlNumber, String qualifier, String identifier) throws IOException,
+            URISyntaxException {
+        URI uri = new URIBuilder()
+                .setScheme(HTTPS)
+                .setHost(Config.getInstance().getBareHost())
+                .setPathSegments("authority", "rest", "authorities", "v2", systemControlNumber, "identifiers", qualifier, identifier)
+                .build();
+        System.out.println("uri=" + uri);
+        HttpDelete httpDelete = new HttpDelete(uri);
+
+        String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
+        httpDelete.addHeader("Authorization", apiKeyAuth);
+
+        return httpClient.execute(httpDelete);
+    }
+
+    /**
+     * Update an existing identifier with a specific qualifier with a new value in a given authority in ARP.
+     *
+     * @param systemControlNumber System control number (identifier) of authority
+     * @param qualifier Qualifier for identifier to update in authority
+     * @param identifier Existing identifier in authority
+     * @param updatedIdentifier New value of existing identifier in authority
+     * @return CloseableHttpResponse
+     * @throws IOException        communication error
+     * @throws URISyntaxException error while creating URI
+     */
+    public CloseableHttpResponse updateIdentifier(String systemControlNumber, String qualifier, String identifier, String updatedIdentifier) throws IOException,
+            URISyntaxException {
+        URI uri = new URIBuilder()
+                .setScheme(HTTPS)
+                .setHost(Config.getInstance().getBareHost())
+                .setPathSegments("authority", "rest", "authorities", "v2", systemControlNumber, "identifiers", qualifier, identifier, "update", updatedIdentifier)
+                .build();
+        System.out.println("uri=" + uri);
+        HttpPut httpPut = new HttpPut(uri);
+
+        String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
+        httpPut.addHeader("Authorization", apiKeyAuth);
+
+        return httpClient.execute(httpPut);
     }
 }

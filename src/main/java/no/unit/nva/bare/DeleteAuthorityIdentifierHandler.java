@@ -9,25 +9,27 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import static java.util.Arrays.asList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static java.util.Arrays.asList;
+
 /**
  * Handler for requests to Lambda function.
  */
-public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
+public class DeleteAuthorityIdentifierHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
     public static final String MISSING_PATH_PARAMETER_SCN = "Missing path parameter 'scn'.";
     public static final String MISSING_PATH_PARAMETER_QUALIFIER = "Missing path parameter 'qualifier'.";
     public static final String INVALID_VALUE_PATH_PARAMETER_QUALIFIER = "Invalid path parameter 'qualifier'.";
     public static final String MISSING_PATH_PARAMETER_IDENTIFIER = "Missing path parameter 'identifier'.";
     public static final String COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY = "Communication failure while updating authority %s";
-    public static final String PATH_PARAMETERS_KEY = "pathParameters";
     public static final String SCN_KEY = "scn";
     public static final String QUALIFIER_KEY = "qualifier";
     public static final String IDENTIFIER_KEY = "identifier";
+    public static final String PATH_PARAMETERS_KEY = "pathParameters";
+    public static final String EMPTY_STRING = "";
     public static final int ERROR_CALLING_REMOTE_SERVER = Response.Status.BAD_GATEWAY.getStatusCode();
     public static final String REMOTE_SERVER_ERRORMESSAGE = "remote server errormessage: ";
 
@@ -37,11 +39,11 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
     protected final transient BareConnection bareConnection;
 
 
-    public AddAuthorityIdentifierHandler() {
+    public DeleteAuthorityIdentifierHandler() {
         this.bareConnection = new BareConnection();
     }
 
-    public AddAuthorityIdentifierHandler(BareConnection bareConnection) {
+    public DeleteAuthorityIdentifierHandler(BareConnection bareConnection) {
         this.bareConnection = bareConnection;
     }
 
@@ -68,7 +70,7 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         String qualifier = pathParameters.get(QUALIFIER_KEY);
         String identifier = pathParameters.get(IDENTIFIER_KEY);
 
-        return addIdentifier(scn, qualifier, identifier);
+        return deleteIdentifier(scn, qualifier, identifier);
     }
 
     @SuppressWarnings("unchecked")
@@ -91,9 +93,9 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         }
     }
 
-    protected GatewayResponse addIdentifier(String scn, String qualifier, String identifier) {
+    protected GatewayResponse deleteIdentifier(String scn, String qualifier, String identifier) {
         GatewayResponse gatewayResponse = new GatewayResponse();
-        try (CloseableHttpResponse response = bareConnection.addIdentifier(scn, qualifier, identifier)) {
+        try (CloseableHttpResponse response = bareConnection.deleteIdentifier(scn, qualifier, identifier)) {
             int responseCode = response.getStatusLine().getStatusCode();
             System.out.println("response (from bareConnection)=" + response);
             if (responseCode == Response.Status.OK.getStatusCode()) {
@@ -115,7 +117,7 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
                     gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                 }
             } else {
-                System.out.println("addIdentifier - ErrorCode=" + response.getStatusLine().getStatusCode()
+                System.out.println("deleteIdentifier - ErrorCode=" + response.getStatusLine().getStatusCode()
                         + ",  reasonPhrase=" + response.getStatusLine().getReasonPhrase());
                 gatewayResponse.setErrorBody(REMOTE_SERVER_ERRORMESSAGE + response.getStatusLine().getReasonPhrase());
                 gatewayResponse.setStatusCode(ERROR_CALLING_REMOTE_SERVER);
@@ -127,5 +129,6 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         }
         return gatewayResponse;
     }
+
 
 }
