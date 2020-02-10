@@ -11,12 +11,9 @@ Globals:
     Timeout: 20
   Api:
     Cors:
-      AllowCredentials: true
-      AllowOrigin: !Sub
-        - "'${Domain}'"
-        - Domain: !Ref  CorsOrigin
-      AllowMethods: "'OPTIONS, GET, PUT'"
-      AllowHeaders: !Ref CorsAllowHeaders
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      AllowMethods: "'OPTIONS, GET, PUT, POST'"
+      AllowOrigin: "'*'"
 
 
 Parameters:
@@ -29,14 +26,6 @@ Parameters:
   CustomDomainBasePath:
     Type: String
     Description: Base path mapping in CustomDomain
-  CorsOrigin:
-    Type: String
-    Description: Value to use for Cors 'Allow...' header if value is set
-    Default: '{{resolve:secretsmanager:DefaultCorsOrigin:SecretString}}'
-  CorsAllowHeaders:
-    Type: String
-    Description: String of headers to allow.
-    Default: '{{resolve:ssm:defaultCorsAllowHeaders:1}}'
   BareApiKey:
     Type: String
     Description: Key to access bare
@@ -68,6 +57,11 @@ Resources:
               type: string
             orgunitid:
               type: string
+        CreateAuthorityEventModel:
+          type: object
+          properties:
+            invertedname:
+              type: string
 
 
 
@@ -76,7 +70,6 @@ Resources:
     Properties:
       Environment:
         Variables:
-          AllowOrigin: !Ref  CorsOrigin
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
       Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
@@ -102,7 +95,6 @@ Resources:
     Properties:
       Environment:
         Variables:
-          AllowOrigin: !Ref  CorsOrigin
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
       Handler: no.unit.nva.bare.AddAuthorityIdentifierHandler::handleRequest
@@ -122,6 +114,29 @@ Resources:
                   Required: true
             RequestModel:
               Model: AddIdentifierEventModel
+
+
+  NvaBareCreateAuthorityFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+      Handler: no.unit.nva.bare.CreateAuthorityHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Events:
+        NvaBareCreateAuthorityEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /
+            Method: post
+            RequestModel:
+              Model: CreateAuthorityEventModel
 
 
 

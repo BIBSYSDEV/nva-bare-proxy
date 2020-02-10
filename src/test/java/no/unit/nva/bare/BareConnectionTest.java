@@ -27,7 +27,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,8 +43,10 @@ public class BareConnectionTest {
     public static final String COMPLETE_SINGLE_AUTHORITY_JSON = "/completeSingleAuthority.json";
     public static final String BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON =
             "/bareSingleAuthorityGetResponseWithAllIds.json";
+    public static final String BARE_SINGLE_AUTHORITY_CREATE_RESPONSE_JSON = "/bareSingleAuthorityCreateResponse.json";
     public static final String NONSENSE_URL = "http://iam.an.url";
     public static final String SCN = "scn";
+    public static final String MOCK_NAME = "Unit, DotNo";
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
@@ -62,6 +63,14 @@ public class BareConnectionTest {
         MockitoAnnotations.initMocks(this);
     }
 
+    @Test
+    public void testConnect() throws IOException {
+        final URL localFileUrl = BareConnectionTest.class.getResource(BARE_SINGLE_AUTHORITY_CREATE_RESPONSE_JSON);
+        BareConnection bareConnection = new BareConnection();
+        final InputStreamReader streamReader = bareConnection.connect(localFileUrl);
+        assertNotNull(streamReader);
+        streamReader.close();
+    }
 
     @Test(expected = IOException.class)
     public void testExceptionOnBareConnection() throws IOException {
@@ -69,14 +78,6 @@ public class BareConnectionTest {
         URL emptyUrl = new URL(NONSENSE_URL);
         bareConnection.connect(emptyUrl);
         fail();
-    }
-
-    @Test
-    public void testConnect() throws IOException {
-        URL invalidUrl = Paths.get("/dev/null").toUri().toURL();
-        BareConnection bareConnection = new BareConnection();
-        final InputStreamReader connect = bareConnection.connect(invalidUrl);
-        assertNotNull(connect);
     }
 
     @Test
@@ -110,6 +111,29 @@ public class BareConnectionTest {
         assertNotNull(updatedAuthority.getFeideids());
         assertNotNull(updatedAuthority.getOrcids());
         assertNotNull(updatedAuthority.getOrgunitids());
+    }
+
+    @Test
+    public void testCreate() throws Exception {
+        InputStream streamResp = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(
+                BARE_SINGLE_AUTHORITY_CREATE_RESPONSE_JSON);
+        mockCloseableHttpResponse.setEntity(mockEntity);
+        when(mockEntity.getContent()).thenReturn(streamResp);
+        when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
+        when(mockHttpClient.execute(any())).thenReturn(mockCloseableHttpResponse);
+
+        BareConnection mockBareConnection = new BareConnection(mockHttpClient);
+
+        AuthorityConverter authorityConverter = new AuthorityConverter();
+        BareAuthority bareAuthority = authorityConverter.buildAuthority(MOCK_NAME);
+        CloseableHttpResponse httpResponse = mockBareConnection.createAuthority(bareAuthority);
+
+        assertNotNull(httpResponse);
+        assertNotNull(httpResponse.getEntity());
+
+        InputStream inputStream = httpResponse.getEntity().getContent();
+        Authority createdAuthority = extractAuthorityFrom(new InputStreamReader(inputStream));
+        assertEquals(MOCK_NAME, createdAuthority.getName());
     }
 
     private Authority extractAuthorityFrom(Reader reader) {

@@ -130,11 +130,6 @@ public class AddAuthorityIdentifierHandlerTest {
         assertEquals(expectedResponse.getBody(), response.getBody());
     }
 
-    private InputStreamReader createInputStreamReader() {
-        InputStream stream1 =
-                AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
-        return new InputStreamReader(stream1);
-    }
 
     @Test
     public void testUpdateAuthoritySingleAuthorityResponseOnlyFeideId() throws Exception {
@@ -259,6 +254,55 @@ public class AddAuthorityIdentifierHandlerTest {
         AddAuthorityIdentifierHandler mockUpdateAuthorityHandler =
                 new AddAuthorityIdentifierHandler(mockBareConnection);
         GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatusCode());
+        String content = response.getBody();
+        assertNotNull(content);
+        assertTrue(content.contains(EXCEPTION_IS_EXPECTED));
+    }
+
+    @Test
+    public void testUpdateAuthority_failingToReadAuthorityFromStream() throws Exception {
+        StatusLine mockStatusLine = mock(StatusLine.class);
+        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.NO_CONTENT.getStatusCode());
+        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
+        mockCloseableHttpResponse.setEntity(mockEntity);
+
+        mockCloseableHttpResponse.setEntity(mockEntity);
+
+        when(mockBareConnection.get(any())).thenReturn(null);
+        AddAuthorityIdentifierHandler mockUpdateAuthorityHandler =
+                new AddAuthorityIdentifierHandler(mockBareConnection);
+        AuthorityIdentifier authorityIdentifier =
+                new AuthorityIdentifier(ValidIdentifierSource.feide.asString(), "may-britt.moser@ntnu.no");
+        when(mockBareConnection.addIdentifier(MOCK_SCN_VALUE, authorityIdentifier))
+                .thenReturn(mockCloseableHttpResponse);
+        GatewayResponse response =
+                mockUpdateAuthorityHandler.updateAuthorityOnBare(MOCK_SCN_VALUE, authorityIdentifier);
+
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatusCode());
+        String content = response.getBody();
+        assertNotNull(content);
+    }
+
+    @Test
+    public void testUpdateAuthority_exceptionOnReadAuthorityFromBare() throws Exception {
+        StatusLine mockStatusLine = mock(StatusLine.class);
+        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.NO_CONTENT.getStatusCode());
+        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
+        mockCloseableHttpResponse.setEntity(mockEntity);
+
+        mockCloseableHttpResponse.setEntity(mockEntity);
+
+        when(mockBareConnection.get(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
+        AddAuthorityIdentifierHandler mockUpdateAuthorityHandler =
+                new AddAuthorityIdentifierHandler(mockBareConnection);
+        AuthorityIdentifier authorityIdentifier =
+                new AuthorityIdentifier(ValidIdentifierSource.feide.asString(), "may-britt.moser@ntnu.no");
+        when(mockBareConnection.addIdentifier(MOCK_SCN_VALUE, authorityIdentifier))
+                .thenReturn(mockCloseableHttpResponse);
+        GatewayResponse response =
+                mockUpdateAuthorityHandler.updateAuthorityOnBare(MOCK_SCN_VALUE, authorityIdentifier);
+
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatusCode());
         String content = response.getBody();
         assertNotNull(content);

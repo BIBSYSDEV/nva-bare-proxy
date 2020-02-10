@@ -19,6 +19,11 @@ public class AuthorityConverter {
     public static final ValidIdentifierSource ORGUNITID_KEY = ValidIdentifierSource.orgunitid;
     public static final ValidIdentifierSource HANDLE_KEY = ValidIdentifierSource.handle;
     public static final String EMPTY_STRING = "";
+    public static final String BLANK = " ";
+    public static final String KAT1 = "kat1";
+    public static final String IND_1 = "1";
+    public static final String MARCTAG_100 = "100";
+    public static final String SUBCODE_A = "a";
 
 
     protected List<Authority> extractAuthoritiesFrom(InputStreamReader reader) {
@@ -46,6 +51,21 @@ public class AuthorityConverter {
         authority.setOrgunitids(orgUnitIdArray.orElse(Collections.EMPTY_LIST));
         authority.setHandles(handleArray.orElse(Collections.EMPTY_LIST));
         System.out.println("AuthorityConverter.asAuthority:authority.scn=" + authority.getSystemControlNumber());
+        return authority;
+    }
+
+    protected BareAuthority buildAuthority(String name) {
+        BareAuthority authority = new BareAuthority();
+        authority.status = KAT1;
+        Marc21 marcdata = new Marc21();
+        marcdata.tag = MARCTAG_100;
+        marcdata.ind1 = IND_1;
+        marcdata.ind2 = BLANK;
+        Subfield subfield = new Subfield();
+        subfield.subcode = SUBCODE_A;
+        subfield.value = name;
+        marcdata.subfields = new Subfield[]{subfield};
+        authority.marcdata = new Marc21[]{marcdata};
         return authority;
     }
 

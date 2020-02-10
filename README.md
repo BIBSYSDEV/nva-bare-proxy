@@ -1,7 +1,8 @@
 # Nva Bare Proxy
 
 The purpose of this project is to fetch authority-metadata by given parameters like name or/and feideId (GET request).
-As well it is expected that authority-metadata can be updated by a POST request updating/adding feideId or orcId to an existing authority identified by its scn (aka. System Control Number).
+As well it is expected that authority-metadata can be updated by a POST request updating/adding feideId, orcId or orgunitid to an existing authority identified by its scn (aka. System Control Number).
+Last but not least one can POST a 'name' to create a new authority in BARE. 
  
 The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
@@ -235,6 +236,29 @@ AWS$ aws s3 rb s3://BUCKET_NAME
           "orgunitid": ["194.0.0.0"],
           "birthDate": "1963-",
           "handle": ["http://hdl.handle.net/11250/1969546"]
+        }
+      ]
+    ```
+  
+* POST to /authority/ with body
+
+    ```json
+       {
+          "name": "Unit, DotNo"
+       }
+    ```
+    
+  Response:
+   ```json
+      [
+        {
+          "name": "Unit, DotNo",
+          "systemControlNumber": "123456789",
+          "feideid": [],
+          "orcid": [],
+          "orgunitid": [],
+          "birthDate": "",
+          "handle": []
         }
       ]
     ```

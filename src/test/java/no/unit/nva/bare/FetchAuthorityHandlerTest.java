@@ -39,14 +39,12 @@ public class FetchAuthorityHandlerTest {
 
     public static final String BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE = "/bareSingleAuthorityResponse.json";
     public static final String BARE_EMPTY_RESPONSE_JSON_FILE = "/bareEmptyResponse.json";
-    public static final String FETCH_AUTHORITY_EVENT_JSON_ALL_PARAMETERS = "/fullFetchAuthorityEvent.json";
     public static final String SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON = "/singleAuthorityGatewayResponseBody.json";
     public static final String MY_MOCK_THROWS_AN_EXCEPTION = "my mock throws an exception";
     public static final String NAME_KEY = "name";
     public static final String FEIDEID_KEY = ValidIdentifierKey.FEIDEID.asString();
     public static final String ORCID_KEY = ValidIdentifierKey.ORCID.asString();
     public static final String SAMPLE_IDENTIFIER = "0000-1111-2222-3333";
-    public static final String SAMPLE_SYSTEM_CONTROL_NUMBER = "1573559857787";
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
@@ -71,7 +69,6 @@ public class FetchAuthorityHandlerTest {
         InputStreamReader bareResponseStreamReader = new InputStreamReader(st);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
-        String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ALL_PARAMETERS);
         Map<String, Object> event = new HashMap<>();
 
         Map<String, String> queryParameters = new HashMap<>();
@@ -84,7 +81,7 @@ public class FetchAuthorityHandlerTest {
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        String postResponseBody = this.readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
+        String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
         assertEquals(postResponseBody, content);
     }
 
@@ -105,8 +102,20 @@ public class FetchAuthorityHandlerTest {
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        String postResponseBody = this.readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
+        String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
         assertEquals(postResponseBody, content);
+    }
+
+    @Test
+    public void testHandlerWithNull_QueryParams() throws Exception {
+        Map<String, Object> event = new HashMap<>();
+        event.put(QUERY_STRING_PARAMETERS_KEY, null);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
+        GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
+        String content = result.getBody();
+        assertNotNull(content);
+        assertTrue(content.contains(FetchAuthorityHandler.MISSING_PARAMETERS));
     }
 
     @Test
@@ -130,7 +139,7 @@ public class FetchAuthorityHandlerTest {
         assertNotNull(content);
         Type authorityListType = new TypeToken<ArrayList<Authority>>(){}.getType();
         List<Authority> responseAuthority = new Gson().fromJson(content, authorityListType);
-        String postResponseBody = this.readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
+        String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
         List<Authority> expectedResponseAuthority = new Gson().fromJson(postResponseBody, authorityListType);
         assertEquals(expectedResponseAuthority.get(0).getSystemControlNumber(),
                 responseAuthority.get(0).getSystemControlNumber());
@@ -181,7 +190,6 @@ public class FetchAuthorityHandlerTest {
 
     @Test
     public void testFailingRequest() throws Exception {
-        String postRequestBody = this.readJsonStringFromFile(FETCH_AUTHORITY_EVENT_JSON_ALL_PARAMETERS);
         when(mockBareConnection.connect(any())).thenThrow(new IOException(MY_MOCK_THROWS_AN_EXCEPTION));
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
         Map<String, Object> event = new HashMap<>();
@@ -208,11 +216,7 @@ public class FetchAuthorityHandlerTest {
     }
 
 
-
-
-
-
-    private String readJsonStringFromFile(String fetchAuthorityEventJsonAllParameters) {
+    protected static String readJsonStringFromFile(String fetchAuthorityEventJsonAllParameters) {
         InputStream stream = FetchAuthorityHandlerTest.class.getResourceAsStream(fetchAuthorityEventJsonAllParameters);
         String postRequestBody;
         try (Scanner scanner = new Scanner(stream, StandardCharsets.UTF_8.name())) {
