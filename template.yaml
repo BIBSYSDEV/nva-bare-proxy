@@ -71,7 +71,7 @@ Resources:
         CreateAuthorityEventModel:
           type: object
           properties:
-            name:
+            invertedname:
               type: string
 
 

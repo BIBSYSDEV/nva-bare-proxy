@@ -27,7 +27,7 @@ import java.util.Objects;
 public class CreateAuthorityHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
     public static final String BODY_KEY = "body";
-    public static final String NAME_KEY = "name";
+    public static final String NAME_KEY = "invertedname";
     public static final String EMPTY_STRING = "";
     public static final String MISSING_EVENT_ELEMENT_BODY = "Missing event element 'body'.";
     public static final String BODY_ARGS_MISSING = "Nothing to create. 'name' is missing.";

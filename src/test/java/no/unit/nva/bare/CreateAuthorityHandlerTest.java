@@ -31,7 +31,7 @@ public class CreateAuthorityHandlerTest {
 
     public static final String BODY_KEY = "body";
     public static final String MOCK_NAME = "Unit, DotNo";
-    public static final String MOCK_BODY = "{\"name\": \"" + MOCK_NAME + "\"}";
+    public static final String MOCK_BODY = "{\"invertedname\": \"" + MOCK_NAME + "\"}";
     public static final String MOCK_BODY_NONAME = "{\"noname\": \"" + MOCK_NAME + "\"}";
     public static final String CREATE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON = "/createAuthorityGatewayResponseBody.json";
     public static final String BARE_SINGLE_AUTHORITY_CREATE_RESPONSE = "/bareSingleAuthorityCreateResponse.json";
