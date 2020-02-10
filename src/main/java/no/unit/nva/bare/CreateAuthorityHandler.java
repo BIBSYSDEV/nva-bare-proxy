@@ -67,7 +67,8 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
         BareAuthority bareAuthority = authorityConverter.buildAuthority(name);
         try (CloseableHttpResponse response = bareConnection.createAuthority(bareAuthority)) {
             System.out.println("response (from bareConnection)=" + response);
-            if (response.getStatusLine().getStatusCode() == Response.Status.CREATED.getStatusCode()) { //201
+            if (response.getStatusLine().getStatusCode() == Response.Status.CREATED.getStatusCode()
+                || response.getStatusLine().getStatusCode() == Response.Status.OK.getStatusCode()) { //201
                 try (Reader streamReader = new InputStreamReader(response.getEntity().getContent())) {
                     BareAuthority createdAuthority = new Gson().fromJson(streamReader, BareAuthority.class);
                     if (Objects.nonNull(createdAuthority)) {
