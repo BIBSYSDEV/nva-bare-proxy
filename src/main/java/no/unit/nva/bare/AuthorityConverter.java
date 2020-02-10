@@ -60,7 +60,7 @@ public class AuthorityConverter {
         Marc21 marcdata = new Marc21();
         marcdata.tag = MARCTAG_100;
         marcdata.ind1 = IND_1;
-        marcdata.ind2 = BLANK;
+        marcdata.ind2 = EMPTY_STRING;
         Subfield subfield = new Subfield();
         subfield.subcode = SUBCODE_A;
         subfield.value = name;
