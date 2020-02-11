@@ -32,6 +32,7 @@ public class CreateAuthorityHandlerTest {
     public static final String BODY_KEY = "body";
     public static final String MOCK_NAME = "Unit, DotNo";
     public static final String MOCK_BODY = "{\"invertedname\": \"" + MOCK_NAME + "\"}";
+    public static final String MOCK_BODY_NOT_INVERTED = "{\"invertedname\": \"no comma\"}";
     public static final String MOCK_BODY_NONAME = "{\"noname\": \"" + MOCK_NAME + "\"}";
     public static final String CREATE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON = "/createAuthorityGatewayResponseBody.json";
     public static final String BARE_SINGLE_AUTHORITY_CREATE_RESPONSE = "/bareSingleAuthorityCreateResponse.json";
@@ -125,6 +126,17 @@ public class CreateAuthorityHandlerTest {
         assertNotNull(response);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatusCode());
         assertTrue(response.getBody().contains(CreateAuthorityHandler.BODY_ARGS_MISSING));
+    }
+
+    @Test
+    public void testCreateAuthorityNotInvertedBodyParam_Name() {
+        Map<String, Object> requestEvent = new HashMap<>();
+        requestEvent.put(BODY_KEY, MOCK_BODY_NOT_INVERTED);
+        CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler();
+        final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
+        assertNotNull(response);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatusCode());
+        assertTrue(response.getBody().contains(CreateAuthorityHandler.MALFORMED_NAME_VALUE));
     }
 
     @Test

@@ -33,6 +33,8 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
     public static final String BODY_ARGS_MISSING = "Nothing to create. 'name' is missing.";
     public static final String COMMUNICATION_ERROR_WHILE_CREATING = "Communication failure while creating new "
             + "authority with name='%s'";
+    public static final String COMMA = ",";
+    public static final String MALFORMED_NAME_VALUE = "The name value seems not to be in inverted form.";
     protected final transient BareConnection bareConnection;
 
     public CreateAuthorityHandler(BareConnection bareConnection) {
@@ -112,8 +114,11 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
         if (StringUtils.isEmpty(eventBody)) {
             throw new RuntimeException(MISSING_EVENT_ELEMENT_BODY);
         }
-        if (StringUtils.isEmpty(getValueFromJsonObject(eventBody, NAME_KEY))) {
+        final String nameValue = getValueFromJsonObject(eventBody, NAME_KEY);
+        if (StringUtils.isEmpty(nameValue)) {
             throw new RuntimeException(BODY_ARGS_MISSING);
+        } else if (!nameValue.contains(COMMA)) {
+            throw new RuntimeException(MALFORMED_NAME_VALUE);
         }
     }
 }
