@@ -9,7 +9,9 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
+
 import static java.util.Arrays.asList;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -23,7 +25,8 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
     public static final String MISSING_PATH_PARAMETER_QUALIFIER = "Missing path parameter 'qualifier'.";
     public static final String INVALID_VALUE_PATH_PARAMETER_QUALIFIER = "Invalid path parameter 'qualifier'.";
     public static final String MISSING_PATH_PARAMETER_IDENTIFIER = "Missing path parameter 'identifier'.";
-    public static final String COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY = "Communication failure while updating authority %s";
+    public static final String COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY =
+            "Communication failure while updating authority %s";
     public static final String PATH_PARAMETERS_KEY = "pathParameters";
     public static final String SCN_KEY = "scn";
     public static final String QUALIFIER_KEY = "qualifier";
@@ -73,7 +76,7 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
     }
 
     private String transformQualifier(String inputQualifier) {
-        if(inputQualifier.equals(ValidIdentifierKey.FEIDEID.asString())) {
+        if (inputQualifier.equals(ValidIdentifierKey.FEIDEID.asString())) {
             return ValidIdentifierSource.feide.asString();
         }
         return inputQualifier;
@@ -114,7 +117,8 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
                         gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
                     } else {
                         System.out.println(String.format(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY, scn));
-                        gatewayResponse.setErrorBody(String.format(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY, scn));
+                        gatewayResponse.setErrorBody(String.format(
+                                COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY, scn));
                         gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                     }
                 } catch (IOException | URISyntaxException e) {

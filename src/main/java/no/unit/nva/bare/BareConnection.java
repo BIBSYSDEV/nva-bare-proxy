@@ -136,12 +136,14 @@ public class BareConnection {
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
      */
-    public CloseableHttpResponse addIdentifier(String systemControlNumber, String qualifier, String identifier) throws IOException,
+    public CloseableHttpResponse addIdentifier(String systemControlNumber, String qualifier, String identifier)
+            throws IOException,
             URISyntaxException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
-                .setPathSegments("authority", "rest", "authorities", "v2", systemControlNumber, "identifiers", qualifier, identifier)
+                .setPathSegments("authority", "rest", "authorities", "v2", systemControlNumber, "identifiers",
+                        qualifier, identifier)
                 .build();
         System.out.println("uri=" + uri);
         HttpPost httpPost = new HttpPost(uri);
@@ -162,12 +164,14 @@ public class BareConnection {
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
      */
-    public CloseableHttpResponse deleteIdentifier(String systemControlNumber, String qualifier, String identifier) throws IOException,
+    public CloseableHttpResponse deleteIdentifier(String systemControlNumber, String qualifier, String identifier)
+            throws IOException,
             URISyntaxException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
-                .setPathSegments("authority", "rest", "authorities", "v2", systemControlNumber, "identifiers", qualifier, identifier)
+                .setPathSegments("authority", "rest", "authorities", "v2", systemControlNumber, "identifiers",
+                        qualifier, identifier)
                 .build();
         System.out.println("uri=" + uri);
         HttpDelete httpDelete = new HttpDelete(uri);
@@ -189,12 +193,14 @@ public class BareConnection {
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
      */
-    public CloseableHttpResponse updateIdentifier(String systemControlNumber, String qualifier, String identifier, String updatedIdentifier) throws IOException,
+    public CloseableHttpResponse updateIdentifier(String systemControlNumber, String qualifier, String identifier,
+                                                  String updatedIdentifier) throws IOException,
             URISyntaxException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
-                .setPathSegments("authority", "rest", "authorities", "v2", systemControlNumber, "identifiers", qualifier, identifier, "update", updatedIdentifier)
+                .setPathSegments("authority", "rest", "authorities", "v2", systemControlNumber, "identifiers",
+                        qualifier, identifier, "update", updatedIdentifier)
                 .build();
         System.out.println("uri=" + uri);
         HttpPut httpPut = new HttpPut(uri);

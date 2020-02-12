@@ -81,7 +81,7 @@ public class BareConnectionTest {
     }
 
     @Test
-    public void testUpdate() throws Exception {
+    public void testAddIdentifier() throws Exception {
         InputStream streamResp = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(
                 BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON);
         mockCloseableHttpResponse.setEntity(mockEntity);
@@ -91,7 +91,8 @@ public class BareConnectionTest {
 
         BareConnection mockBareConnection = new BareConnection(mockHttpClient);
 
-        CloseableHttpResponse httpResponse = mockBareConnection.addIdentifier(SCN, ValidIdentifierKey.FEIDEID.asString(), "feide");
+        CloseableHttpResponse httpResponse = mockBareConnection.addIdentifier(SCN,
+                ValidIdentifierKey.FEIDEID.asString(), "feide");
 
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.getEntity());
@@ -109,6 +110,52 @@ public class BareConnectionTest {
         assertNotNull(updatedAuthority.getFeideids());
         assertNotNull(updatedAuthority.getOrcids());
         assertNotNull(updatedAuthority.getOrgunitids());
+    }
+
+    @Test
+    public void testDeleteIdentifier() throws Exception {
+        InputStream streamResp = DeleteAuthorityIdentifierHandlerTest.class.getResourceAsStream(
+                BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON);
+        mockCloseableHttpResponse.setEntity(mockEntity);
+        when(mockEntity.getContent()).thenReturn(streamResp);
+        when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
+        when(mockHttpClient.execute(any())).thenReturn(mockCloseableHttpResponse);
+
+        BareConnection mockBareConnection = new BareConnection(mockHttpClient);
+
+        CloseableHttpResponse httpResponse = mockBareConnection.deleteIdentifier(SCN,
+                ValidIdentifierSource.feide.asString(), "feide");
+
+        assertNotNull(httpResponse);
+        assertNotNull(httpResponse.getEntity());
+
+        InputStream inputStream = httpResponse.getEntity().getContent();
+        Authority updatedAuthority = extractAuthorityFrom(new InputStreamReader(inputStream));
+
+
+    }
+
+    @Test
+    public void testUpdateIdentifier() throws Exception {
+        InputStream streamResp = UpdateAuthorityIdentifierHandlerTest.class.getResourceAsStream(
+                BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON);
+        mockCloseableHttpResponse.setEntity(mockEntity);
+        when(mockEntity.getContent()).thenReturn(streamResp);
+        when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
+        when(mockHttpClient.execute(any())).thenReturn(mockCloseableHttpResponse);
+
+        BareConnection mockBareConnection = new BareConnection(mockHttpClient);
+
+        CloseableHttpResponse httpResponse = mockBareConnection.updateIdentifier(SCN,
+                ValidIdentifierSource.feide.asString(), "feide", "updatedFeide");
+
+        assertNotNull(httpResponse);
+        assertNotNull(httpResponse.getEntity());
+
+        InputStream inputStream = httpResponse.getEntity().getContent();
+        Authority updatedAuthority = extractAuthorityFrom(new InputStreamReader(inputStream));
+
+
     }
 
     @Test
