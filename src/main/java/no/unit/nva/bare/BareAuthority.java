@@ -30,19 +30,6 @@ public class BareAuthority {
     }
 
     /**
-     * Checks if identifier is present for given system.
-     *
-     * @param authorityIdentifier identifier of authority
-     * @return <code>TRUE</code> if identifier exists
-     */
-    public boolean hasIdentifier(AuthorityIdentifier authorityIdentifier) {
-        if (Objects.nonNull(identifiersMap) && identifiersMap.containsKey(authorityIdentifier.getSource())) {
-            return identifiersMap.get(authorityIdentifier.getSource()).contains(authorityIdentifier.getIdentifier());
-        }
-        return false;
-    }
-
-    /**
      * Help method to get identifiers.
      *
      * @param source key for identifying system

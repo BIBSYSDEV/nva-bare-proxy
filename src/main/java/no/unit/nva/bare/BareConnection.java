@@ -100,34 +100,6 @@ public class BareConnection {
     }
 
     /**
-     * Updates metadata of the given authority to Bare.
-     *
-     * @param authoritySystemControlNumber Identifier of Authority to update
-     * @param authorityIdentifier New identifier pair to add to authority
-     * @return CloseableHttpResponse
-     * @throws IOException        communication error
-     * @throws URISyntaxException error while creating URI
-     */
-    public CloseableHttpResponse addIdentifier(String authoritySystemControlNumber,
-                                               AuthorityIdentifier authorityIdentifier) throws IOException,
-            URISyntaxException {
-        URI uri = new URIBuilder()
-                .setScheme(HTTPS)
-                .setHost(Config.getInstance().getBareHost())
-                .setPathSegments("authority", "rest", "authorities", "v2", authoritySystemControlNumber, "identifiers")
-                .build();
-        System.out.println("uri=" + uri);
-        HttpPost httpPost = new HttpPost(uri);
-
-        String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
-        httpPost.addHeader("Authorization", apiKeyAuth);
-        httpPost.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        httpPost.setEntity(new StringEntity(new Gson().toJson(authorityIdentifier, AuthorityIdentifier.class)));
-        System.out.println("httpPost=" + httpPost);
-        return httpClient.execute(httpPost);
-    }
-
-    /**
      * Creates a new authority in Bare.
      *
      * @param bareAuthority authority to be created

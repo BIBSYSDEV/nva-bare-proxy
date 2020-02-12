@@ -91,9 +91,7 @@ public class BareConnectionTest {
 
         BareConnection mockBareConnection = new BareConnection(mockHttpClient);
 
-        AuthorityIdentifier authorityIdentifier =
-                new AuthorityIdentifier(ValidIdentifierSource.feide.asString(), "feide");
-        CloseableHttpResponse httpResponse = mockBareConnection.addIdentifier(SCN, authorityIdentifier);
+        CloseableHttpResponse httpResponse = mockBareConnection.addIdentifier(SCN, ValidIdentifierKey.FEIDEID.asString(), "feide");
 
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.getEntity());

@@ -83,7 +83,7 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         if (StringUtils.isEmpty(pathParameters.get(QUALIFIER_KEY))) {
             throw new RuntimeException(MISSING_PATH_PARAMETER_QUALIFIER);
         }
-        if (VALID_QUALIFIERS.contains(pathParameters.get(QUALIFIER_KEY))) {
+        if (!VALID_QUALIFIERS.contains(pathParameters.get(QUALIFIER_KEY))) {
             throw new RuntimeException(INVALID_VALUE_PATH_PARAMETER_QUALIFIER);
         }
         if (StringUtils.isEmpty(pathParameters.get(IDENTIFIER_KEY))) {
