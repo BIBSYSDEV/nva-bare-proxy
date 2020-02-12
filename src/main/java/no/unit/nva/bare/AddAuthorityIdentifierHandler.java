@@ -65,10 +65,18 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
         }
         Map<String, String> pathParameters = (Map<String, String>) input.get(PATH_PARAMETERS_KEY);
         String scn = pathParameters.get(SCN_KEY);
-        String qualifier = pathParameters.get(QUALIFIER_KEY);
+        String inputQualifier = pathParameters.get(QUALIFIER_KEY);
+        String qualifier = transformQualifier(inputQualifier);
         String identifier = pathParameters.get(IDENTIFIER_KEY);
 
         return addIdentifier(scn, qualifier, identifier);
+    }
+
+    private String transformQualifier(String inputQualifier) {
+        if(inputQualifier.equals(ValidIdentifierKey.FEIDEID.asString())) {
+            return ValidIdentifierSource.feide.asString();
+        }
+        return inputQualifier;
     }
 
     @SuppressWarnings("unchecked")
