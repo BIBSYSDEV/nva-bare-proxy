@@ -48,15 +48,6 @@ Resources:
             UserPoolArn: !Ref CognitoAuthorizerArn
       EndpointConfiguration: Regional
       Models:
-        AddIdentifierEventModel:
-          type: object
-          properties:
-            feideid:
-              type: string
-            orcid:
-              type: string
-            orgunitid:
-              type: string
         CreateAuthorityEventModel:
           type: object
           properties:
@@ -107,14 +98,71 @@ Resources:
             Auth:
               Authorizer: MyCognitoAuthorizer
             RestApiId: !Ref NvaBareProxyApi
-            Path: /{scn}
+            Path: /{scn}/{qualifier}/{identifier}
+            Method: post
+            RequestParameters:
+              - method.request.path.scn:
+                  Required: true
+              - method.request.path.qualifier:
+                  Required: true
+              - method.request.path.identifier:
+                  Required: true
+
+  NvaBareDeleteIdentifierFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+      Handler: no.unit.nva.bare.DeleteAuthorityIdentifierHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Events:
+        NvaBareAddIdentifierEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}/{qualifier}/{identifier}
+            Method: delete
+            RequestParameters:
+              - method.request.path.scn:
+                  Required: true
+              - method.request.path.qualifier:
+                  Required: true
+              - method.request.path.identifier:
+                  Required: true
+
+  NvaBareUpdateIdentifierFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+      Handler: no.unit.nva.bare.UpdateAuthorityIdentifierHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Events:
+        NvaBareAddIdentifierEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}/{qualifier}/{identifier}/update/{updatedIdentifier}
             Method: put
             RequestParameters:
               - method.request.path.scn:
                   Required: true
-            RequestModel:
-              Model: AddIdentifierEventModel
-
+              - method.request.path.qualifier:
+                  Required: true
+              - method.request.path.identifier:
+                  Required: true
+              - method.request.path.updatedIdentifier:
+                  Required: true
 
   NvaBareCreateAuthorityFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
