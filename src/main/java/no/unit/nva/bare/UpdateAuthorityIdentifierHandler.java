@@ -51,9 +51,9 @@ public class UpdateAuthorityIdentifierHandler implements RequestHandler<Map<Stri
     }
 
     /**
-     * Main lambda function to update feideId or/and orcId on Bare authority metadata.
+     * Main lambda function to update an identifier on a Bare authority.
      *
-     * @param input payload with body-parameter containing the authority metadata
+     * @param input payload with path-parameters
      * @return a GatewayResponse
      */
     @Override
