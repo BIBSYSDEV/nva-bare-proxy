@@ -72,29 +72,44 @@ Resources:
                 type: AWS_PROXY
               responses:
                 '201':
-                  description: 'Authority created.'
+                  description: Authority created.
                   content:
                     application/json:
                       schema:
                         $ref: '#/components/schemas/createAuthorityResponseBody'
                 '400':
-                  description: 'Bad request.'
+                  description: Bad request.
                   content:
                     application/json:
                       schema:
+                        title: 400 Bad request
                         type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
                 '401':
-                  description: 'Unauthorized.'
+                  description: Unauthorized.
                   content:
                     application/json:
                       schema:
+                        title: 401 Unathorized
                         type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
                 '500':
-                  description: 'Internal Server Error.'
+                  description: Internal Server Error.
                   content:
                     application/json:
                       schema:
+                        title: 500 Internal Server Error
                         type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
           /{scn}:
             put:
               summary: Adds an identifier to the authority identifier list.
@@ -125,17 +140,27 @@ Resources:
                       schema:
                         $ref: '#/components/schemas/addIdentifierResponseBody'
                 '400':
-                  description: 'Bad request.'
+                  description: Bad request.
                   content:
                     application/json:
                       schema:
+                        title: 400 Bad request
                         type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
                 '404':
-                  description: 'The specified authority was not found.'
+                  description: The specified authority was not found.
                   content:
                     application/json:
                       schema:
+                        title: 404 Not found
                         type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
             get:
               summary:  Fetches authority by name, feideid
               parameters:
@@ -161,17 +186,27 @@ Resources:
                       schema:
                         $ref: '#/components/schemas/fetchAuthorityResponseBody'
                 '400':
-                  description: 'Bad request.'
+                  description: Bad request.
                   content:
                     application/json:
                       schema:
+                        title: 400 Bad request
                         type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
                 '404':
                   description: 'Authority not found.'
                   content:
                     application/json:
                       schema:
+                        title: 404 Not found
                         type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
 
         components:
           securitySchemes:
