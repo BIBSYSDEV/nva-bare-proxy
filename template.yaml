@@ -207,6 +207,138 @@ Resources:
                           error:
                             type: string
                             description: error message
+          /{scn}/identifiers/{qualifier}/{identifier}:
+            post:
+              summary: Adds an identifier to the authority identifier list.
+              parameters:
+                - in: path
+                  name: scn
+                  type: string
+                  description: authors systemControlNumber (scn).
+                - in: path
+                  name: qualifier
+                  type: string
+                  description: qualifier of identifier to add.
+                - in: path
+                  name: identifier
+                  type: string
+                  description: identifier to add.
+              security:
+                - CognitoUserPool: []
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareAddNewIdentifierFunction.Arn}/invocations
+                responses: {}
+                httpMethod: POST
+                type: AWS_PROXY
+              responses:
+                '200':
+                  description: 'Identifier added to authority.'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/addIdentifierResponseBody'
+                '400':
+                  description: 'Bad request.'
+                  content:
+                    application/json:
+                      schema:
+                        type: object
+                '404':
+                  description: 'The specified authority was not found.'
+                  content:
+                    application/json:
+                      schema:
+                        type: object
+            delete:
+              summary: Removes an identifier from the authority identifier list.
+              parameters:
+                - in: path
+                  name: scn
+                  type: string
+                  description: authors systemControlNumber (scn).
+                - in: path
+                  name: qualifier
+                  type: string
+                  description: qualifier of identifier to remove.
+                - in: path
+                  name: identifier
+                  type: string
+                  description: identifier to remove.
+              security:
+                - CognitoUserPool: []
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareDeleteIdentifierFunction.Arn}/invocations
+                responses: {}
+                httpMethod: DELETE
+                type: AWS_PROXY
+              responses:
+                '200':
+                  description: 'Identifier removed from authority.'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/addIdentifierResponseBody'
+                '400':
+                  description: 'Bad request.'
+                  content:
+                    application/json:
+                      schema:
+                        type: object
+                '404':
+                  description: 'The specified authority was not found.'
+                  content:
+                    application/json:
+                      schema:
+                        type: object
+          /{scn}/identifiers/{qualifier}/{identifier}/update/{updatedIdentifier}:
+            put:
+              summary: Updates the value of a identifier in the authority identifier list.
+              parameters:
+                - in: path
+                  name: scn
+                  type: string
+                  description: authors systemControlNumber (scn).
+                - in: path
+                  name: qualifier
+                  type: string
+                  description: qualifier of identifier to add.
+                - in: path
+                  name: identifier
+                  type: string
+                  description: current identifier.
+                - in: path
+                  name: updatedIdentifier
+                  type: string
+                  description: updated identifier.
+              security:
+                - CognitoUserPool: []
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareUpdateIdentifierFunction.Arn}/invocations
+                responses: {}
+                httpMethod: PUT
+                type: AWS_PROXY
+              responses:
+                '200':
+                  description: 'Identifier updated in authority.'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/addIdentifierResponseBody'
+                '400':
+                  description: 'Bad request.'
+                  content:
+                    application/json:
+                      schema:
+                        type: object
+                '404':
+                  description: 'The specified authority was not found.'
+                  content:
+                    application/json:
+                      schema:
+                        type: object
 
         components:
           securitySchemes:
@@ -364,6 +496,89 @@ Resources:
             RestApiId: !Ref NvaBareProxyApi
             Path: /{scn}
             Method: put
+
+  NvaBareAddNewIdentifierFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+      Handler: no.unit.nva.bare.AddNewAuthorityIdentifierHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Events:
+        NvaBareAddNewIdentifierEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}/identifiers/{qualifier}/{identifier}
+            Method: post
+            RequestParameters:
+              - method.request.path.scn:
+                  Required: true
+              - method.request.path.qualifier:
+                  Required: true
+              - method.request.path.identifier:
+                  Required: true
+
+  NvaBareDeleteIdentifierFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+      Handler: no.unit.nva.bare.DeleteAuthorityIdentifierHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Events:
+        NvaBareDeleteIdentifierEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}/identifiers/{qualifier}/{identifier}
+            Method: delete
+            RequestParameters:
+              - method.request.path.scn:
+                  Required: true
+              - method.request.path.qualifier:
+                  Required: true
+              - method.request.path.identifier:
+                  Required: true
+
+  NvaBareUpdateIdentifierFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+      Handler: no.unit.nva.bare.UpdateAuthorityIdentifierHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Events:
+        NvaBareUpdateIdentifierEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}/identifiers/{qualifier}/{identifier}/update/{updatedIdentifier}
+            Method: put
+            RequestParameters:
+              - method.request.path.scn:
+                  Required: true
+              - method.request.path.qualifier:
+                  Required: true
+              - method.request.path.identifier:
+                  Required: true
+              - method.request.path.updatedIdentifier:
+                  Required: true
 
   NvaBareCreateAuthorityFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
