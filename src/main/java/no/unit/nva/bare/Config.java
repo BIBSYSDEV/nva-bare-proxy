@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 public class Config {
 
     public static final String MISSING_ENVIRONMENT_VARIABLES = "Missing environment variables";
-    public static final String CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME = "AllowOrigin";
+    public static final String CORS_ALLOW_ORIGIN_HEADER_ENVIRONMENT_NAME = "ALLOWED_ORIGIN";
     public static final String BARE_APIKEY_KEY = "BARE_API_KEY";
     public static final String BARE_HOST_KEY = "BARE_HOST";
     public static final String BARE_QUERY_PATH = "/authority/rest/functions/v2/query";
