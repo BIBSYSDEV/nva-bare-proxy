@@ -98,7 +98,7 @@ Resources:
             Auth:
               Authorizer: MyCognitoAuthorizer
             RestApiId: !Ref NvaBareProxyApi
-            Path: /{scn}/{qualifier}/{identifier}
+            Path: /{scn}/identifiers/{qualifier}/{identifier}
             Method: post
             RequestParameters:
               - method.request.path.scn:
@@ -125,7 +125,7 @@ Resources:
             Auth:
               Authorizer: MyCognitoAuthorizer
             RestApiId: !Ref NvaBareProxyApi
-            Path: /{scn}/{qualifier}/{identifier}
+            Path: /{scn}/identifiers/{qualifier}/{identifier}
             Method: delete
             RequestParameters:
               - method.request.path.scn:
@@ -152,7 +152,7 @@ Resources:
             Auth:
               Authorizer: MyCognitoAuthorizer
             RestApiId: !Ref NvaBareProxyApi
-            Path: /{scn}/{qualifier}/{identifier}/update/{updatedIdentifier}
+            Path: /{scn}/identifiers/{qualifier}/{identifier}/update/{updatedIdentifier}
             Method: put
             RequestParameters:
               - method.request.path.scn:

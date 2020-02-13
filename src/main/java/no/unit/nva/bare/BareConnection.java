@@ -26,6 +26,8 @@ public class BareConnection {
 
     public static final String HTTPS = "https";
     public static final String APIKEY_KEY = "apikey";
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String URI_LOG_STRING = "uri=";
     public static final String SPACE = " ";
     private final transient CloseableHttpClient httpClient;
 
@@ -113,7 +115,7 @@ public class BareConnection {
                 .setHost(Config.getInstance().getBareHost())
                 .setPath(Config.BARE_CREATE_PATH)
                 .build();
-        System.out.println("uri=" + uri);
+        System.out.println(URI_LOG_STRING + uri);
         HttpPost httpPost = new HttpPost(uri);
 
         String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
@@ -145,11 +147,11 @@ public class BareConnection {
                 .setPathSegments("authority", "rest", "authorities", "v2", systemControlNumber, "identifiers",
                         qualifier, identifier)
                 .build();
-        System.out.println("uri=" + uri);
+        System.out.println(URI_LOG_STRING + uri);
         HttpPost httpPost = new HttpPost(uri);
 
         String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
-        httpPost.addHeader("Authorization", apiKeyAuth);
+        httpPost.addHeader(AUTHORIZATION_HEADER, apiKeyAuth);
 
         return httpClient.execute(httpPost);
     }
@@ -173,11 +175,11 @@ public class BareConnection {
                 .setPathSegments("authority", "rest", "authorities", "v2", systemControlNumber, "identifiers",
                         qualifier, identifier)
                 .build();
-        System.out.println("uri=" + uri);
+        System.out.println(URI_LOG_STRING + uri);
         HttpDelete httpDelete = new HttpDelete(uri);
 
         String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
-        httpDelete.addHeader("Authorization", apiKeyAuth);
+        httpDelete.addHeader(AUTHORIZATION_HEADER, apiKeyAuth);
 
         return httpClient.execute(httpDelete);
     }
@@ -202,11 +204,11 @@ public class BareConnection {
                 .setPathSegments("authority", "rest", "authorities", "v2", systemControlNumber, "identifiers",
                         qualifier, identifier, "update", updatedIdentifier)
                 .build();
-        System.out.println("uri=" + uri);
+        System.out.println(URI_LOG_STRING + uri);
         HttpPut httpPut = new HttpPut(uri);
 
         String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
-        httpPut.addHeader("Authorization", apiKeyAuth);
+        httpPut.addHeader(AUTHORIZATION_HEADER, apiKeyAuth);
 
         return httpClient.execute(httpPut);
     }
