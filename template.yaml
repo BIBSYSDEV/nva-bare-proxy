@@ -501,8 +501,6 @@ Resources:
         NvaBareFetchEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Auth:
-              Authorizer: MyCognitoAuthorizer
             RestApiId: !Ref NvaBareProxyApi
             Path: /
             Method: get
@@ -522,8 +520,6 @@ Resources:
         NvaBareAddIdentifierEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Auth:
-              Authorizer: MyCognitoAuthorizer
             RestApiId: !Ref NvaBareProxyApi
             Path: /{scn}
             Method: put
@@ -542,8 +538,6 @@ Resources:
         NvaBareAddNewIdentifierEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Auth:
-              Authorizer: MyCognitoAuthorizer
             RestApiId: !Ref NvaBareProxyApi
             Path: /{scn}/identifiers/{qualifier}/{identifier}
             Method: post
@@ -562,8 +556,6 @@ Resources:
         NvaBareDeleteIdentifierEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Auth:
-              Authorizer: MyCognitoAuthorizer
             RestApiId: !Ref NvaBareProxyApi
             Path: /{scn}/identifiers/{qualifier}/{identifier}
             Method: delete
@@ -582,8 +574,6 @@ Resources:
         NvaBareUpdateIdentifierEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Auth:
-              Authorizer: MyCognitoAuthorizer
             RestApiId: !Ref NvaBareProxyApi
             Path: /{scn}/identifiers/{qualifier}/{identifier}/update/{updatedIdentifier}
             Method: put
@@ -603,8 +593,6 @@ Resources:
         NvaBareCreateAuthorityEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Auth:
-              Authorizer: MyCognitoAuthorizer
             RestApiId: !Ref NvaBareProxyApi
             Path: /
             Method: post
