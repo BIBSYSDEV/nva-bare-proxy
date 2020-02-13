@@ -134,7 +134,7 @@ Resources:
                 type: AWS_PROXY
               responses:
                 '200':
-                  description: 'Identifier added to authority.'
+                  description: Identifier added to authority.
                   content:
                     application/json:
                       schema:
@@ -180,7 +180,7 @@ Resources:
                 type: AWS_PROXY
               responses:
                 '200':
-                  description: 'authority'
+                  description: authority
                   content:
                     application/json:
                       schema:
@@ -197,7 +197,7 @@ Resources:
                             type: string
                             description: error message
                 '404':
-                  description: 'Authority not found.'
+                  description: Authority not found.
                   content:
                     application/json:
                       schema:
@@ -233,23 +233,33 @@ Resources:
                 type: AWS_PROXY
               responses:
                 '200':
-                  description: 'Identifier added to authority.'
+                  description: Identifier added to authority.
                   content:
                     application/json:
                       schema:
                         $ref: '#/components/schemas/addIdentifierResponseBody'
                 '400':
-                  description: 'Bad request.'
+                  description: Bad request.
                   content:
                     application/json:
                       schema:
+                        title: 400 Bad request
                         type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
                 '404':
-                  description: 'The specified authority was not found.'
+                  description: The specified authority was not found.
                   content:
                     application/json:
                       schema:
+                        title: 404 Not found
                         type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
             delete:
               summary: Removes an identifier from the authority identifier list.
               parameters:
@@ -275,23 +285,34 @@ Resources:
                 type: AWS_PROXY
               responses:
                 '200':
-                  description: 'Identifier removed from authority.'
+                  description: Identifier removed from authority.
                   content:
                     application/json:
                       schema:
                         $ref: '#/components/schemas/addIdentifierResponseBody'
                 '400':
-                  description: 'Bad request.'
+                  description: Bad request.
                   content:
                     application/json:
                       schema:
+                        title: 400 Bad Request
                         type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
                 '404':
-                  description: 'The specified authority was not found.'
+                  description: The specified authority was not found.
                   content:
                     application/json:
                       schema:
+                        title: 404 Not found
                         type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+
           /{scn}/identifiers/{qualifier}/{identifier}/update/{updatedIdentifier}:
             put:
               summary: Updates the value of a identifier in the authority identifier list.
@@ -332,13 +353,23 @@ Resources:
                   content:
                     application/json:
                       schema:
+                        title: 400 Bad Request
                         type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
                 '404':
-                  description: 'The specified authority was not found.'
+                  description: The specified authority was not found.
                   content:
                     application/json:
                       schema:
+                        title: 404 Not Found
                         type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
 
         components:
           securitySchemes:
