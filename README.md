@@ -264,3 +264,15 @@ AWS$ aws s3 rb s3://BUCKET_NAME
         }
       ]
     ```
+
+* POST to /authority/{scn}/identifiers/{qualifier}/{identifier}
+
+  Adds a qualified identifier to authority
+
+* DELETE to /authority/{scn}/identifiers/{qualifier}/{identifier}
+
+  Removes a qualified identifier from authority
+
+* PUT to /authority/{scn}/identifiers/{qualifier}/{identifier}/update/{updatedIdentifier}
+
+  Updates a qualified identifier to a new value 
