@@ -547,13 +547,6 @@ Resources:
             RestApiId: !Ref NvaBareProxyApi
             Path: /{scn}/identifiers/{qualifier}/{identifier}
             Method: post
-            RequestParameters:
-              - method.request.path.scn:
-                  Required: true
-              - method.request.path.qualifier:
-                  Required: true
-              - method.request.path.identifier:
-                  Required: true
 
   NvaBareDeleteIdentifierFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -574,13 +567,6 @@ Resources:
             RestApiId: !Ref NvaBareProxyApi
             Path: /{scn}/identifiers/{qualifier}/{identifier}
             Method: delete
-            RequestParameters:
-              - method.request.path.scn:
-                  Required: true
-              - method.request.path.qualifier:
-                  Required: true
-              - method.request.path.identifier:
-                  Required: true
 
   NvaBareUpdateIdentifierFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -601,15 +587,6 @@ Resources:
             RestApiId: !Ref NvaBareProxyApi
             Path: /{scn}/identifiers/{qualifier}/{identifier}/update/{updatedIdentifier}
             Method: put
-            RequestParameters:
-              - method.request.path.scn:
-                  Required: true
-              - method.request.path.qualifier:
-                  Required: true
-              - method.request.path.identifier:
-                  Required: true
-              - method.request.path.updatedIdentifier:
-                  Required: true
 
   NvaBareCreateAuthorityFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
