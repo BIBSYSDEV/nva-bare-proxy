@@ -63,7 +63,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
         DeleteAuthorityIdentifierHandler mockUpdateAuthorityHandler =
-                new DeleteAuthorityIdentifierHandler(mockBareConnection);
+                new DeleteAuthorityIdentifierHandler();
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
         expectedResponse.setErrorBody(DeleteAuthorityIdentifierHandler.MISSING_PATH_PARAMETER_SCN);
@@ -80,7 +80,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
         pathParams.put(DeleteAuthorityIdentifierHandler.SCN_KEY, EMPTY_STRING);
         requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         DeleteAuthorityIdentifierHandler mockUpdateAuthorityHandler =
-                new DeleteAuthorityIdentifierHandler(mockBareConnection);
+                new DeleteAuthorityIdentifierHandler();
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
         expectedResponse.setErrorBody(DeleteAuthorityIdentifierHandler.MISSING_PATH_PARAMETER_SCN);
@@ -96,7 +96,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
         pathParams.put(DeleteAuthorityIdentifierHandler.SCN_KEY, MOCK_SCN_VALUE);
         requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         DeleteAuthorityIdentifierHandler mockUpdateAuthorityHandler =
-                new DeleteAuthorityIdentifierHandler(mockBareConnection);
+                new DeleteAuthorityIdentifierHandler();
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
         expectedResponse.setErrorBody(DeleteAuthorityIdentifierHandler.MISSING_PATH_PARAMETER_QUALIFIER);
@@ -114,7 +114,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
                 ValidIdentifierKey.ORGUNITID.asString() + "invalid");
         requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         DeleteAuthorityIdentifierHandler mockUpdateAuthorityHandler =
-                new DeleteAuthorityIdentifierHandler(mockBareConnection);
+                new DeleteAuthorityIdentifierHandler();
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
         expectedResponse.setErrorBody(DeleteAuthorityIdentifierHandler.INVALID_VALUE_PATH_PARAMETER_QUALIFIER);
@@ -131,7 +131,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
         pathParams.put(DeleteAuthorityIdentifierHandler.QUALIFIER_KEY, ValidIdentifierKey.ORGUNITID.asString());
         requestEvent.put(PATH_PARAMETERS_KEY, pathParams);
         DeleteAuthorityIdentifierHandler mockUpdateAuthorityHandler =
-                new DeleteAuthorityIdentifierHandler(mockBareConnection);
+                new DeleteAuthorityIdentifierHandler();
         GatewayResponse expectedResponse = new GatewayResponse();
         expectedResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
         expectedResponse.setErrorBody(DeleteAuthorityIdentifierHandler.MISSING_PATH_PARAMETER_IDENTIFIER);
@@ -163,6 +163,19 @@ public class DeleteAuthorityIdentifierHandlerTest {
         GatewayResponse response = mockDeleteAuthorityHandler.handleRequest(requestEvent, null);
         Authority responseAuthority = new Gson().fromJson(response.getBody(), Authority.class);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusCode());
+    }
+
+    @Test
+    public void testResponseFromBareWhereStatusCodeBadRequest() throws IOException, URISyntaxException {
+        DeleteAuthorityIdentifierHandler handler = new DeleteAuthorityIdentifierHandler(mockBareConnection);
+        StatusLine mockStatusLine = mock(StatusLine.class);
+        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.BAD_REQUEST.getStatusCode());
+        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
+        when(mockBareConnection.deleteIdentifier(any(), any(), any()))
+                .thenReturn(mockCloseableHttpResponse);
+        final GatewayResponse gatewayResponse = handler.deleteIdentifier(MOCK_SCN_VALUE, "invalid",
+                MOCK_FEIDEID_VALUE);
+        assertEquals(DeleteAuthorityIdentifierHandler.ERROR_CALLING_REMOTE_SERVER, gatewayResponse.getStatusCode());
     }
 
     @Test

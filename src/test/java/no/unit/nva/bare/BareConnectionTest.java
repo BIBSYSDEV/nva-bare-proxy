@@ -81,7 +81,7 @@ public class BareConnectionTest {
     }
 
     @Test
-    public void testAddIdentifier() throws Exception {
+    public void testUpdate() throws Exception {
         InputStream streamResp = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(
                 BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON);
         mockCloseableHttpResponse.setEntity(mockEntity);
@@ -91,8 +91,9 @@ public class BareConnectionTest {
 
         BareConnection mockBareConnection = new BareConnection(mockHttpClient);
 
-        CloseableHttpResponse httpResponse = mockBareConnection.addIdentifier(SCN,
-                ValidIdentifierKey.FEIDEID.asString(), "feide");
+        AuthorityIdentifier authorityIdentifier =
+                new AuthorityIdentifier(ValidIdentifierSource.feide.asString(), "feide");
+        CloseableHttpResponse httpResponse = mockBareConnection.addIdentifier(SCN, authorityIdentifier);
 
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.getEntity());
@@ -102,6 +103,38 @@ public class BareConnectionTest {
 
         InputStream stream =
                 AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
+        String st = IOUtils.toString(stream, Charset.defaultCharset());
+        Type authorityListType = new TypeToken<ArrayList<Authority>>() {
+        }.getType();
+        List<Authority> mockAuthorityList = new Gson().fromJson(st, authorityListType);
+        assertEquals(mockAuthorityList.get(0).getSystemControlNumber(), updatedAuthority.getSystemControlNumber());
+        assertNotNull(updatedAuthority.getFeideids());
+        assertNotNull(updatedAuthority.getOrcids());
+        assertNotNull(updatedAuthority.getOrgunitids());
+    }
+
+    @Test
+    public void testAddNewIdentifier() throws Exception {
+        InputStream streamResp = AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(
+                BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON);
+        mockCloseableHttpResponse.setEntity(mockEntity);
+        when(mockEntity.getContent()).thenReturn(streamResp);
+        when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
+        when(mockHttpClient.execute(any())).thenReturn(mockCloseableHttpResponse);
+
+        BareConnection mockBareConnection = new BareConnection(mockHttpClient);
+
+        CloseableHttpResponse httpResponse = mockBareConnection.addNewIdentifier(SCN,
+                ValidIdentifierKey.FEIDEID.asString(), "feide");
+
+        assertNotNull(httpResponse);
+        assertNotNull(httpResponse.getEntity());
+
+        InputStream inputStream = httpResponse.getEntity().getContent();
+        Authority updatedAuthority = extractAuthorityFrom(new InputStreamReader(inputStream));
+
+        InputStream stream =
+                AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
         String st = IOUtils.toString(stream, Charset.defaultCharset());
         Type authorityListType = new TypeToken<ArrayList<Authority>>() {
         }.getType();
@@ -160,7 +193,7 @@ public class BareConnectionTest {
 
     @Test
     public void testCreate() throws Exception {
-        InputStream streamResp = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(
+        InputStream streamResp = AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(
                 BARE_SINGLE_AUTHORITY_CREATE_RESPONSE_JSON);
         mockCloseableHttpResponse.setEntity(mockEntity);
         when(mockEntity.getContent()).thenReturn(streamResp);
@@ -213,7 +246,7 @@ public class BareConnectionTest {
 
         String fakeInput = BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON;
         InputStream fakeStream =
-                AddAuthorityIdentifierHandlerTest.class
+                AddNewAuthorityIdentifierHandlerTest.class
                         .getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON);
         when(mockEntity.getContent()).thenReturn(fakeStream);
         when(mockHttpClient.execute(any())).thenReturn(mockCloseableHttpResponse);

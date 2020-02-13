@@ -37,7 +37,6 @@ Parameters:
     Default: '{{resolve:ssm:bareHost:2}}'
 
 Resources:
-
   NvaBareProxyApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -48,13 +47,20 @@ Resources:
             UserPoolArn: !Ref CognitoAuthorizerArn
       EndpointConfiguration: Regional
       Models:
+        AddIdentifierEventModel:
+          type: object
+          properties:
+            feideid:
+              type: string
+            orcid:
+              type: string
+            orgunitid:
+              type: string
         CreateAuthorityEventModel:
           type: object
           properties:
             invertedname:
               type: string
-
-
 
   NvaBareFetchFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -98,6 +104,31 @@ Resources:
             Auth:
               Authorizer: MyCognitoAuthorizer
             RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}
+            Method: put
+            RequestParameters:
+              - method.request.path.scn:
+                  Required: true
+            RequestModel:
+              Model: AddIdentifierEventModel
+
+  NvaBareAddNewIdentifierFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+      Handler: no.unit.nva.bare.AddNewAuthorityIdentifierHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Events:
+        NvaBareAddNewIdentifierEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
             Path: /{scn}/identifiers/{qualifier}/{identifier}
             Method: post
             RequestParameters:
@@ -119,7 +150,7 @@ Resources:
       Runtime: java8
       MemorySize: 512
       Events:
-        NvaBareAddIdentifierEvent:
+        NvaBareDeleteIdentifierEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Auth:
@@ -146,7 +177,7 @@ Resources:
       Runtime: java8
       MemorySize: 512
       Events:
-        NvaBareAddIdentifierEvent:
+        NvaBareUpdateIdentifierEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Auth:
