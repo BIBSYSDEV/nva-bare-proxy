@@ -25,7 +25,7 @@ public class BareQueryResponseTest {
 
     @Test
     public void testReadingFromfile()  {
-        InputStream stream = AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(EMPTY_BARE_RESPONSE);
+        InputStream stream = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(EMPTY_BARE_RESPONSE);
         final BareQueryResponse bareQueryResponse = new Gson().fromJson(new InputStreamReader(stream),
                 BareQueryResponse.class);
         assertNotNull(bareQueryResponse);
