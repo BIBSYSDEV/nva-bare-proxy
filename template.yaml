@@ -130,7 +130,7 @@ Resources:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareAddIdentifierFunction.Arn}/invocations
                 responses: {}
-                httpMethod: PUT
+                httpMethod: POST
                 type: AWS_PROXY
               responses:
                 '200':
@@ -176,7 +176,7 @@ Resources:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareFetchAuthorityFunction.Arn}/invocations
                 responses: {}
-                httpMethod: GET
+                httpMethod: POST
                 type: AWS_PROXY
               responses:
                 '200':
@@ -281,7 +281,7 @@ Resources:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareDeleteIdentifierFunction.Arn}/invocations
                 responses: {}
-                httpMethod: DELETE
+                httpMethod: POST
                 type: AWS_PROXY
               responses:
                 '200':
@@ -339,7 +339,7 @@ Resources:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareUpdateIdentifierFunction.Arn}/invocations
                 responses: {}
-                httpMethod: PUT
+                httpMethod: POST
                 type: AWS_PROXY
               responses:
                 '200':
