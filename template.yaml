@@ -54,6 +54,52 @@ Resources:
           version: '1.0'
         paths:
           /:
+            get:
+              summary:  Fetches authority by name, feideid
+              parameters:
+                - in: query
+                  name: name
+                  type: string
+                  description: authors name (inverted).
+                - in: query
+                  name: feideid
+                  type: string
+                  description: feideid.
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareFetchAuthorityFunction.Arn}/invocations
+                responses: {}
+                httpMethod: POST
+                type: AWS_PROXY
+              responses:
+                '200':
+                  description: authority
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/fetchAuthorityResponseBody'
+                '400':
+                  description: Bad request.
+                  content:
+                    application/json:
+                      schema:
+                        title: 400 Bad request
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+                '404':
+                  description: Authority not found.
+                  content:
+                    application/json:
+                      schema:
+                        title: 404 Not found
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
             post:
               summary: Create authority
               security:
@@ -152,52 +198,6 @@ Resources:
                             description: error message
                 '404':
                   description: The specified authority was not found.
-                  content:
-                    application/json:
-                      schema:
-                        title: 404 Not found
-                        type: object
-                        properties:
-                          error:
-                            type: string
-                            description: error message
-            get:
-              summary:  Fetches authority by name, feideid
-              parameters:
-                - in: query
-                  name: name
-                  type: string
-                  description: authors name (inverted).
-                - in: query
-                  name: feideid
-                  type: string
-                  description: feideid.
-              x-amazon-apigateway-integration:
-                uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareFetchAuthorityFunction.Arn}/invocations
-                responses: {}
-                httpMethod: POST
-                type: AWS_PROXY
-              responses:
-                '200':
-                  description: authority
-                  content:
-                    application/json:
-                      schema:
-                        $ref: '#/components/schemas/fetchAuthorityResponseBody'
-                '400':
-                  description: Bad request.
-                  content:
-                    application/json:
-                      schema:
-                        title: 400 Bad request
-                        type: object
-                        properties:
-                          error:
-                            type: string
-                            description: error message
-                '404':
-                  description: Authority not found.
                   content:
                     application/json:
                       schema:
