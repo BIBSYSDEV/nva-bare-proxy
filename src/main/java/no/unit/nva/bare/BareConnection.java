@@ -52,8 +52,7 @@ public class BareConnection {
         return new InputStreamReader(url.openStream());
     }
 
-    protected URL generateQueryUrl(String authorityName)
-            throws MalformedURLException, URISyntaxException {
+    protected URL generateQueryUrl(String authorityName) throws MalformedURLException, URISyntaxException {
         final String authoritytype = " authoritytype:person";
         String queryString = authorityName + authoritytype;
         URI uri = new URIBuilder()
@@ -87,6 +86,7 @@ public class BareConnection {
      * @return InputStreamReader containing the authority payload
      * @throws IOException        some communication mishap
      * @throws URISyntaxException error in configuration
+     * @throws InterruptedException error in communication
      */
     public BareAuthority get(String systemControlNumber) throws URISyntaxException, IOException, InterruptedException {
         final URI getUrl = generateGetUrl(systemControlNumber);
@@ -115,6 +115,7 @@ public class BareConnection {
      * @return CloseableHttpResponse
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
+     * @throws InterruptedException error in communication
      */
     public HttpResponse<String> addIdentifier(String authoritySystemControlNumber,
                                               AuthorityIdentifier authorityIdentifier) throws IOException,
@@ -150,6 +151,7 @@ public class BareConnection {
      * @return CloseableHttpResponse
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
+     * @throws InterruptedException error in communication
      */
     public HttpResponse<String> createAuthority(BareAuthority bareAuthority)
             throws IOException, URISyntaxException, InterruptedException {
@@ -185,6 +187,7 @@ public class BareConnection {
      * @return CloseableHttpResponse
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
+     * @throws InterruptedException error in communication
      */
     public HttpResponse<String> addNewIdentifier(String systemControlNumber, String qualifier, String identifier)
             throws URISyntaxException, IOException, InterruptedException {
@@ -218,10 +221,10 @@ public class BareConnection {
      * @return CloseableHttpResponse
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
+     * @throws InterruptedException error in communication
      */
     public HttpResponse<String> deleteIdentifier(String systemControlNumber, String qualifier, String identifier)
-            throws IOException,
-            URISyntaxException, InterruptedException {
+            throws IOException, URISyntaxException, InterruptedException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
@@ -253,10 +256,11 @@ public class BareConnection {
      * @return CloseableHttpResponse
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
+     * @throws InterruptedException error in communication
      */
     public HttpResponse<String> updateIdentifier(String systemControlNumber, String qualifier, String identifier,
-                                                 String updatedIdentifier) throws IOException,
-            URISyntaxException, InterruptedException {
+                                                 String updatedIdentifier) throws IOException, URISyntaxException,
+            InterruptedException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
