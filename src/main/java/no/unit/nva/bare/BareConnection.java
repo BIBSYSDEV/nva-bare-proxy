@@ -1,7 +1,6 @@
 package no.unit.nva.bare;
 
 import com.google.gson.Gson;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -22,7 +21,6 @@ public class BareConnection {
 
     public static final String HTTPS = "https";
     public static final String APIKEY_KEY = "apikey";
-    public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String URI_LOG_STRING = "uri=";
     public static final String SPACE = " ";
 
@@ -32,6 +30,7 @@ public class BareConnection {
     public static final String PATH_SEGMENT_V_2 = "v2";
     public static final String PATH_SEGMENT_IDENTIFIERS = "identifiers";
     public static final Duration TIMEOUT_DURATION = Duration.ofSeconds(15);
+    public static final String PATH_SEPARATOR = "/";
 
     private final transient HttpClient httpClient;
 
@@ -75,7 +74,7 @@ public class BareConnection {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
-                .setPath(Config.BARE_GET_PATH + "/" + systemControlNumber)
+                .setPath(Config.BARE_GET_PATH + PATH_SEPARATOR + systemControlNumber)
                 .setParameter("format", "json")
                 .build();
         return uri;
@@ -197,10 +196,7 @@ public class BareConnection {
                         qualifier, identifier)
                 .build();
         System.out.println(URI_LOG_STRING + uri);
-        HttpPost httpPost = new HttpPost(uri);
-
         String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
-        httpPost.addHeader(AUTHORIZATION_HEADER, apiKeyAuth);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.noBody())
