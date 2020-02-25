@@ -1,26 +1,22 @@
 package no.unit.nva.bare;
 
 import com.google.gson.Gson;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 
 public class BareConnection {
 
@@ -35,20 +31,21 @@ public class BareConnection {
     public static final String PATH_SEGMENT_AUTHORITIES = "authorities";
     public static final String PATH_SEGMENT_V_2 = "v2";
     public static final String PATH_SEGMENT_IDENTIFIERS = "identifiers";
+    public static final Duration TIMEOUT_DURATION = Duration.ofSeconds(15);
 
-    private final transient CloseableHttpClient httpClient;
+    private final transient HttpClient httpClient;
 
     /**
      * Constructor for testability reasons.
      *
      * @param httpClient HttpClient
      */
-    public BareConnection(CloseableHttpClient httpClient) {
+    public BareConnection(HttpClient httpClient) {
         this.httpClient = httpClient;
     }
 
     public BareConnection() {
-        httpClient = HttpClients.createDefault();
+        httpClient = HttpClient.newHttpClient();
 
     }
 
@@ -86,25 +83,28 @@ public class BareConnection {
 
     /**
      * Get an authority from Bare by given systemControlNumber.
+     *
      * @param systemControlNumber scn
      * @return InputStreamReader containing the authority payload
-     * @throws IOException some communication mishap
+     * @throws IOException        some communication mishap
      * @throws URISyntaxException error in configuration
      */
-    public BareAuthority get(String systemControlNumber) throws URISyntaxException, IOException {
+    public BareAuthority get(String systemControlNumber) throws URISyntaxException, IOException, InterruptedException {
         final URI getUrl = generateGetUrl(systemControlNumber);
         System.out.println("bareConnection.get(" + getUrl + ")");
-        HttpGet httpGet = new HttpGet(getUrl);
-        try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
-            if (response.getStatusLine().getStatusCode() == Response.Status.OK.getStatusCode()) {
-                try (Reader streamReader = new InputStreamReader(response.getEntity().getContent())) {
-                    BareAuthority fetchedAuthority = new Gson().fromJson(streamReader, BareAuthority.class);
-                    return fetchedAuthority;
-                }
-            } else {
-                System.out.println("Error..? " + response.getStatusLine().getReasonPhrase());
-                throw new IOException(response.getStatusLine().getReasonPhrase());
-            }
+        HttpRequest request = HttpRequest.newBuilder()
+                .GET()
+                .version(HttpClient.Version.HTTP_2)
+                .uri(getUrl)
+                .timeout(TIMEOUT_DURATION)
+                .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == Response.Status.OK.getStatusCode()) {
+            final String body = response.body();
+            return new Gson().fromJson(body, BareAuthority.class);
+        } else {
+            System.out.println("Error..? " + response.body());
+            throw new IOException(response.body());
         }
     }
 
@@ -112,14 +112,14 @@ public class BareConnection {
      * Updates metadata of the given authority to Bare.
      *
      * @param authoritySystemControlNumber Identifier of Authority to update
-     * @param authorityIdentifier New identifier pair to add to authority
+     * @param authorityIdentifier          New identifier pair to add to authority
      * @return CloseableHttpResponse
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
      */
-    public CloseableHttpResponse addIdentifier(String authoritySystemControlNumber,
-                                               AuthorityIdentifier authorityIdentifier) throws IOException,
-            URISyntaxException {
+    public HttpResponse<String> addIdentifier(String authoritySystemControlNumber,
+                                              AuthorityIdentifier authorityIdentifier) throws IOException,
+            URISyntaxException, InterruptedException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
@@ -127,14 +127,21 @@ public class BareConnection {
                         authoritySystemControlNumber, PATH_SEGMENT_IDENTIFIERS)
                 .build();
         System.out.println("uri=" + uri);
-        HttpPost httpPost = new HttpPost(uri);
 
+        final String body = new Gson().toJson(authorityIdentifier, AuthorityIdentifier.class);
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(body);
         String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
-        httpPost.addHeader("Authorization", apiKeyAuth);
-        httpPost.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-        httpPost.setEntity(new StringEntity(new Gson().toJson(authorityIdentifier, AuthorityIdentifier.class)));
-        System.out.println("httpPost=" + httpPost);
-        return httpClient.execute(httpPost);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .version(HttpClient.Version.HTTP_2)
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, apiKeyAuth)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                .timeout(TIMEOUT_DURATION)
+                .build();
+        System.out.println("httpPost=" + request.toString());
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     /**
@@ -145,38 +152,43 @@ public class BareConnection {
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
      */
-    public CloseableHttpResponse createAuthority(BareAuthority bareAuthority) throws IOException, URISyntaxException {
+    public HttpResponse<String> createAuthority(BareAuthority bareAuthority)
+            throws IOException, URISyntaxException, InterruptedException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
                 .setPath(Config.BARE_CREATE_PATH)
                 .build();
         System.out.println(URI_LOG_STRING + uri);
-        HttpPost httpPost = new HttpPost(uri);
 
         String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
-        httpPost.addHeader("Authorization", apiKeyAuth);
-        httpPost.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         final String payload = new Gson().toJson(bareAuthority, BareAuthority.class);
-        httpPost.setEntity(new StringEntity(payload));
-        System.out.println("httpPost=" + httpPost);
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(payload);
+        HttpRequest request = HttpRequest.newBuilder()
+                .POST(bodyPublisher)
+                .version(HttpClient.Version.HTTP_2)
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, apiKeyAuth)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                .timeout(TIMEOUT_DURATION)
+                .build();
+        System.out.println("httpPost=" + request.toString());
         System.out.println("payload: " + payload);
-        return httpClient.execute(httpPost);
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     /**
      * Add an identifier for a specific qualifier to a given authority in ARP.
      *
      * @param systemControlNumber System control number (identifier) of authority
-     * @param qualifier Qualifier for identifier to add to authority
-     * @param identifier Identifier to add to authority
+     * @param qualifier           Qualifier for identifier to add to authority
+     * @param identifier          Identifier to add to authority
      * @return CloseableHttpResponse
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
      */
-    public CloseableHttpResponse addNewIdentifier(String systemControlNumber, String qualifier, String identifier)
-            throws IOException,
-            URISyntaxException {
+    public HttpResponse<String> addNewIdentifier(String systemControlNumber, String qualifier, String identifier)
+            throws URISyntaxException, IOException, InterruptedException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
@@ -190,22 +202,30 @@ public class BareConnection {
         String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
         httpPost.addHeader(AUTHORIZATION_HEADER, apiKeyAuth);
 
-        return httpClient.execute(httpPost);
+        HttpRequest request = HttpRequest.newBuilder()
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .version(HttpClient.Version.HTTP_2)
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, apiKeyAuth)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                .timeout(TIMEOUT_DURATION)
+                .build();
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     /**
      * Delete an identifier for a specific qualifier in a given authority in ARP.
      *
      * @param systemControlNumber System control number (identifier) of authority
-     * @param qualifier Qualifier for identifier to delete from authority
-     * @param identifier Identifier to delete from authority
+     * @param qualifier           Qualifier for identifier to delete from authority
+     * @param identifier          Identifier to delete from authority
      * @return CloseableHttpResponse
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
      */
-    public CloseableHttpResponse deleteIdentifier(String systemControlNumber, String qualifier, String identifier)
+    public HttpResponse<String> deleteIdentifier(String systemControlNumber, String qualifier, String identifier)
             throws IOException,
-            URISyntaxException {
+            URISyntaxException, InterruptedException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
@@ -214,28 +234,33 @@ public class BareConnection {
                         qualifier, identifier)
                 .build();
         System.out.println(URI_LOG_STRING + uri);
-        HttpDelete httpDelete = new HttpDelete(uri);
 
         String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
-        httpDelete.addHeader(AUTHORIZATION_HEADER, apiKeyAuth);
-
-        return httpClient.execute(httpDelete);
+        HttpRequest request = HttpRequest.newBuilder()
+                .DELETE()
+                .version(HttpClient.Version.HTTP_2)
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, apiKeyAuth)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                .timeout(TIMEOUT_DURATION)
+                .build();
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     /**
      * Update an existing identifier with a specific qualifier with a new value in a given authority in ARP.
      *
      * @param systemControlNumber System control number (identifier) of authority
-     * @param qualifier Qualifier for identifier to update in authority
-     * @param identifier Existing identifier in authority
-     * @param updatedIdentifier New value of existing identifier in authority
+     * @param qualifier           Qualifier for identifier to update in authority
+     * @param identifier          Existing identifier in authority
+     * @param updatedIdentifier   New value of existing identifier in authority
      * @return CloseableHttpResponse
      * @throws IOException        communication error
      * @throws URISyntaxException error while creating URI
      */
-    public CloseableHttpResponse updateIdentifier(String systemControlNumber, String qualifier, String identifier,
-                                                  String updatedIdentifier) throws IOException,
-            URISyntaxException {
+    public HttpResponse<String> updateIdentifier(String systemControlNumber, String qualifier, String identifier,
+                                                 String updatedIdentifier) throws IOException,
+            URISyntaxException, InterruptedException {
         URI uri = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
@@ -244,11 +269,17 @@ public class BareConnection {
                         qualifier, identifier, "update", updatedIdentifier)
                 .build();
         System.out.println(URI_LOG_STRING + uri);
-        HttpPut httpPut = new HttpPut(uri);
 
         String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
-        httpPut.addHeader(AUTHORIZATION_HEADER, apiKeyAuth);
+        HttpRequest request = HttpRequest.newBuilder()
+                .PUT(HttpRequest.BodyPublishers.noBody())
+                .version(HttpClient.Version.HTTP_2)
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, apiKeyAuth)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                .timeout(TIMEOUT_DURATION)
+                .build();
 
-        return httpClient.execute(httpPut);
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 }

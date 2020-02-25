@@ -1,9 +1,6 @@
 package no.unit.nva.bare;
 
 import com.google.gson.Gson;
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +25,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -49,9 +46,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
     @Mock
     BareConnection mockBareConnection;
     @Mock
-    CloseableHttpResponse mockCloseableHttpResponse;
-    @Mock
-    HttpEntity mockEntity;
+    HttpResponse mockHttpResponse;
 
     @Before
     public void setUp() {
@@ -154,10 +149,8 @@ public class DeleteAuthorityIdentifierHandlerTest {
         final BareAuthority bareAuthority = new Gson().fromJson(new InputStreamReader(stream1), BareAuthority.class);
         when(mockBareConnection.get(anyString())).thenReturn(bareAuthority);
 
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.OK.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        when(mockBareConnection.deleteIdentifier(any(), any(), any())).thenReturn(mockCloseableHttpResponse);
+        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.OK.getStatusCode());
+        when(mockBareConnection.deleteIdentifier(any(), any(), any())).thenReturn(mockHttpResponse);
         DeleteAuthorityIdentifierHandler mockDeleteAuthorityHandler =
                 new DeleteAuthorityIdentifierHandler(mockBareConnection);
         GatewayResponse response = mockDeleteAuthorityHandler.handleRequest(requestEvent, null);
@@ -166,13 +159,12 @@ public class DeleteAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testResponseFromBareWhereStatusCodeBadRequest() throws IOException, URISyntaxException {
+    public void testResponseFromBareWhereStatusCodeBadRequest() throws IOException, URISyntaxException,
+            InterruptedException {
         DeleteAuthorityIdentifierHandler handler = new DeleteAuthorityIdentifierHandler(mockBareConnection);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.BAD_REQUEST.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
+        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.BAD_REQUEST.getStatusCode());
         when(mockBareConnection.deleteIdentifier(any(), any(), any()))
-                .thenReturn(mockCloseableHttpResponse);
+                .thenReturn(mockHttpResponse);
         final GatewayResponse gatewayResponse = handler.deleteIdentifier(MOCK_SCN_VALUE, "invalid",
                 MOCK_FEIDEID_VALUE);
         assertEquals(DeleteAuthorityIdentifierHandler.ERROR_CALLING_REMOTE_SERVER, gatewayResponse.getStatusCode());
@@ -199,16 +191,13 @@ public class DeleteAuthorityIdentifierHandlerTest {
 
     @Test
     public void testDeleteAuthority_failingToReadAuthorityFromStream() throws Exception {
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.OK.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        mockCloseableHttpResponse.setEntity(mockEntity);
+        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.OK.getStatusCode());
         when(mockBareConnection.get(any())).thenReturn(null);
         DeleteAuthorityIdentifierHandler mockDeleteAuthorityHandler =
                 new DeleteAuthorityIdentifierHandler(mockBareConnection);
         when(mockBareConnection.deleteIdentifier(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString(),
                 "may-britt.moser@ntnu.no"))
-                .thenReturn(mockCloseableHttpResponse);
+                .thenReturn(mockHttpResponse);
         GatewayResponse response =
                 mockDeleteAuthorityHandler.deleteIdentifier(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString(),
                         "may-britt.moser@ntnu.no");
@@ -219,17 +208,14 @@ public class DeleteAuthorityIdentifierHandlerTest {
 
     @Test
     public void testDeleteAuthority_exceptionOnReadAuthorityFromBare() throws Exception {
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.OK.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        mockCloseableHttpResponse.setEntity(mockEntity);
+        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.OK.getStatusCode());
 
         when(mockBareConnection.get(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
         DeleteAuthorityIdentifierHandler mockDeleteAuthorityHandler =
                 new DeleteAuthorityIdentifierHandler(mockBareConnection);
         when(mockBareConnection.deleteIdentifier(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString(),
                 "may-britt.moser@ntnu.no"))
-                .thenReturn(mockCloseableHttpResponse);
+                .thenReturn(mockHttpResponse);
         GatewayResponse response =
                 mockDeleteAuthorityHandler.deleteIdentifier(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString(),
                         "may-britt.moser@ntnu.no");
@@ -240,7 +226,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testDeleteAuthorityCommunicationErrors() throws IOException, URISyntaxException {
+    public void testDeleteAuthorityCommunicationErrors() throws IOException, URISyntaxException, InterruptedException {
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(DeleteAuthorityIdentifierHandler.SCN_KEY, MOCK_SCN_VALUE);
         pathParams.put(DeleteAuthorityIdentifierHandler.QUALIFIER_KEY, ValidIdentifierKey.ORCID.asString());

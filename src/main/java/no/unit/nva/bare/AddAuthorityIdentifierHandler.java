@@ -7,11 +7,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.Objects;
 
@@ -123,7 +123,7 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
                 gatewayResponse.setErrorBody(String.format(AUTHORITY_NOT_FOUND, scn));
                 gatewayResponse.setStatusCode(Response.Status.NOT_FOUND.getStatusCode());
             }
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException | InterruptedException e) {
             System.out.println(e);
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
@@ -133,8 +133,9 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
 
     protected GatewayResponse updateAuthorityOnBare(String scn, AuthorityIdentifier authorityIdentifier) {
         GatewayResponse gatewayResponse = new GatewayResponse();
-        try (CloseableHttpResponse response = bareConnection.addIdentifier(scn, authorityIdentifier)) {
-            int responseCode = response.getStatusLine().getStatusCode();
+        try {
+            HttpResponse<String> response = bareConnection.addIdentifier(scn, authorityIdentifier);
+            int responseCode = response.statusCode();
             System.out.println("response (from bareConnection)=" + response);
             // Somewhat strange code (204) returned from bare when OK
             if (responseCode == Response.Status.NO_CONTENT.getStatusCode()) {
@@ -157,12 +158,12 @@ public class AddAuthorityIdentifierHandler implements RequestHandler<Map<String,
                     gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                 }
             } else {
-                System.out.println("updateAuthorityOnBare - ErrorCode=" + response.getStatusLine().getStatusCode()
-                        + ",  reasonPhrase=" + response.getStatusLine().getReasonPhrase());
-                gatewayResponse.setErrorBody(REMOTE_SERVER_ERRORMESSAGE + response.getStatusLine().getReasonPhrase());
+                System.out.println("updateAuthorityOnBare - ErrorCode=" + response.statusCode()
+                        + ",  reasonPhrase=" + response.body());
+                gatewayResponse.setErrorBody(REMOTE_SERVER_ERRORMESSAGE + response.body());
                 gatewayResponse.setStatusCode(ERROR_CALLING_REMOTE_SERVER);
             }
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException | InterruptedException e) {
             System.out.println(e);
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());

@@ -1,8 +1,6 @@
 package no.unit.nva.bare;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +14,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -44,23 +43,19 @@ public class CreateAuthorityHandlerTest {
     @Mock
     BareConnection mockBareConnection;
     @Mock
-    CloseableHttpResponse mockCloseableHttpResponse;
-    @Mock
-    HttpEntity mockEntity;
+    HttpResponse mockHttpResponse;
 
     @Test
-    public void testCreateAuthority() throws IOException, URISyntaxException {
+    public void testCreateAuthority() throws IOException, URISyntaxException, InterruptedException {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.CREATED.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        mockCloseableHttpResponse.setEntity(mockEntity);
-        when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
-        when(mockBareConnection.createAuthority(any())).thenReturn(mockCloseableHttpResponse);
         InputStream responseStream =
                 CreateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_CREATE_RESPONSE);
-        when(mockEntity.getContent()).thenReturn(responseStream);
+        final String mockBody = IOUtils.toString(responseStream, StandardCharsets.UTF_8);
+
+        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.CREATED.getStatusCode());
+        when(mockHttpResponse.body()).thenReturn(mockBody);
+        when(mockBareConnection.createAuthority(any())).thenReturn(mockHttpResponse);
         CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection);
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
@@ -70,17 +65,17 @@ public class CreateAuthorityHandlerTest {
     }
 
     @Test
-    public void testCreateAuthority_FailingToReadAuthorityFromResponseStream() throws IOException, URISyntaxException {
+    public void testCreateAuthority_FailingToReadAuthorityFromResponseStream() throws IOException, URISyntaxException,
+            InterruptedException {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.CREATED.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        mockCloseableHttpResponse.setEntity(mockEntity);
-        when(mockCloseableHttpResponse.getEntity()).thenReturn(mockEntity);
-        when(mockBareConnection.createAuthority(any())).thenReturn(mockCloseableHttpResponse);
-        InputStream emptyStream = new ByteArrayInputStream(new byte[0]);;
-        when(mockEntity.getContent()).thenReturn(emptyStream);
+        InputStream emptyStream = new ByteArrayInputStream(new byte[0]);
+        final String mockBody = IOUtils.toString(emptyStream, StandardCharsets.UTF_8);
+
+        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.CREATED.getStatusCode());
+        when(mockHttpResponse.body()).thenReturn(mockBody);
+        when(mockBareConnection.createAuthority(any())).thenReturn(mockHttpResponse);
+
         CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection);
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
@@ -90,14 +85,13 @@ public class CreateAuthorityHandlerTest {
     }
 
     @Test
-    public void testCreateAuthority_FailingToCreateAuthorityOnBare() throws IOException, URISyntaxException {
+    public void testCreateAuthority_FailingToCreateAuthorityOnBare() throws IOException, URISyntaxException,
+            InterruptedException {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.NOT_ACCEPTABLE.getStatusCode());
-        when(mockStatusLine.getReasonPhrase()).thenReturn(MOCK_ERROR_MESSAGE);
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        when(mockBareConnection.createAuthority(any())).thenReturn(mockCloseableHttpResponse);
+        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.NOT_ACCEPTABLE.getStatusCode());
+        when(mockHttpResponse.body()).thenReturn(MOCK_ERROR_MESSAGE);
+        when(mockBareConnection.createAuthority(any())).thenReturn(mockHttpResponse);
         CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection);
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
@@ -106,7 +100,7 @@ public class CreateAuthorityHandlerTest {
     }
 
     @Test
-    public void testCreateAuthority_ExceptionFromBare() throws IOException, URISyntaxException {
+    public void testCreateAuthority_ExceptionFromBare() throws IOException, URISyntaxException, InterruptedException {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
         when(mockBareConnection.createAuthority(any())).thenThrow(new IOException(MOCK_ERROR_MESSAGE));

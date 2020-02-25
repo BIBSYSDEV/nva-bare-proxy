@@ -495,7 +495,7 @@ Resources:
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN:  '*'
       Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
-      Runtime: java8
+      Runtime: java11
       MemorySize: 512
       Events:
         NvaBareFetchEvent:
@@ -514,7 +514,7 @@ Resources:
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN:  '*'
       Handler: no.unit.nva.bare.AddAuthorityIdentifierHandler::handleRequest
-      Runtime: java8
+      Runtime: java11
       MemorySize: 512
       Events:
         NvaBareAddIdentifierEvent:
@@ -532,7 +532,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
       Handler: no.unit.nva.bare.AddNewAuthorityIdentifierHandler::handleRequest
-      Runtime: java8
+      Runtime: java11
       MemorySize: 512
       Events:
         NvaBareAddNewIdentifierEvent:
@@ -550,7 +550,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
       Handler: no.unit.nva.bare.DeleteAuthorityIdentifierHandler::handleRequest
-      Runtime: java8
+      Runtime: java11
       MemorySize: 512
       Events:
         NvaBareDeleteIdentifierEvent:
@@ -568,7 +568,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
       Handler: no.unit.nva.bare.UpdateAuthorityIdentifierHandler::handleRequest
-      Runtime: java8
+      Runtime: java11
       MemorySize: 512
       Events:
         NvaBareUpdateIdentifierEvent:
@@ -587,7 +587,7 @@ Resources:
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN:  '*'
       Handler: no.unit.nva.bare.CreateAuthorityHandler::handleRequest
-      Runtime: java8
+      Runtime: java11
       MemorySize: 512
       Events:
         NvaBareCreateAuthorityEvent:

@@ -8,14 +8,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,34 +65,33 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
         GatewayResponse gatewayResponse = new GatewayResponse();
         AuthorityConverter authorityConverter = new AuthorityConverter();
         BareAuthority bareAuthority = authorityConverter.buildAuthority(name);
-        try (CloseableHttpResponse response = bareConnection.createAuthority(bareAuthority)) {
+        try {
+            HttpResponse<String> response = bareConnection.createAuthority(bareAuthority);
             System.out.println("response (from bareConnection)=" + response);
-            if (response.getStatusLine().getStatusCode() == Response.Status.CREATED.getStatusCode()
-                || response.getStatusLine().getStatusCode() == Response.Status.OK.getStatusCode()) { //201
-                try (Reader streamReader = new InputStreamReader(response.getEntity().getContent())) {
-                    BareAuthority createdAuthority = new Gson().fromJson(streamReader, BareAuthority.class);
-                    if (Objects.nonNull(createdAuthority)) {
-                        final Authority authority = authorityConverter.asAuthority(createdAuthority);
-                        List<Authority> authorities = new ArrayList<>();
-                        authorities.add(authority);
-                        Type authorityListType = new TypeToken<ArrayList<Authority>>(){}.getType();
-                        Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
-                        gatewayResponse.setBody(gson.toJson(authorities, authorityListType));
-                        gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
-                    } else {
-                        System.out.println(String.format(COMMUNICATION_ERROR_WHILE_CREATING, name));
-                        gatewayResponse.setErrorBody(String.format(COMMUNICATION_ERROR_WHILE_CREATING, name));
-                        gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-                    }
+            if (response.statusCode() == Response.Status.CREATED.getStatusCode()
+                    || response.statusCode() == Response.Status.OK.getStatusCode()) { //201
+                BareAuthority createdAuthority = new Gson().fromJson(response.body(), BareAuthority.class);
+                if (Objects.nonNull(createdAuthority)) {
+                    final Authority authority = authorityConverter.asAuthority(createdAuthority);
+                    List<Authority> authorities = new ArrayList<>();
+                    authorities.add(authority);
+                    Type authorityListType = new TypeToken<ArrayList<Authority>>() {}.getType();
+                    Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
+                    gatewayResponse.setBody(gson.toJson(authorities, authorityListType));
+                    gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
+                } else {
+                    System.out.println(String.format(COMMUNICATION_ERROR_WHILE_CREATING, name));
+                    gatewayResponse.setErrorBody(String.format(COMMUNICATION_ERROR_WHILE_CREATING, name));
+                    gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                 }
             } else {
-                System.out.println("Error: " + response.getStatusLine().getReasonPhrase());
+                System.out.println("Error: " + response.body());
                 System.out.println("new authority looked like this: \n" + new Gson().toJson(bareAuthority));
-                gatewayResponse.setErrorBody(response.getStatusLine().getStatusCode() + ": "
-                        + response.getStatusLine().getReasonPhrase());
+                gatewayResponse.setErrorBody(response.statusCode() + ": "
+                        + response.body());
                 gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
             }
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException | InterruptedException e) {
             System.out.println(e);
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
