@@ -1,6 +1,7 @@
 package no.unit.nva.bare;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.http.client.utils.URIBuilder;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -30,9 +31,9 @@ public class BareConnection {
     public static final String PATH_SEGMENT_V_2 = "v2";
     public static final String PATH_SEGMENT_IDENTIFIERS = "identifiers";
     public static final Duration TIMEOUT_DURATION = Duration.ofSeconds(15);
-    public static final String PATH_SEPARATOR = "/";
 
     private final transient HttpClient httpClient;
+    private final transient Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     /**
      * Constructor for testability reasons.
@@ -45,7 +46,6 @@ public class BareConnection {
 
     public BareConnection() {
         httpClient = HttpClient.newHttpClient();
-
     }
 
     protected InputStreamReader connect(URL url) throws IOException {
@@ -67,40 +67,31 @@ public class BareConnection {
         return uri.toURL();
     }
 
-    protected URI generateGetUrl(String systemControlNumber)
-            throws URISyntaxException {
-
-        URI uri = new URIBuilder()
-                .setScheme(HTTPS)
-                .setHost(Config.getInstance().getBareHost())
-                .setPath(Config.BARE_GET_PATH + PATH_SEPARATOR + systemControlNumber)
-                .setParameter("format", "json")
-                .build();
-        return uri;
-    }
-
     /**
      * Get an authority from Bare by given systemControlNumber.
      *
      * @param systemControlNumber scn
      * @return InputStreamReader containing the authority payload
-     * @throws IOException        some communication mishap
-     * @throws URISyntaxException error in configuration
+     * @throws IOException          some communication mishap
+     * @throws URISyntaxException   error in configuration
      * @throws InterruptedException error in communication
      */
     public BareAuthority get(String systemControlNumber) throws URISyntaxException, IOException, InterruptedException {
-        final URI getUrl = generateGetUrl(systemControlNumber);
-        System.out.println("bareConnection.get(" + getUrl + ")");
-        HttpRequest request = HttpRequest.newBuilder()
-                .GET()
-                .version(HttpClient.Version.HTTP_2)
-                .uri(getUrl)
-                .timeout(TIMEOUT_DURATION)
+        final URI getUrl = new URIBuilder()
+                .setScheme(HTTPS)
+                .setHost(Config.getInstance().getBareHost())
+                .setPath(Config.BARE_GET_PATH)
+                .setPathSegments(systemControlNumber)
+                .setParameter("format", "json")
                 .build();
+        System.out.println("bareConnection.get(" + getUrl + ")");
+
+        final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(getUrl);
+        HttpRequest request = requestBuilder.GET().build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() == Response.Status.OK.getStatusCode()) {
             final String body = response.body();
-            return new Gson().fromJson(body, BareAuthority.class);
+            return gson.fromJson(body, BareAuthority.class);
         } else {
             System.out.println("Error..? " + response.body());
             throw new IOException(response.body());
@@ -113,8 +104,8 @@ public class BareConnection {
      * @param authoritySystemControlNumber Identifier of Authority to update
      * @param authorityIdentifier          New identifier pair to add to authority
      * @return CloseableHttpResponse
-     * @throws IOException        communication error
-     * @throws URISyntaxException error while creating URI
+     * @throws IOException          communication error
+     * @throws URISyntaxException   error while creating URI
      * @throws InterruptedException error in communication
      */
     public HttpResponse<String> addIdentifier(String authoritySystemControlNumber,
@@ -128,18 +119,10 @@ public class BareConnection {
                 .build();
         System.out.println("uri=" + uri);
 
-        final String body = new Gson().toJson(authorityIdentifier, AuthorityIdentifier.class);
+        final String body = gson.toJson(authorityIdentifier, AuthorityIdentifier.class);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(body);
-        String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .version(HttpClient.Version.HTTP_2)
-                .uri(uri)
-                .header(HttpHeaders.AUTHORIZATION, apiKeyAuth)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .timeout(TIMEOUT_DURATION)
-                .build();
+        final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
+        HttpRequest request = requestBuilder.POST(bodyPublisher).build();
         System.out.println("httpPost=" + request.toString());
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
@@ -149,8 +132,8 @@ public class BareConnection {
      *
      * @param bareAuthority authority to be created
      * @return CloseableHttpResponse
-     * @throws IOException        communication error
-     * @throws URISyntaxException error while creating URI
+     * @throws IOException          communication error
+     * @throws URISyntaxException   error while creating URI
      * @throws InterruptedException error in communication
      */
     public HttpResponse<String> createAuthority(BareAuthority bareAuthority)
@@ -162,17 +145,11 @@ public class BareConnection {
                 .build();
         System.out.println(URI_LOG_STRING + uri);
 
-        String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
-        final String payload = new Gson().toJson(bareAuthority, BareAuthority.class);
+        final String payload = gson.toJson(bareAuthority, BareAuthority.class);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(payload);
-        HttpRequest request = HttpRequest.newBuilder()
-                .POST(bodyPublisher)
-                .version(HttpClient.Version.HTTP_2)
-                .uri(uri)
-                .header(HttpHeaders.AUTHORIZATION, apiKeyAuth)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .timeout(TIMEOUT_DURATION)
-                .build();
+
+        final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
+        HttpRequest request = requestBuilder.POST(bodyPublisher).build();
         System.out.println("httpPost=" + request.toString());
         System.out.println("payload: " + payload);
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -185,8 +162,8 @@ public class BareConnection {
      * @param qualifier           Qualifier for identifier to add to authority
      * @param identifier          Identifier to add to authority
      * @return CloseableHttpResponse
-     * @throws IOException        communication error
-     * @throws URISyntaxException error while creating URI
+     * @throws IOException          communication error
+     * @throws URISyntaxException   error while creating URI
      * @throws InterruptedException error in communication
      */
     public HttpResponse<String> addNewIdentifier(String systemControlNumber, String qualifier, String identifier)
@@ -199,16 +176,9 @@ public class BareConnection {
                         qualifier, identifier)
                 .build();
         System.out.println(URI_LOG_STRING + uri);
-        String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.noBody())
-                .version(HttpClient.Version.HTTP_2)
-                .uri(uri)
-                .header(HttpHeaders.AUTHORIZATION, apiKeyAuth)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .timeout(TIMEOUT_DURATION)
-                .build();
+        final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
+        HttpRequest request = requestBuilder.POST(HttpRequest.BodyPublishers.noBody()).build();
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
@@ -219,8 +189,8 @@ public class BareConnection {
      * @param qualifier           Qualifier for identifier to delete from authority
      * @param identifier          Identifier to delete from authority
      * @return CloseableHttpResponse
-     * @throws IOException        communication error
-     * @throws URISyntaxException error while creating URI
+     * @throws IOException          communication error
+     * @throws URISyntaxException   error while creating URI
      * @throws InterruptedException error in communication
      */
     public HttpResponse<String> deleteIdentifier(String systemControlNumber, String qualifier, String identifier)
@@ -234,15 +204,8 @@ public class BareConnection {
                 .build();
         System.out.println(URI_LOG_STRING + uri);
 
-        String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
-        HttpRequest request = HttpRequest.newBuilder()
-                .DELETE()
-                .version(HttpClient.Version.HTTP_2)
-                .uri(uri)
-                .header(HttpHeaders.AUTHORIZATION, apiKeyAuth)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .timeout(TIMEOUT_DURATION)
-                .build();
+        final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
+        HttpRequest request = requestBuilder.DELETE().build();
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
@@ -254,8 +217,8 @@ public class BareConnection {
      * @param identifier          Existing identifier in authority
      * @param updatedIdentifier   New value of existing identifier in authority
      * @return CloseableHttpResponse
-     * @throws IOException        communication error
-     * @throws URISyntaxException error while creating URI
+     * @throws IOException          communication error
+     * @throws URISyntaxException   error while creating URI
      * @throws InterruptedException error in communication
      */
     public HttpResponse<String> updateIdentifier(String systemControlNumber, String qualifier, String identifier,
@@ -265,21 +228,23 @@ public class BareConnection {
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
                 .setPathSegments(PATH_SEGMENT_AUTHORITY, PATH_SEGMENT_REST, PATH_SEGMENT_AUTHORITIES, PATH_SEGMENT_V_2,
-                        systemControlNumber, PATH_SEGMENT_IDENTIFIERS,
-                        qualifier, identifier, "update", updatedIdentifier)
+                        systemControlNumber, PATH_SEGMENT_IDENTIFIERS, qualifier, identifier, "update",
+                        updatedIdentifier)
                 .build();
         System.out.println(URI_LOG_STRING + uri);
 
+        final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
+        HttpRequest request = requestBuilder.PUT(HttpRequest.BodyPublishers.noBody()).build();
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpRequest.Builder getHttpRequestBuilder(URI uri) {
         String apiKeyAuth = APIKEY_KEY + SPACE + Config.getInstance().getBareApikey();
-        HttpRequest request = HttpRequest.newBuilder()
-                .PUT(HttpRequest.BodyPublishers.noBody())
-                .version(HttpClient.Version.HTTP_2)
+        return HttpRequest.newBuilder()
                 .uri(uri)
                 .header(HttpHeaders.AUTHORIZATION, apiKeyAuth)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .timeout(TIMEOUT_DURATION)
-                .build();
-
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                .timeout(TIMEOUT_DURATION);
     }
+
 }

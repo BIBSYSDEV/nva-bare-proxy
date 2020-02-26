@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
@@ -201,17 +200,9 @@ public class BareConnectionTest {
     }
 
     @Test
-    public void testGenerateGetUri() throws URISyntaxException {
-        final URI uri = new BareConnection().generateGetUrl(SCN);
-        assertNotNull(uri);
-
-    }
-
-    @Test
     public void testGenerateQueryUrl() throws IOException, URISyntaxException {
         final URL url = new BareConnection().generateQueryUrl("henrik ibsen");
         assertNotNull(url);
-
     }
 
     @Test
