@@ -1,9 +1,6 @@
 package no.unit.nva.bare;
 
 import com.google.gson.Gson;
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +25,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -50,9 +47,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
     @Mock
     BareConnection mockBareConnection;
     @Mock
-    CloseableHttpResponse mockCloseableHttpResponse;
-    @Mock
-    HttpEntity mockEntity;
+    HttpResponse mockHttpResponse;
 
     @Before
     public void setUp() {
@@ -174,10 +169,8 @@ public class UpdateAuthorityIdentifierHandlerTest {
         final BareAuthority bareAuthority = new Gson().fromJson(new InputStreamReader(stream1), BareAuthority.class);
         when(mockBareConnection.get(anyString())).thenReturn(bareAuthority);
 
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.OK.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        when(mockBareConnection.updateIdentifier(any(), any(), any(), any())).thenReturn(mockCloseableHttpResponse);
+        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.OK.getStatusCode());
+        when(mockBareConnection.updateIdentifier(any(), any(), any(), any())).thenReturn(mockHttpResponse);
         UpdateAuthorityIdentifierHandler mockUpdateAuthorityHandler =
                 new UpdateAuthorityIdentifierHandler(mockBareConnection);
         GatewayResponse response = mockUpdateAuthorityHandler.handleRequest(requestEvent, null);
@@ -185,13 +178,11 @@ public class UpdateAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testResponseFromBareWhereStatusCodeBadRequest() throws IOException, URISyntaxException {
+    public void testResponseFromBareWhereStatusCodeBadRequest() throws IOException, URISyntaxException,
+            InterruptedException {
         UpdateAuthorityIdentifierHandler handler = new UpdateAuthorityIdentifierHandler(mockBareConnection);
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.BAD_REQUEST.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        when(mockBareConnection.updateIdentifier(any(), any(), any(), any()))
-                .thenReturn(mockCloseableHttpResponse);
+        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.BAD_REQUEST.getStatusCode());
+        when(mockBareConnection.updateIdentifier(any(), any(), any(), any())).thenReturn(mockHttpResponse);
         final GatewayResponse gatewayResponse = handler.updateIdentifier(MOCK_SCN_VALUE, "invalid",
                 MOCK_FEIDEID_VALUE, MOCK_FEIDEID_VALUE);
         assertEquals(UpdateAuthorityIdentifierHandler.ERROR_CALLING_REMOTE_SERVER, gatewayResponse.getStatusCode());
@@ -220,16 +211,13 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
     @Test
     public void testUpdateAuthority_failingToReadAuthorityFromStream() throws Exception {
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.OK.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        mockCloseableHttpResponse.setEntity(mockEntity);
+        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.OK.getStatusCode());
         when(mockBareConnection.get(any())).thenReturn(null);
         UpdateAuthorityIdentifierHandler mockUpdateAuthorityHandler =
                 new UpdateAuthorityIdentifierHandler(mockBareConnection);
         when(mockBareConnection.updateIdentifier(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString(),
                 "may-britt.moser@ntnu.no", "may-britt.moser@ntnu.no"))
-                .thenReturn(mockCloseableHttpResponse);
+                .thenReturn(mockHttpResponse);
         GatewayResponse response =
                 mockUpdateAuthorityHandler.updateIdentifier(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString(),
                         "may-britt.moser@ntnu.no", "may-britt.moser@ntnu.no");
@@ -240,17 +228,14 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
     @Test
     public void testUpdateAuthority_exceptionOnReadAuthorityFromBare() throws Exception {
-        StatusLine mockStatusLine = mock(StatusLine.class);
-        when(mockStatusLine.getStatusCode()).thenReturn(Response.Status.OK.getStatusCode());
-        when(mockCloseableHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-        mockCloseableHttpResponse.setEntity(mockEntity);
+        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.OK.getStatusCode());
 
         when(mockBareConnection.get(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
         UpdateAuthorityIdentifierHandler mockUpdateAuthorityHandler =
                 new UpdateAuthorityIdentifierHandler(mockBareConnection);
         when(mockBareConnection.updateIdentifier(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString(),
                 "may-britt.moser@ntnu.no", "may-britt.moser@ntnu.no"))
-                .thenReturn(mockCloseableHttpResponse);
+                .thenReturn(mockHttpResponse);
         GatewayResponse response =
                 mockUpdateAuthorityHandler.updateIdentifier(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString(),
                         "may-britt.moser@ntnu.no", "may-britt.moser@ntnu.no");
@@ -261,7 +246,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testUpdateAuthorityCommunicationErrors() throws IOException, URISyntaxException {
+    public void testUpdateAuthorityCommunicationErrors() throws IOException, URISyntaxException, InterruptedException {
         HashMap<String, String> pathParams = new HashMap<>();
         pathParams.put(UpdateAuthorityIdentifierHandler.SCN_KEY, MOCK_SCN_VALUE);
         pathParams.put(UpdateAuthorityIdentifierHandler.QUALIFIER_KEY, ValidIdentifierKey.ORCID.asString());

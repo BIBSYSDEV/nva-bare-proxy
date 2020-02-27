@@ -4,11 +4,11 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -111,11 +111,11 @@ public class UpdateAuthorityIdentifierHandler implements RequestHandler<Map<Stri
     protected GatewayResponse updateIdentifier(String scn, String qualifier, String identifier,
                                                String updatedIdentifier) {
         GatewayResponse gatewayResponse = new GatewayResponse();
-        try (CloseableHttpResponse response = bareConnection.updateIdentifier(scn, qualifier, identifier,
-                updatedIdentifier)) {
-            int responseCode = response.getStatusLine().getStatusCode();
+        try {
+            HttpResponse<String> response = bareConnection.updateIdentifier(scn, qualifier, identifier,
+                updatedIdentifier);
             System.out.println("response (from bareConnection)=" + response);
-            if (responseCode == Response.Status.OK.getStatusCode()) {
+            if (response.statusCode() == Response.Status.OK.getStatusCode()) {
                 try {
                     final BareAuthority updatedAuthority = bareConnection.get(scn);
                     if (Objects.nonNull(updatedAuthority)) {
@@ -135,12 +135,12 @@ public class UpdateAuthorityIdentifierHandler implements RequestHandler<Map<Stri
                     gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                 }
             } else {
-                System.out.println("updatedIdentifier - ErrorCode=" + response.getStatusLine().getStatusCode()
-                        + ",  reasonPhrase=" + response.getStatusLine().getReasonPhrase());
-                gatewayResponse.setErrorBody(REMOTE_SERVER_ERRORMESSAGE + response.getStatusLine().getReasonPhrase());
+                System.out.println("updatedIdentifier - ErrorCode=" + response.statusCode()
+                        + ",  reasonPhrase=" + response.body());
+                gatewayResponse.setErrorBody(REMOTE_SERVER_ERRORMESSAGE + response.body());
                 gatewayResponse.setStatusCode(ERROR_CALLING_REMOTE_SERVER);
             }
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException | InterruptedException e) {
             System.out.println(e);
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
