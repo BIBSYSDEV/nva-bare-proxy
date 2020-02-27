@@ -24,17 +24,18 @@ public class AuthorityConverter {
     public static final String IND_1 = "1";
     public static final String MARCTAG_100 = "100";
     public static final String SUBCODE_A = "a";
+    private final transient Logger log = Logger.instance();
 
 
     protected List<Authority> extractAuthoritiesFrom(InputStreamReader reader) {
         final BareQueryResponse bareQueryResponse = new Gson().fromJson(reader, BareQueryResponse.class);
-        System.out.println(bareQueryResponse);
+        log.info(bareQueryResponse.toString());
         return Arrays.stream(bareQueryResponse.results).map(this::asAuthority).collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
     protected Authority asAuthority(BareAuthority bareAuthority) {
-        System.out.println("AuthorityConverter.asAuthority incoming bareAuthorty=" + bareAuthority);
+        log.info("AuthorityConverter.asAuthority incoming bareAuthorty=" + bareAuthority);
         final String name = this.findValueIn(bareAuthority, MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE);
         final String date = this.findValueIn(bareAuthority, MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE);
         final String id = bareAuthority.systemControlNumber;
@@ -50,7 +51,7 @@ public class AuthorityConverter {
         authority.setOrcids(orcIdArray.orElse(Collections.EMPTY_LIST));
         authority.setOrgunitids(orgUnitIdArray.orElse(Collections.EMPTY_LIST));
         authority.setHandles(handleArray.orElse(Collections.EMPTY_LIST));
-        System.out.println("AuthorityConverter.asAuthority:authority.scn=" + authority.getSystemControlNumber());
+        log.info("AuthorityConverter.asAuthority:authority.scn=" + authority.getSystemControlNumber());
         return authority;
     }
 

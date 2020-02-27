@@ -37,6 +37,7 @@ public class AddNewAuthorityIdentifierHandler implements RequestHandler<Map<Stri
             ValidIdentifierKey.ORCID.asString(), ValidIdentifierKey.ORGUNITID.asString());
 
     protected final transient BareConnection bareConnection;
+    private final transient Logger log = Logger.instance();
 
 
     public AddNewAuthorityIdentifierHandler() {
@@ -60,7 +61,7 @@ public class AddNewAuthorityIdentifierHandler implements RequestHandler<Map<Stri
         try {
             this.checkParameters(input);
         } catch (RuntimeException e) {
-            System.out.println(e);
+            log.error(e);
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
             return gatewayResponse;
@@ -105,7 +106,7 @@ public class AddNewAuthorityIdentifierHandler implements RequestHandler<Map<Stri
         GatewayResponse gatewayResponse = new GatewayResponse();
         try {
             HttpResponse<String> response = bareConnection.addNewIdentifier(scn, qualifier, identifier);
-            System.out.println("response (from bareConnection)=" + response);
+            log.info("response (from bareConnection)=" + response);
             if (response.statusCode() == Response.Status.OK.getStatusCode()) {
                 try {
                     final BareAuthority updatedAuthority = bareConnection.get(scn);
@@ -115,24 +116,24 @@ public class AddNewAuthorityIdentifierHandler implements RequestHandler<Map<Stri
                         gatewayResponse.setBody(new Gson().toJson(authority));
                         gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
                     } else {
-                        System.out.println(String.format(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY, scn));
+                        log.info(String.format(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY, scn));
                         gatewayResponse.setErrorBody(String.format(
                                 COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY, scn));
                         gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                     }
                 } catch (IOException | URISyntaxException e) {
-                    System.out.println(e);
+                    log.error(e);
                     gatewayResponse.setErrorBody(e.getMessage());
                     gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
                 }
             } else {
-                System.out.println("addNewIdentifier - ErrorCode=" + response.statusCode()
-                        + ",  reasonPhrase=" + response.body());
+                log.error(String.format("addNewIdentifier - ErrorCode=%s, reasonPhrase=%s", response.statusCode(),
+                        response.body()));
                 gatewayResponse.setErrorBody(REMOTE_SERVER_ERRORMESSAGE + response.body());
                 gatewayResponse.setStatusCode(ERROR_CALLING_REMOTE_SERVER);
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
-            System.out.println(e);
+            log.error(e);
             gatewayResponse.setErrorBody(e.getMessage());
             gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         }

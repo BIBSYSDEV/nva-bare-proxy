@@ -34,6 +34,7 @@ public class BareConnection {
 
     private final transient HttpClient httpClient;
     private final transient Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final transient Logger log = Logger.instance();
 
     /**
      * Constructor for testability reasons.
@@ -84,7 +85,7 @@ public class BareConnection {
                 .setPathSegments(systemControlNumber)
                 .setParameter("format", "json")
                 .build();
-        System.out.println("bareConnection.get(" + getUrl + ")");
+        log.info("bareConnection.get(" + getUrl + ")");
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(getUrl);
         HttpRequest request = requestBuilder.GET().build();
@@ -93,7 +94,7 @@ public class BareConnection {
             final String body = response.body();
             return gson.fromJson(body, BareAuthority.class);
         } else {
-            System.out.println("Error..? " + response.body());
+            log.error("Error..? " + response.body());
             throw new IOException(response.body());
         }
     }
@@ -117,13 +118,13 @@ public class BareConnection {
                 .setPathSegments(PATH_SEGMENT_AUTHORITY, PATH_SEGMENT_REST, PATH_SEGMENT_AUTHORITIES, PATH_SEGMENT_V_2,
                         authoritySystemControlNumber, PATH_SEGMENT_IDENTIFIERS)
                 .build();
-        System.out.println("uri=" + uri);
+        log.info("uri=" + uri);
 
         final String body = gson.toJson(authorityIdentifier, AuthorityIdentifier.class);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(body);
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.POST(bodyPublisher).build();
-        System.out.println("httpPost=" + request.toString());
+        log.info("httpPost=" + request.toString());
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
@@ -143,15 +144,15 @@ public class BareConnection {
                 .setHost(Config.getInstance().getBareHost())
                 .setPath(Config.BARE_CREATE_PATH)
                 .build();
-        System.out.println(URI_LOG_STRING + uri);
+        log.info(URI_LOG_STRING + uri);
 
         final String payload = gson.toJson(bareAuthority, BareAuthority.class);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(payload);
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.POST(bodyPublisher).build();
-        System.out.println("httpPost=" + request.toString());
-        System.out.println("payload: " + payload);
+        log.info("httpPost=" + request.toString());
+        log.info("payload: " + payload);
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
@@ -175,7 +176,7 @@ public class BareConnection {
                         systemControlNumber, PATH_SEGMENT_IDENTIFIERS,
                         qualifier, identifier)
                 .build();
-        System.out.println(URI_LOG_STRING + uri);
+        log.info(URI_LOG_STRING + uri);
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.POST(HttpRequest.BodyPublishers.noBody()).build();
@@ -202,7 +203,7 @@ public class BareConnection {
                         systemControlNumber, PATH_SEGMENT_IDENTIFIERS,
                         qualifier, identifier)
                 .build();
-        System.out.println(URI_LOG_STRING + uri);
+        log.info(URI_LOG_STRING + uri);
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.DELETE().build();
@@ -231,7 +232,7 @@ public class BareConnection {
                         systemControlNumber, PATH_SEGMENT_IDENTIFIERS, qualifier, identifier, "update",
                         updatedIdentifier)
                 .build();
-        System.out.println(URI_LOG_STRING + uri);
+        log.info(URI_LOG_STRING + uri);
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.PUT(HttpRequest.BodyPublishers.noBody()).build();

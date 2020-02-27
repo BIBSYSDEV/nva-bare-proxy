@@ -7,14 +7,15 @@ import static no.unit.nva.bare.Logger.LogLevel.INFO;
 
 public class Logger {
 
-    protected enum LogLevel {
-        ERROR, INFO
-    }
 
+
+    protected enum LogLevel {
+        ERROR, INFO;
+    }
     private static class LazyHolder {
+
         public static final Logger INSTANCE = new Logger();
     }
-
     /**
      * Singleton instance for Logger.
      *
@@ -35,6 +36,10 @@ public class Logger {
 
     public void info(Map<String, Object> infoMessage) {
         System.out.println(INFO.name() + " - " + infoMessage);
+    }
+
+    public void info(String infoMessage) {
+        System.out.println(infoMessage);
     }
 
     private String dumpException(Exception e) {
