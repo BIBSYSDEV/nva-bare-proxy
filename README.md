@@ -206,7 +206,12 @@ AWS$ aws s3 rb s3://BUCKET_NAME
 
     ```json
        {
-          "feideid": "may-britt.moser@ntnu.no"
+            "name": "Moser, May-Britt",
+            "scn": "90517730",
+            "feideId": "may-britt.moser@ntnu.no",
+            "orcId": "0000-0001-7884-3049",
+            "birthDate": "1963-",
+            "handle": "http://hdl.handle.net/11250/1969546"
        }
     ```
   or
