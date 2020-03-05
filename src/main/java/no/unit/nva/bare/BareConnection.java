@@ -80,8 +80,8 @@ public class BareConnection {
         final URI getUrl = new URIBuilder()
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
-                .setPath(Config.BARE_GET_PATH)
-                .setPathSegments(systemControlNumber)
+                .setPathSegments(PATH_SEGMENT_AUTHORITY, PATH_SEGMENT_REST, PATH_SEGMENT_AUTHORITIES, PATH_SEGMENT_V_2,
+                        systemControlNumber)
                 .setParameter("format", "json")
                 .build();
         System.out.println("bareConnection.get(" + getUrl + ")");
