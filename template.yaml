@@ -21,7 +21,7 @@ Globals:
   Api:
     Cors:
       AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-      AllowMethods: "'OPTIONS, GET, PUT, POST, DELETE'"
+      AllowMethods: "'OPTIONS, GET, PUT, POST'"
       AllowOrigin: "'*'"
 
 
@@ -540,7 +540,6 @@ Resources:
         Variables:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
-          ALLOWED_ORIGIN:  '*'
       Handler: no.unit.nva.bare.AddNewAuthorityIdentifierHandler::handleRequest
       Runtime: java11
       MemorySize: 512
@@ -559,7 +558,6 @@ Resources:
         Variables:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
-          ALLOWED_ORIGIN:  '*'
       Handler: no.unit.nva.bare.DeleteAuthorityIdentifierHandler::handleRequest
       Runtime: java11
       MemorySize: 512
@@ -578,7 +576,6 @@ Resources:
         Variables:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
-          ALLOWED_ORIGIN:  '*'
       Handler: no.unit.nva.bare.UpdateAuthorityIdentifierHandler::handleRequest
       Runtime: java11
       MemorySize: 512
