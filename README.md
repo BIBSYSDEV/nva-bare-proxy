@@ -1,7 +1,8 @@
 # Nva Bare Proxy
 
-The purpose of this project is to fetch authority-metadata by given parameters like name or/and feideId (POST request).
-As well it is expected that authority-metadata can be updated by a PUT request updating/adding feideId or/and orcId to an existing authority identified by its scn (aka. System Control Number).
+The purpose of this project is to fetch authority-metadata by given parameters like name or/and feideId (GET request).
+As well it is expected that authority-metadata can be updated by a POST request updating/adding feideId, orcId or orgunitid to an existing authority identified by its scn (aka. System Control Number).
+Last but not least one can POST a 'name' to create a new authority in BARE. 
  
 The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
@@ -45,7 +46,7 @@ After deployment is complete you can run the following command to retrieve the A
 ```bash
 AWS$ aws cloudformation describe-stacks \
     --stack-name AWS \
-    --query 'Stacks[].Outputs[?OutputKey==`HelloWorldApi`]' \
+    --query 'Stacks[].Outputs[?OutputKey==`NvaBareProxyApi`]' \
     --output table
 ``` 
 
@@ -57,14 +58,14 @@ Build your application with the `sam build` command.
 AWS$ sam build
 ```
 
-The SAM CLI installs dependencies defined in `HelloWorldFunction/build.gradle`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
+The SAM CLI installs dependencies defined in `nva-bare-proxy/build.gradle`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
 
 Test a single function by invoking it directly with a test event. An event is a JSON document that represents the input that the function receives from the event source. Test events are included in the `events` folder in this project.
 
 Run functions locally and invoke them with the `sam local invoke` command.
 
 ```bash
-AWS$ sam local invoke HelloWorldFunction --event events/event.json
+AWS$ sam local invoke BareAuthorityHandler --event events/event.json
 ```
 
 The SAM CLI can also emulate your application's API. Use the `sam local start-api` to run the API locally on port 3000.
@@ -74,15 +75,69 @@ AWS$ sam local start-api
 AWS$ curl http://localhost:3000/
 ```
 
+The application expects two environment variables:
+ * `BARE_HOST` defines the source of the Authority data (utvikle-a.bibsys.no for development, authority.bibsys.no for production)
+ * `BARE_API_KEY` should be defined in the AWS SecretsManager and is needed to for update/PUT functionality
+
+```yaml
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          BARE_HOST: "{{resolve:ssm:bareHost:[VERSION]]}}"
+          BARE_API_KEY: '{{resolve:secretsmanager:bareApiKey:SecretString}}'
+```
+
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
 
 ```yaml
+  NvaBareFetchFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          AllowOrigin: !Sub
+            - "${Domain}"
+            - Domain: !Ref  CorsOrigin
+      Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
       Events:
-        NvaBareProxy:
-          Type: Api
+        NvaBareFetchEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /authority
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /
             Method: post
+            RequestModel:
+              Model: Map<String, Object> # REQUIRED; must match the name of a model defined in the Models property of the AWS::Serverless::API
+              Required: true # OPTIONAL; boolean
+
+  NvaBareUpdateFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          AllowOrigin: !Sub
+          - "${Domain}"
+          - Domain: !Ref  CorsOrigin
+          BARE_HOST: "utvikle-a.bibsys.no"
+          BARE_API_KEY: '{{resolve:ssm:bareApiKey:1}}'
+      Handler: no.unit.nva.bare.AddAuthorityIdentifierHandler::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Events:
+        NvaBareUpdateEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Auth:
+              Authorizer: MyCognitoAuthorizer
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}
+            Method: put
+            RequestModel:
+              Model: Map<String, Object> # REQUIRED; must match the name of a model defined in the Models property of the AWS::Serverless::API
+              Required: true # OPTIONAL; boolean
 ```
 
 ## Add a resource to your application
@@ -118,44 +173,36 @@ AWS$ aws cloudformation delete-stack --stack-name AWS
 AWS$ aws s3 rb s3://BUCKET_NAME
 ```
 
-## Resources
-
-See the [AWS SAM developer guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) for an introduction to SAM specification, the SAM CLI, and serverless application concepts.
-
-Next, you can use AWS Serverless Application Repository to deploy ready to use Apps that go beyond hello world samples and learn how authors developed their applications: [AWS Serverless Application Repository main page](https://aws.amazon.com/serverless/serverlessrepo/)
-
-
 ## Example
 
-* POST to /authority with body
+* GET to 
 
-     ```json
-        {
-          "name": "Moser, May-Britt",
-          "feideId": "may-britt.moser@ntnu.no",
-          "orcId": "0000-0001-7884-3049"
-        }
-     ```
-     (the body has to contain a value for to at least one of the following parameters: name, feideId, orcId.)
+        /authority/?name=[name] 
+
+        /authority/?feideid=[feideId] 
+        
+        /authority/?orcid=[orcId]
+        
+        /authority/?orgunitid=[orgUnitId]
         
      Response:
      ```json
         [
           {
             "name": "Moser, May-Britt",
-            "scn": "90517730",
-            "feideId": "",
-            "orcId": "",
+            "systemControlNumber": "90517730",
+            "feideid": [""],
+            "orcid": [""],
+            "orgunitid": [""],
             "birthDate": "1963-",
-            "handle": "http://hdl.handle.net/11250/1969546"
+            "handle": ["http://hdl.handle.net/11250/1969546"]
           }
         ]
-
      ```
 
 
 
-* PUT to /authority/90517730 with body
+* POST to /authority/90517730 with body
 
     ```json
        {
@@ -167,17 +214,70 @@ Next, you can use AWS Serverless Application Repository to deploy ready to use A
             "handle": "http://hdl.handle.net/11250/1969546"
        }
     ```
-  (the body has to contain at least a value for at least one of the parameters: feideId, orcId.)
-    
-  Response
+  or
   
     ```json
-    {
-      "name": "Moser, May-Britt",
-      "scn": "90517730",
-      "feideId": "may-britt.moser@ntnu.no",
-      "orcId": "0000-0001-7884-3049",
-      "birthDate": "1963-",
-      "handle": "http://hdl.handle.net/11250/1969546"
-    }
+       {
+          "orcid": "0000-0001-7884-3049"
+       }
     ```
+    or
+    
+      ```json
+         {
+            "orgunitid": "194.0.0.0"
+         }
+      ```
+  (the body has to contain at least a value for at least one of the parameters: feideId, orcId.)
+    
+  Response:
+   ```json
+      [
+        {
+          "name": "Moser, May-Britt",
+          "systemControlNumber": "90517730",
+          "feideid": ["may-britt.moser@ntnu.no"],
+          "orcid": ["0000-0001-7884-3049"],
+          "orgunitid": ["194.0.0.0"],
+          "birthDate": "1963-",
+          "handle": ["http://hdl.handle.net/11250/1969546"]
+        }
+      ]
+    ```
+  
+* POST to /authority/ with body
+
+    ```json
+       {
+          "invertedname": "Unit, DotNo"
+       }
+    ```
+    
+    The 'invertedname' parameter value must contain a comma.
+    
+  Response:
+   ```json
+      [
+        {
+          "name": "Unit, DotNo",
+          "systemControlNumber": "123456789",
+          "feideid": [],
+          "orcid": [],
+          "orgunitid": [],
+          "birthDate": "",
+          "handle": []
+        }
+      ]
+    ```
+
+* POST to /authority/{scn}/identifiers/{qualifier}/{identifier}
+
+  Adds a qualified identifier to authority
+
+* DELETE to /authority/{scn}/identifiers/{qualifier}/{identifier}
+
+  Removes a qualified identifier from authority
+
+* PUT to /authority/{scn}/identifiers/{qualifier}/{identifier}/update/{updatedIdentifier}
+
+  Updates a qualified identifier to a new value 

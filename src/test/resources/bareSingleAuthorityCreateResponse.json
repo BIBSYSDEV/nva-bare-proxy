@@ -1,0 +1,30 @@
+{
+  "authorityType": "PERSON",
+  "status": "kat",
+  "deleted": false,
+  "systemControlNumber": "123456789",
+  "lastUpdateDate": "2020-02-05 08:38:24.594",
+  "createdDate": "2020-02-05 00:00:00.000",
+  "replacedBy": "0",
+  "marcdata": [
+    {
+      "tag": "100",
+      "ind1": "1",
+      "ind2": " ",
+      "subfields": [
+        {
+          "subcode": "a",
+          "value": "Unit, DotNo"
+        }
+      ]
+    }
+  ],
+  "identifiersMap": {
+    "autid": [],
+    "handle": [],
+    "scn": [
+      "123456789"
+    ],
+    "feide": []
+  }
+}

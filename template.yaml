@@ -5,39 +5,615 @@ Description: >
 
   Sample SAM Template for AWS
 
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: bare-proxy
+    Description: Fetch authority-metadata by given parameters
+    Author: Unit
+    SemanticVersion: 1.0.0
+    SpdxLicenseId: MIT
+    LicenseUrl: LICENSE
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     Timeout: 20
+  Api:
+    Cors:
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      AllowMethods: "'OPTIONS, GET, PUT, POST, DELETE'"
+      AllowOrigin: "'*'"
+
+
+Parameters:
+  CognitoAuthorizerArn:
+    Type: String
+    Description: Reference to Cognito UserPool for the stage
+  CustomDomain:
+    Type: String
+    Description: Custom API to connect this lambda to
+  CustomDomainBasePath:
+    Type: String
+    Description: Base path mapping in CustomDomain
+  BareApiKey:
+    Type: String
+    Description: Key to access bare
+    Default: '{{resolve:secretsmanager:bareApiKey:SecretString}}'
+    NoEcho: true
+  BareHost:
+    Type: String
+    Description: Address to bare
+    Default: '{{resolve:ssm:bareHost:2}}'
 
 Resources:
-  NvaBareProxy:
+
+  NvaBareProxyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Auth:
+        Authorizers:
+          MyCognitoAuthorizer:
+            UserPoolArn: !Ref CognitoAuthorizerArn
+      EndpointConfiguration: Regional
+      DefinitionBody:
+        openapi: 3.0.0
+        info:
+          title: NVA Bare Proxy
+          version: '1.0'
+        paths:
+          /:
+            get:
+              summary:  Fetches authority by name, feideid
+              parameters:
+                - in: query
+                  name: name
+                  type: string
+                  description: authors name (inverted).
+                - in: query
+                  name: feideid
+                  type: string
+                  description: feideid.
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareFetchAuthorityFunction.Arn}/invocations
+                responses: {}
+                httpMethod: POST
+                type: AWS_PROXY
+              responses:
+                '200':
+                  description: authority
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/fetchAuthorityResponseBody'
+                '400':
+                  description: Bad request.
+                  content:
+                    application/json:
+                      schema:
+                        title: 400 Bad request
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+                '404':
+                  description: Authority not found.
+                  content:
+                    application/json:
+                      schema:
+                        title: 404 Not found
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+            post:
+              summary: Create authority
+              security:
+                - CognitoUserPool: []
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/createAuthorityRequestBody'
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareCreateAuthorityFunction.Arn}/invocations
+                responses: {}
+                httpMethod: POST
+                type: AWS_PROXY
+              responses:
+                '201':
+                  description: Authority created.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/createAuthorityResponseBody'
+                '400':
+                  description: Bad request.
+                  content:
+                    application/json:
+                      schema:
+                        title: 400 Bad request
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+                '401':
+                  description: Unauthorized.
+                  content:
+                    application/json:
+                      schema:
+                        title: 401 Unathorized
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+                '500':
+                  description: Internal Server Error.
+                  content:
+                    application/json:
+                      schema:
+                        title: 500 Internal Server Error
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+          /{scn}:
+            put:
+              summary: Adds an identifier to the authority identifier list.
+              parameters:
+                - in: path
+                  name: scn
+                  type: string
+                  description: authors systemControlNumber (scn).
+              security:
+                - CognitoUserPool: []
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/addIdentifierRequestBody'
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareAddIdentifierFunction.Arn}/invocations
+                responses: {}
+                httpMethod: POST
+                type: AWS_PROXY
+              responses:
+                '200':
+                  description: Identifier added to authority.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/addIdentifierResponseBody'
+                '400':
+                  description: Bad request.
+                  content:
+                    application/json:
+                      schema:
+                        title: 400 Bad request
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+                '404':
+                  description: The specified authority was not found.
+                  content:
+                    application/json:
+                      schema:
+                        title: 404 Not found
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+          /{scn}/identifiers/{qualifier}/{identifier}:
+            post:
+              summary: Adds an identifier to the authority identifier list.
+              parameters:
+                - in: path
+                  name: scn
+                  type: string
+                  description: authors systemControlNumber (scn).
+                - in: path
+                  name: qualifier
+                  type: string
+                  description: qualifier of identifier to add.
+                - in: path
+                  name: identifier
+                  type: string
+                  description: identifier to add.
+              security:
+                - CognitoUserPool: []
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareAddNewIdentifierFunction.Arn}/invocations
+                responses: {}
+                httpMethod: POST
+                type: AWS_PROXY
+              responses:
+                '200':
+                  description: Identifier added to authority.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/addIdentifierResponseBody'
+                '400':
+                  description: Bad request.
+                  content:
+                    application/json:
+                      schema:
+                        title: 400 Bad request
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+                '404':
+                  description: The specified authority was not found.
+                  content:
+                    application/json:
+                      schema:
+                        title: 404 Not found
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+            delete:
+              summary: Removes an identifier from the authority identifier list.
+              parameters:
+                - in: path
+                  name: scn
+                  type: string
+                  description: authors systemControlNumber (scn).
+                - in: path
+                  name: qualifier
+                  type: string
+                  description: qualifier of identifier to remove.
+                - in: path
+                  name: identifier
+                  type: string
+                  description: identifier to remove.
+              security:
+                - CognitoUserPool: []
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareDeleteIdentifierFunction.Arn}/invocations
+                responses: {}
+                httpMethod: POST
+                type: AWS_PROXY
+              responses:
+                '200':
+                  description: Identifier removed from authority.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/addIdentifierResponseBody'
+                '400':
+                  description: Bad request.
+                  content:
+                    application/json:
+                      schema:
+                        title: 400 Bad Request
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+                '404':
+                  description: The specified authority was not found.
+                  content:
+                    application/json:
+                      schema:
+                        title: 404 Not found
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+
+          /{scn}/identifiers/{qualifier}/{identifier}/update/{updatedIdentifier}:
+            put:
+              summary: Updates the value of a identifier in the authority identifier list.
+              parameters:
+                - in: path
+                  name: scn
+                  type: string
+                  description: authors systemControlNumber (scn).
+                - in: path
+                  name: qualifier
+                  type: string
+                  description: qualifier of identifier to add.
+                - in: path
+                  name: identifier
+                  type: string
+                  description: current identifier.
+                - in: path
+                  name: updatedIdentifier
+                  type: string
+                  description: updated identifier.
+              security:
+                - CognitoUserPool: []
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareUpdateIdentifierFunction.Arn}/invocations
+                responses: {}
+                httpMethod: POST
+                type: AWS_PROXY
+              responses:
+                '200':
+                  description: 'Identifier updated in authority.'
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/addIdentifierResponseBody'
+                '400':
+                  description: 'Bad request.'
+                  content:
+                    application/json:
+                      schema:
+                        title: 400 Bad Request
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+                '404':
+                  description: The specified authority was not found.
+                  content:
+                    application/json:
+                      schema:
+                        title: 404 Not Found
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+
+        components:
+          securitySchemes:
+            CognitoUserPool:
+              type: apiKey
+              name: Authorization
+              in: header
+              x-amazon-apigateway-authtype: cognito_user_pools
+              x-amazon-apigateway-authorizer:
+                type: cognito_user_pools
+                providerARNs:
+                  - !Ref CognitoAuthorizerArn
+          schemas:
+            createAuthorityRequestBody:
+              title: create authority
+              type: object
+              properties:
+                invertedname:
+                  type: string
+                  description: Name of authority in inverted form (must contain comma)
+              required:
+                - invertedname
+
+            addIdentifierRequestBody:
+              title: Adds an identifier to the auhority
+              type: object
+              properties:
+                feideid:
+                  type: string
+                  description: feideid
+                orcid:
+                  type: string
+                  description: orcid
+                orgunitid:
+                  type: string
+                  description: unitid from CRIStin
+
+            createAuthorityResponseBody:
+              title: created authority
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: author name
+                systemControlNumber:
+                  type: string
+                  description: systemControlNumber (scn)
+                feideid:
+                  type: object
+                  description: list of feideids
+                orcid:
+                  type: object
+                  description: list of orcids
+                orgunitid:
+                  type: object
+                  description: list of orgunitids
+                birthDate:
+                  type: string
+                  description: date associated with the author
+                handle:
+                  type: object
+                  description: list of handles
+
+            addIdentifierResponseBody:
+              title: updated authority
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: author name
+                systemControlNumber:
+                  type: string
+                  description: systemControlNumber (scn)
+                feideid:
+                  type: object
+                  description: list of feideids
+                orcid:
+                  type: object
+                  description: list of orcids
+                orgunitid:
+                  type: object
+                  description: list of orgunitids
+                birthDate:
+                  type: string
+                  description: date associated with the author
+                handle:
+                  type: object
+                  description: list of handles
+
+            fetchAuthorityResponseBody:
+              title: fetched authority
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: author name
+                systemControlNumber:
+                  type: string
+                  description: systemControlNumber (scn)
+                feideid:
+                  type: object
+                  description: list of feideids
+                orcid:
+                  type: object
+                  description: list of orcids
+                orgunitid:
+                  type: object
+                  description: list of orgunitids
+                birthDate:
+                  type: string
+                  description: date associated with the author
+                handle:
+                  type: object
+                  description: list of handles
+
+
+  NvaBareFetchAuthorityFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: NvaBareProxy
-      Handler: no.unit.nva.bare.AuthorityProxy::handleRequest
-      Runtime: java8
-      MemorySize: 512
-      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+      Environment:
         Variables:
-          PARAM1: VALUE
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+          ALLOWED_ORIGIN:  '*'
+      Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
+      Runtime: java11
+      MemorySize: 512
       Events:
-        NvaBareProxy:
+        NvaBareFetchEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /authority
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /
+            Method: get
+
+  NvaBareAddIdentifierFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+          ALLOWED_ORIGIN:  '*'
+      Handler: no.unit.nva.bare.AddAuthorityIdentifierHandler::handleRequest
+      Runtime: java11
+      MemorySize: 512
+      Events:
+        NvaBareAddIdentifierEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}
+            Method: put
+
+  NvaBareAddNewIdentifierFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+          ALLOWED_ORIGIN:  '*'
+      Handler: no.unit.nva.bare.AddNewAuthorityIdentifierHandler::handleRequest
+      Runtime: java11
+      MemorySize: 512
+      Events:
+        NvaBareAddNewIdentifierEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}/identifiers/{qualifier}/{identifier}
             Method: post
 
-Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  NvaBareProxyApi:
-    Description: "API Gateway endpoint URL for Prod stage for NVA Bare Proxy"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/authority/"
-  NvaBareProxy:
-    Description: "NVA Bare Proxy Function ARN"
-    Value: !GetAtt NvaBareProxy.Arn
-  NvaBareProxyIamRole:
-    Description: "Implicit IAM Role created for NVA Bare proxy function"
-    Value: !GetAtt NvaBareProxyRole.Arn
+  NvaBareDeleteIdentifierFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+          ALLOWED_ORIGIN:  '*'
+      Handler: no.unit.nva.bare.DeleteAuthorityIdentifierHandler::handleRequest
+      Runtime: java11
+      MemorySize: 512
+      Events:
+        NvaBareDeleteIdentifierEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}/identifiers/{qualifier}/{identifier}
+            Method: delete
+
+  NvaBareUpdateIdentifierFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+          ALLOWED_ORIGIN:  '*'
+      Handler: no.unit.nva.bare.UpdateAuthorityIdentifierHandler::handleRequest
+      Runtime: java11
+      MemorySize: 512
+      Events:
+        NvaBareUpdateIdentifierEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}/identifiers/{qualifier}/{identifier}/update/{updatedIdentifier}
+            Method: put
+
+  NvaBareCreateAuthorityFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+          ALLOWED_ORIGIN:  '*'
+      Handler: no.unit.nva.bare.CreateAuthorityHandler::handleRequest
+      Runtime: java11
+      MemorySize: 512
+      Events:
+        NvaBareCreateAuthorityEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /
+            Method: post
+
+
+  NvaBareProxyBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: !Ref CustomDomainBasePath
+      DomainName: !Ref CustomDomain
+      RestApiId: !Ref NvaBareProxyApi
+      Stage: !Ref NvaBareProxyApi.Stage

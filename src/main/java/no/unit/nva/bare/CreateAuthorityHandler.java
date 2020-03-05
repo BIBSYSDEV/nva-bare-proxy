@@ -1,0 +1,114 @@
+package no.unit.nva.bare;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
+import java.util.Map;
+import java.util.Objects;
+
+/**
+ * Handler for requests to Lambda function creating an authority in ARP.
+ */
+public class CreateAuthorityHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
+
+    public static final String BODY_KEY = "body";
+    public static final String NAME_KEY = "invertedname";
+    public static final String EMPTY_STRING = "";
+    public static final String MISSING_EVENT_ELEMENT_BODY = "Missing event element 'body'.";
+    public static final String BODY_ARGS_MISSING = "Nothing to create. 'name' is missing.";
+    public static final String COMMUNICATION_ERROR_WHILE_CREATING = "Communication failure while creating new "
+            + "authority with name='%s'";
+    public static final String COMMA = ",";
+    public static final String MALFORMED_NAME_VALUE = "The name value seems not to be in inverted form.";
+    protected final transient BareConnection bareConnection;
+    private final transient Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
+
+    public CreateAuthorityHandler(BareConnection bareConnection) {
+        this.bareConnection = bareConnection;
+    }
+
+    public CreateAuthorityHandler() {
+        this.bareConnection = new BareConnection();
+    }
+
+    @Override
+    public GatewayResponse handleRequest(Map<String, Object> input, Context context) {
+        GatewayResponse gatewayResponse = new GatewayResponse();
+        try {
+            this.checkParameters(input);
+        } catch (RuntimeException e) {
+            System.out.println(e);
+            gatewayResponse.setErrorBody(e.getMessage());
+            gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
+            return gatewayResponse;
+        }
+        String bodyEvent = (String) input.get(BODY_KEY);
+        String nameValue = getValueFromJsonObject(bodyEvent, NAME_KEY);
+        //todo: check if name is in inverted form
+        gatewayResponse = createAuthorityOnBare(nameValue);
+        return gatewayResponse;
+    }
+
+    protected GatewayResponse createAuthorityOnBare(String name) {
+        GatewayResponse gatewayResponse = new GatewayResponse();
+        AuthorityConverter authorityConverter = new AuthorityConverter();
+        BareAuthority bareAuthority = authorityConverter.buildAuthority(name);
+        try {
+            HttpResponse<String> response = bareConnection.createAuthority(bareAuthority);
+            System.out.println("response (from bareConnection)=" + response);
+            if (response.statusCode() == Response.Status.CREATED.getStatusCode()
+                    || response.statusCode() == Response.Status.OK.getStatusCode()) { //201
+                BareAuthority createdAuthority = gson.fromJson(response.body(), BareAuthority.class);
+                if (Objects.nonNull(createdAuthority)) {
+                    final Authority authority = authorityConverter.asAuthority(createdAuthority);
+                    Authority[] authorities = {authority};
+                    gatewayResponse.setBody(gson.toJson(authorities, Authority[].class));
+                    gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
+                } else {
+                    System.out.println(String.format(COMMUNICATION_ERROR_WHILE_CREATING, name));
+                    gatewayResponse.setErrorBody(String.format(COMMUNICATION_ERROR_WHILE_CREATING, name));
+                    gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+                }
+            } else {
+                System.out.println("Error: " + response.body());
+                System.out.println("new authority looked like this: \n" + gson.toJson(bareAuthority));
+                gatewayResponse.setErrorBody(response.statusCode() + ": " + response.body());
+                gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+            }
+        } catch (IOException | URISyntaxException | InterruptedException e) {
+            System.out.println(e);
+            gatewayResponse.setErrorBody(e.getMessage());
+            gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        }
+        return gatewayResponse;
+    }
+
+
+    protected String getValueFromJsonObject(String body, String key) {
+        JsonObject jsonObject = (JsonObject) JsonParser.parseString(body);
+        JsonElement jsonElement = jsonObject.get(key);
+        return Objects.isNull(jsonElement) ? EMPTY_STRING : jsonElement.getAsString();
+    }
+
+    private void checkParameters(Map<String, Object> input) {
+        String eventBody = (String) input.get(BODY_KEY);
+        if (StringUtils.isEmpty(eventBody)) {
+            throw new RuntimeException(MISSING_EVENT_ELEMENT_BODY);
+        }
+        final String nameValue = getValueFromJsonObject(eventBody, NAME_KEY);
+        if (StringUtils.isEmpty(nameValue)) {
+            throw new RuntimeException(BODY_ARGS_MISSING);
+        } else if (!nameValue.contains(COMMA)) {
+            throw new RuntimeException(MALFORMED_NAME_VALUE);
+        }
+    }
+}

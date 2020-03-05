@@ -1,58 +1,86 @@
 package no.unit.nva.bare;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 public class Authority {
 
+    public static final String EMPTY_STRING = "";
     private String name;
-    private String scn;
-    private String feideId;
-    private String orcId;
+    private String systemControlNumber;
+    private final Set<String> feideids;
+    private final Set<String> orcids;
+    private final Set<String> orgunitids;
     private String birthDate;
+    private final Set<String> handles;
 
+    /**
+     * POJO to hold authority metadata.
+     */
     public Authority() {
-        name = "";
-        scn = "";
-        feideId = "";
-        orcId = "";
-        birthDate = "";
+        name = EMPTY_STRING;
+        systemControlNumber = EMPTY_STRING;
+        feideids = new HashSet<>();
+        orcids = new HashSet<>();
+        orgunitids = new HashSet<>();
+        birthDate = EMPTY_STRING;
+        handles = new HashSet<>();
     }
 
     public String getName() {
         return name;
     }
 
-    public String getFeideId() {
-        return feideId;
+    public Set<String> getFeideids() {
+        return feideids;
     }
 
-    public String getOrcId() {
-        return orcId;
+    public Set<String> getOrcids() {
+        return orcids;
     }
 
-    public String getScn() {
-        return scn;
+    public Set<String> getOrgunitids() {
+        return orgunitids;
+    }
+
+    public String getSystemControlNumber() {
+        return systemControlNumber;
     }
 
     public String getBirthDate() {
         return birthDate;
     }
 
+    public Set<String> getHandles() {
+        return handles;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
 
-    public void setScn(String scn) {
-        this.scn = scn;
-    }
-
-    public void setFeideId(String feideId) {
-        this.feideId = feideId;
-    }
-
-    public void setOrcId(String orcId) {
-        this.orcId = orcId;
+    public void setSystemControlNumber(String systemControlNumber) {
+        this.systemControlNumber = systemControlNumber;
     }
 
     public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
+    }
+
+    public void setFeideids(Collection<String> feideids) {
+        this.feideids.addAll(feideids);
+    }
+
+    public void setOrcids(Collection<String> orcids) {
+        this.orcids.addAll(orcids);
+    }
+
+    public void setOrgunitids(Collection<String> orgunitids) {
+        this.orgunitids.addAll(orgunitids);
+    }
+
+    public void setHandles(Collection<String> handles) {
+        this.handles.addAll(handles);
     }
 }
