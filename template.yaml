@@ -1,14 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  AWS
-
-  Sample SAM Template for AWS
+  Lambda, api and base path mapping for maipulating persondata
 
 Metadata:
   AWS::ServerlessRepo::Application:
-    Name: bare-proxy
-    Description: Fetch authority-metadata by given parameters
+    Name: PersonData
+    Description: Fetch person metadata by given parameters
     Author: Unit
     SemanticVersion: 1.0.0
     SpdxLicenseId: MIT
@@ -23,7 +21,6 @@ Globals:
       AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
       AllowMethods: "'OPTIONS, GET, PUT, POST, DELETE'"
       AllowOrigin: "'*'"
-
 
 Parameters:
   CognitoAuthorizerArn:
@@ -494,7 +491,6 @@ Resources:
                   type: object
                   description: list of handles
 
-
   NvaBareFetchAuthorityFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -608,7 +604,6 @@ Resources:
             RestApiId: !Ref NvaBareProxyApi
             Path: /
             Method: post
-
 
   NvaBareProxyBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
