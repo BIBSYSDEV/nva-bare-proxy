@@ -25,6 +25,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
     public static final String NAME_KEY = "name";
     public static final String FEIDE_KEY = "feideid";
     public static final String ORCID_KEY = "orcid";
+    private final transient Logger log = Logger.instance();
 
 
     public FetchAuthorityHandler() {
@@ -43,7 +44,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
     @Override
     @SuppressWarnings("unchecked")
     public GatewayResponse handleRequest(final Map<String, Object> input, Context context) {
-        System.out.println(input);
+        log.info(input);
         Config.getInstance().checkProperties();
         GatewayResponse gatewayResponse  = new GatewayResponse();
 
@@ -63,11 +64,11 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
             }
             try {
                 URL bareUrl = bareConnection.generateQueryUrl(query);
-                System.out.println(bareUrl.toString());
+                log.info(bareUrl.toString());
                 try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
                     final List<Authority> fetchedAuthority = authorityConverter.extractAuthoritiesFrom(streamReader);
                     Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
-                    System.out.println(gson.toJson(fetchedAuthority));
+                    log.info(gson.toJson(fetchedAuthority));
                     gatewayResponse.setBody(gson.toJson(fetchedAuthority));
                     gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
                 }
