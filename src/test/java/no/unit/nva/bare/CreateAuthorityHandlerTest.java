@@ -61,8 +61,7 @@ public class CreateAuthorityHandlerTest {
         assertNotNull(response);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatusCode());
         String resp = FetchAuthorityHandlerTest.readJsonStringFromFile(CREATE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
-        assertEquals(resp.replaceAll("\n","").replaceAll("\r",""),
-                response.getBody().replace("\n","").replaceAll("\r",""));
+        assertEquals(resp, response.getBody());
     }
 
     @Test

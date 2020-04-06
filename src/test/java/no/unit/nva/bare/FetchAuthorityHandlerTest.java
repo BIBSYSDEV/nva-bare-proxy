@@ -82,8 +82,7 @@ public class FetchAuthorityHandlerTest {
         String content = result.getBody();
         assertNotNull(content);
         String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
-        assertEquals(postResponseBody.replaceAll("\n","").replaceAll("\r",""),
-                content.replaceAll("\n","").replaceAll("\r",""));
+        assertEquals(postResponseBody, content);
     }
 
     @Test
@@ -104,8 +103,7 @@ public class FetchAuthorityHandlerTest {
         String content = result.getBody();
         assertNotNull(content);
         String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
-        assertEquals(postResponseBody.replaceAll("\n","").replaceAll("\r",""),
-                content.replaceAll("\n","").replaceAll("\r",""));
+        assertEquals(postResponseBody, content);
     }
 
     @Test
