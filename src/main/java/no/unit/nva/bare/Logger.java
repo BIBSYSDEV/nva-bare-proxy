@@ -12,10 +12,12 @@ public class Logger {
     protected enum LogLevel {
         ERROR, INFO;
     }
+
     private static class LazyHolder {
 
         public static final Logger INSTANCE = new Logger();
     }
+
     /**
      * Singleton instance for Logger.
      *
