@@ -18,13 +18,14 @@ import java.util.Objects;
  */
 public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
-    protected static final String MISSING_PARAMETERS = "Missing parameters! Neither 'feideId' nor 'name' is set";
+    protected static final String MISSING_PARAMETERS = "Missing parameters! Query parameter not set.";
     protected final transient AuthorityConverter authorityConverter = new AuthorityConverter();
     protected final transient BareConnection bareConnection;
     public static final String QUERY_STRING_PARAMETERS_KEY = "queryStringParameters";
     public static final String NAME_KEY = "name";
     public static final String FEIDE_KEY = "feideid";
     public static final String ORCID_KEY = "orcid";
+    public static final String ARPID_KEY = "arpId";
     private final transient Logger log = Logger.instance();
 
 
@@ -47,10 +48,25 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
         log.info(input);
         Config.getInstance().checkProperties();
         GatewayResponse gatewayResponse  = new GatewayResponse();
+        Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
 
         if (input != null && input.containsKey(QUERY_STRING_PARAMETERS_KEY)) {
-            String query;
             Map<String, String> queryStringParameters = (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
+            if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(ARPID_KEY)) {
+                String arpId = queryStringParameters.get(ARPID_KEY);
+                try {
+                    BareAuthority fetchedAuthority = bareConnection.get(arpId);
+                    gatewayResponse.setBody(gson.toJson(fetchedAuthority));
+                    gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
+                    return gatewayResponse;
+                } catch (URISyntaxException | IOException | InterruptedException e) {
+                    gatewayResponse.setErrorBody(e.getMessage());
+                    gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+                    return gatewayResponse;
+                }
+            }
+
+            String query;
             if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(FEIDE_KEY)) {
                 query = queryStringParameters.get(FEIDE_KEY);
             } else if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(ORCID_KEY)) {
@@ -67,7 +83,6 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
                 log.info(bareUrl.toString());
                 try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
                     final List<Authority> fetchedAuthority = authorityConverter.extractAuthoritiesFrom(streamReader);
-                    Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
                     log.info(gson.toJson(fetchedAuthority));
                     gatewayResponse.setBody(gson.toJson(fetchedAuthority));
                     gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
