@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import static no.unit.nva.bare.AddAuthorityIdentifierHandlerTest.BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON;
 import static no.unit.nva.bare.FetchAuthorityHandler.ARPID_KEY;
 import static no.unit.nva.bare.FetchAuthorityHandler.QUERY_STRING_PARAMETERS_KEY;
 import static org.junit.Assert.assertEquals;
@@ -88,9 +89,11 @@ public class FetchAuthorityHandlerTest {
 
     @Test
     public void handlerReturnsOkResponseWhenValidQueryParamArpIdProvided() throws Exception {
-        BareAuthority bareAuthority = new BareAuthority();
-        bareAuthority.setSystemControlNumber(SAMPLE_IDENTIFIER);
-        when(mockBareConnection.get(any())).thenReturn(bareAuthority);
+        InputStream st = FetchAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
+        InputStreamReader reader = new InputStreamReader(st);
+        BareAuthority authority = new Gson().fromJson(reader, BareAuthority.class);
+
+        when(mockBareConnection.get(any())).thenReturn(authority);
         Map<String, Object> event = new HashMap<>();
 
         Map<String, String> queryParameters = new HashMap<>();
@@ -103,7 +106,6 @@ public class FetchAuthorityHandlerTest {
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        assertTrue(content.contains(SAMPLE_IDENTIFIER));
     }
 
     @Test

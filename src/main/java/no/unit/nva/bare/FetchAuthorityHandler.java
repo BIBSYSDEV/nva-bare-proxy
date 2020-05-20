@@ -56,7 +56,8 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
                 String arpId = queryStringParameters.get(ARPID_KEY);
                 try {
                     BareAuthority fetchedAuthority = bareConnection.get(arpId);
-                    gatewayResponse.setBody(gson.toJson(fetchedAuthority));
+                    Authority authority = authorityConverter.asAuthority(fetchedAuthority);
+                    gatewayResponse.setBody(gson.toJson(authority));
                     gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
                     return gatewayResponse;
                 } catch (URISyntaxException | IOException | InterruptedException e) {
