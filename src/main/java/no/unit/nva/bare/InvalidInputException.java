@@ -1,4 +1,5 @@
 package no.unit.nva.bare;
+
 import nva.commons.exceptions.ApiGatewayException;
 import org.apache.http.HttpStatus;
 

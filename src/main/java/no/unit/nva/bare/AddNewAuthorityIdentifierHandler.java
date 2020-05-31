@@ -32,12 +32,9 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
     public static final String MISSING_REQUEST_JSON_BODY = "Missing json in body.";
     public static final String MISSING_ATTRIBUTE_IDENTIFIER = "Missing json attribute 'identifier'.";
     public static final String COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY =
-            "Communication failure while updating authority %s";
-    public static final String PATH_PARAMETERS_KEY = "pathParameters";
+            "Communication failure trying to update authority";
     public static final String SCN_KEY = "scn";
     public static final String QUALIFIER_KEY = "qualifier";
-    public static final String IDENTIFIER_KEY = "identifier";
-    public static final int ERROR_CALLING_REMOTE_SERVER = Response.Status.BAD_GATEWAY.getStatusCode();
     public static final String REMOTE_SERVER_ERRORMESSAGE = "remote server errormessage: ";
 
     public static final List<String> VALID_QUALIFIERS = asList(ValidIdentifierKey.FEIDEID.asString(),
@@ -53,8 +50,15 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
         this(new Environment(), new BareConnection());
     }
 
+    /**
+     * Constructor for AddNewAuthorityIdentifierHandler.
+     *
+     * @param environment    environment
+     * @param bareConnection bareConnection
+     */
     public AddNewAuthorityIdentifierHandler(Environment environment, BareConnection bareConnection) {
-        super(AddNewAuthorityIdentifierRequest.class, environment, LoggerFactory.getLogger(AddNewAuthorityIdentifierHandler.class));
+        super(AddNewAuthorityIdentifierRequest.class, environment,
+                LoggerFactory.getLogger(AddNewAuthorityIdentifierHandler.class));
         this.bareConnection = bareConnection;
     }
 
@@ -110,9 +114,9 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
                         final Authority authority = authorityConverter.asAuthority(updatedAuthority);
                         return new Gson().toJson(authority);
                     } else {
-                        logger.info(String.format(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY, scn));
-                        throw new BareCommunicationException(String.format(
-                                COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY, scn));
+                        logger.info(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);
+                        throw new BareCommunicationException(
+                                COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);
                     }
                 } catch (IOException | URISyntaxException e) {
                     logger.error(e.getMessage(), e);
