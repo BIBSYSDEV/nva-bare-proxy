@@ -3,17 +3,10 @@ package no.unit.nva.bare;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.ws.rs.core.Response;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,13 +20,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.apache.http.HttpStatus.SC_NOT_ACCEPTABLE;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class BareConnectionTest {
 
     public static final String COMPLETE_SINGLE_AUTHORITY_JSON = "/completeSingleAuthority.json";
@@ -45,18 +40,17 @@ public class BareConnectionTest {
     public static final String MOCK_NAME = "Unit, DotNo";
     private static final String MOCK_BARE_HOST = "authority.bibsys.no";
 
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
+    private HttpClient mockHttpClient;
+    private HttpResponse mockHttpResponse;
 
-    @Mock
-    HttpClient mockHttpClient;
-    @Mock
-    HttpResponse mockHttpResponse;
-
-    @Before
+    /**
+     * Initialize mocks.
+     */
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
         Config.getInstance().setBareHost(MOCK_BARE_HOST);
+        mockHttpClient = mock(HttpClient.class);
+        mockHttpResponse = mock(HttpResponse.class);
     }
 
     @Test
@@ -68,17 +62,16 @@ public class BareConnectionTest {
         streamReader.close();
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testExceptionOnBareConnection() throws IOException {
         BareConnection bareConnection = new BareConnection();
         URL emptyUrl = new URL(NONSENSE_URL);
-        bareConnection.connect(emptyUrl);
-        fail();
+        assertThrows(IOException.class, () -> bareConnection.connect(emptyUrl));
     }
 
     @Test
     public void testUpdate() throws Exception {
-        InputStream streamResp = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(
+        InputStream streamResp = AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(
                 BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON);
         final String mockBody = IOUtils.toString(streamResp, StandardCharsets.UTF_8);
         when(mockHttpResponse.body()).thenReturn(mockBody);
@@ -96,7 +89,7 @@ public class BareConnectionTest {
         Authority updatedAuthority = new Gson().fromJson(httpResponse.body(), Authority.class);
 
         InputStream stream =
-                AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
+                AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
         String st = IOUtils.toString(stream, Charset.defaultCharset());
         Type authorityListType = new TypeToken<ArrayList<Authority>>() {
         }.getType();
@@ -179,7 +172,7 @@ public class BareConnectionTest {
 
     @Test
     public void testCreate() throws Exception {
-        InputStream streamResp = AddAuthorityIdentifierHandlerTest.class.getResourceAsStream(
+        InputStream streamResp = AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(
                 BARE_SINGLE_AUTHORITY_CREATE_RESPONSE_JSON);
         final String mockBody = IOUtils.toString(streamResp, StandardCharsets.UTF_8);
 
@@ -207,12 +200,12 @@ public class BareConnectionTest {
 
     @Test
     public void testGetMethodOnBareConnection() throws IOException, URISyntaxException, InterruptedException {
-        InputStream fakeStream = AddAuthorityIdentifierHandlerTest.class
+        InputStream fakeStream = AddNewAuthorityIdentifierHandlerTest.class
                 .getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON);
         final String mockBody = IOUtils.toString(fakeStream, StandardCharsets.UTF_8);
 
         BareConnection bareConnection = new BareConnection(mockHttpClient);
-        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.OK.getStatusCode());
+        when(mockHttpResponse.statusCode()).thenReturn(SC_OK);
         when(mockHttpResponse.body()).thenReturn(mockBody);
 
         when(mockHttpClient.send(any(), any())).thenReturn(mockHttpResponse);
@@ -220,15 +213,14 @@ public class BareConnectionTest {
         assertNotNull(bareAuthority);
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testGetMethodOnBareConnection_ResponseFail() throws IOException, URISyntaxException,
             InterruptedException {
         BareConnection bareConnection = new BareConnection(mockHttpClient);
 
-        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.NOT_ACCEPTABLE.getStatusCode());
+        when(mockHttpResponse.statusCode()).thenReturn(SC_NOT_ACCEPTABLE);
         when(mockHttpClient.send(any(), any())).thenReturn(mockHttpResponse);
-        final BareAuthority inputStreamReader = bareConnection.get(SCN);
-        fail("where is my Exception?");
+        assertThrows(IOException.class, () -> bareConnection.get(SCN));
     }
 
 

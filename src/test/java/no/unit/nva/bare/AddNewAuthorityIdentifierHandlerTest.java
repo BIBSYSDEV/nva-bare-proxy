@@ -9,7 +9,6 @@ import no.unit.nva.testutils.TestHeaders;
 import nva.commons.utils.Environment;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
 
-import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,11 +38,13 @@ import static no.unit.nva.bare.AddNewAuthorityIdentifierHandler.SCN_KEY;
 import static nva.commons.handlers.ApiGatewayHandler.ALLOWED_ORIGIN_ENV;
 import static nva.commons.utils.JsonUtils.objectMapper;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -201,7 +201,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
         nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
                 nva.commons.handlers.GatewayResponse.class);
 
-        Assert.assertEquals(SC_OK, gatewayResponse.getStatusCode());
+        assertEquals(SC_OK, gatewayResponse.getStatusCode());
     }
 
     @Test
@@ -229,7 +229,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
     @Test
     public void testAddNewAuthorityIdentifier_failingToReadAuthorityFromStream() throws Exception {
 
-        when(httpResponse.statusCode()).thenReturn(Response.Status.OK.getStatusCode());
+        when(httpResponse.statusCode()).thenReturn(SC_OK);
         when(bareConnection.get(any())).thenReturn(null);
         when(bareConnection.addNewIdentifier(any(), any(), any())).thenReturn(httpResponse);
 
@@ -252,7 +252,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
     @Test
     public void testAddNewAuthorityIdentifier_exceptionOnReadAuthorityFromBare() throws Exception {
 
-        when(httpResponse.statusCode()).thenReturn(Response.Status.OK.getStatusCode());
+        when(httpResponse.statusCode()).thenReturn(SC_OK);
         when(bareConnection.get(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
         when(bareConnection.addNewIdentifier(any(), any(), any())).thenReturn(httpResponse);
 
@@ -275,7 +275,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
     @Test
     public void testAddNewAuthorityIdentifier_unexpectedBareResponse() throws Exception {
 
-        when(httpResponse.statusCode()).thenReturn(Response.Status.FORBIDDEN.getStatusCode());
+        when(httpResponse.statusCode()).thenReturn(SC_FORBIDDEN);
         when(bareConnection.addNewIdentifier(any(), any(), any())).thenReturn(httpResponse);
 
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(environment, bareConnection);

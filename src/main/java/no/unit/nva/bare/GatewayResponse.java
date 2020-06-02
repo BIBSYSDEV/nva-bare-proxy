@@ -2,14 +2,15 @@ package no.unit.nva.bare;
 
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHeaders;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 
 /**
  * POJO containing response object for API Gateway.
@@ -27,7 +28,7 @@ public class GatewayResponse {
      * GatewayResponse contains response status, response headers and body with payload resp. error messages.
      */
     public GatewayResponse() {
-        this.statusCode = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
+        this.statusCode = SC_INTERNAL_SERVER_ERROR;
         this.body = EMPTY_JSON;
         this.generateDefaultHeaders();
     }
@@ -74,7 +75,7 @@ public class GatewayResponse {
 
     private void generateDefaultHeaders() {
         Map<String, String> headers = new ConcurrentHashMap<>();
-        headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+        headers.put(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON.getMimeType());
         final String corsAllowDomain = Config.getInstance().getCorsHeader();
         if (StringUtils.isNotEmpty(corsAllowDomain)) {
             headers.put(CORS_ALLOW_ORIGIN_HEADER, corsAllowDomain);

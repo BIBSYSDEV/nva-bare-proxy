@@ -2,11 +2,9 @@ package no.unit.nva.bare;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.URIBuilder;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -17,6 +15,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 
 public class BareConnection {
 
@@ -90,7 +91,7 @@ public class BareConnection {
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(getUrl);
         HttpRequest request = requestBuilder.GET().build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() == Response.Status.OK.getStatusCode()) {
+        if (response.statusCode() == SC_OK) {
             final String body = response.body();
             return gson.fromJson(body, BareAuthority.class);
         } else {
@@ -244,7 +245,7 @@ public class BareConnection {
         return HttpRequest.newBuilder()
                 .uri(uri)
                 .header(HttpHeaders.AUTHORIZATION, apiKeyAuth)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON.getMimeType())
                 .timeout(TIMEOUT_DURATION);
     }
 

@@ -10,7 +10,6 @@ import nva.commons.utils.JacocoGenerated;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
@@ -115,7 +114,7 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
             HttpResponse<String> response = bareConnection.updateIdentifier(scn, qualifier, identifier,
                     updatedIdentifier);
             logger.info("response (from bareConnection)=" + response);
-            if (response.statusCode() == Response.Status.OK.getStatusCode()) {
+            if (response.statusCode() == SC_OK) {
                 try {
                     final BareAuthority updatedAuthority = bareConnection.get(scn);
                     if (Objects.nonNull(updatedAuthority)) {
