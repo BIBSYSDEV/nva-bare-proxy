@@ -74,8 +74,8 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
                     || response.statusCode() == SC_OK) { //201
                 BareAuthority createdAuthority = gson.fromJson(response.body(), BareAuthority.class);
                 if (Objects.nonNull(createdAuthority)) {
-                    final Authority authority = authorityConverter.asAuthority(createdAuthority);
-                    gatewayResponse.setBody(gson.toJson(authority, Authority.class));
+                    final AuthorityResponse authority = authorityConverter.asAuthority(createdAuthority);
+                    gatewayResponse.setBody(gson.toJson(authority, AuthorityResponse.class));
                     gatewayResponse.setStatusCode(SC_OK);
                 } else {
                     log.error(String.format(COMMUNICATION_ERROR_WHILE_CREATING, name));

@@ -1,7 +1,6 @@
 package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.google.gson.Gson;
 import nva.commons.exceptions.ApiGatewayException;
 import nva.commons.handlers.ApiGatewayHandler;
 import nva.commons.handlers.RequestInfo;
@@ -23,7 +22,8 @@ import static org.apache.http.HttpStatus.SC_OK;
 /**
  * Handler for requests to Lambda function.
  */
-public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAuthorityIdentifierRequest, String> {
+public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAuthorityIdentifierRequest,
+        AuthorityResponse> {
 
     public static final String MISSING_PATH_PARAMETER_SCN = "Missing path parameter 'scn'.";
     public static final String MISSING_PATH_PARAMETER_QUALIFIER = "Missing path parameter 'qualifier'.";
@@ -34,7 +34,6 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
             "Communication failure trying to update authority";
     public static final String SCN_KEY = "scn";
     public static final String QUALIFIER_KEY = "qualifier";
-    public static final String EMPTY_STRING = "";
     public static final String REMOTE_SERVER_ERRORMESSAGE = "remote server errormessage: ";
 
     public static final List<String> VALID_QUALIFIERS = asList(ValidIdentifierKey.FEIDEID.asString(),
@@ -63,8 +62,8 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
     }
 
     @Override
-    protected String processInput(DeleteAuthorityIdentifierRequest input, RequestInfo requestInfo, Context context)
-            throws ApiGatewayException {
+    protected AuthorityResponse processInput(DeleteAuthorityIdentifierRequest input, RequestInfo requestInfo,
+                                             Context context) throws ApiGatewayException {
 
         validateInput(input, requestInfo.getPathParameters());
 
@@ -103,7 +102,7 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
         }
     }
 
-    protected String deleteIdentifier(String scn, String qualifier, String identifier)
+    protected AuthorityResponse deleteIdentifier(String scn, String qualifier, String identifier)
             throws ApiGatewayException {
         try {
             HttpResponse<String> response = bareConnection.deleteIdentifier(scn, qualifier, identifier);
@@ -114,8 +113,7 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
                     final BareAuthority updatedAuthority = bareConnection.get(scn);
                     if (Objects.nonNull(updatedAuthority)) {
                         AuthorityConverter authorityConverter = new AuthorityConverter();
-                        final Authority authority = authorityConverter.asAuthority(updatedAuthority);
-                        return new Gson().toJson(authority);
+                        return authorityConverter.asAuthority(updatedAuthority);
                     } else {
                         logger.error(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);
                         throw new BareCommunicationException(
@@ -137,7 +135,7 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
     }
 
     @Override
-    protected Integer getSuccessStatusCode(DeleteAuthorityIdentifierRequest input, String output) {
+    protected Integer getSuccessStatusCode(DeleteAuthorityIdentifierRequest input, AuthorityResponse output) {
         return SC_OK;
     }
 }

@@ -1,7 +1,6 @@
 package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.google.gson.Gson;
 import nva.commons.exceptions.ApiGatewayException;
 import nva.commons.handlers.ApiGatewayHandler;
 import nva.commons.handlers.RequestInfo;
@@ -23,7 +22,8 @@ import static org.apache.http.HttpStatus.SC_OK;
 /**
  * Handler for requests to Lambda function.
  */
-public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAuthorityIdentifierRequest, String> {
+public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAuthorityIdentifierRequest,
+        AuthorityResponse> {
 
     public static final String MISSING_PATH_PARAMETER_SCN = "Missing path parameter 'scn'.";
     public static final String MISSING_PATH_PARAMETER_QUALIFIER = "Missing path parameter 'qualifier'.";
@@ -62,8 +62,8 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
     }
 
     @Override
-    protected String processInput(AddNewAuthorityIdentifierRequest input, RequestInfo requestInfo, Context context)
-            throws ApiGatewayException {
+    protected AuthorityResponse processInput(AddNewAuthorityIdentifierRequest input, RequestInfo requestInfo,
+                                             Context context) throws ApiGatewayException {
 
         validateInput(input, requestInfo.getPathParameters());
 
@@ -101,7 +101,7 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
         }
     }
 
-    protected String addNewIdentifier(String scn, String qualifier, String identifier)
+    protected AuthorityResponse addNewIdentifier(String scn, String qualifier, String identifier)
             throws ApiGatewayException {
         try {
             HttpResponse<String> response = bareConnection.addNewIdentifier(scn, qualifier, identifier);
@@ -110,8 +110,7 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
                     final BareAuthority updatedAuthority = bareConnection.get(scn);
                     if (Objects.nonNull(updatedAuthority)) {
                         AuthorityConverter authorityConverter = new AuthorityConverter();
-                        final Authority authority = authorityConverter.asAuthority(updatedAuthority);
-                        return new Gson().toJson(authority);
+                        return authorityConverter.asAuthority(updatedAuthority);
                     } else {
                         logger.info(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);
                         throw new BareCommunicationException(
@@ -133,7 +132,7 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
     }
 
     @Override
-    protected Integer getSuccessStatusCode(AddNewAuthorityIdentifierRequest input, String output) {
+    protected Integer getSuccessStatusCode(AddNewAuthorityIdentifierRequest input, AuthorityResponse output) {
         return SC_OK;
     }
 
