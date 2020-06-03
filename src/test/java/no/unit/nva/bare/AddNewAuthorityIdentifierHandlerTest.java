@@ -183,7 +183,8 @@ public class AddNewAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testAddNewAuthorityIdentifierFeideId() throws Exception {
+    @DisplayName("handler Returns Ok Response When Input Is Valid And Authority Identifier Is Added Successfully")
+    public void handlerReturnsOkWhenInputIsValidAndAuthorityIdentifierIsAddedSuccessfully() throws Exception {
 
         InputStream is =
                 AddNewAuthorityIdentifierHandler.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
@@ -205,7 +206,8 @@ public class AddNewAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testAddNewAuthorityIdentifierBareConnectionError() throws Exception {
+    @DisplayName("handler Returns Internal Server Error Response When Bare Connection Error")
+    public void handlerReturnsInternalServerErrorWhenBareConnectionError() throws Exception {
 
         when(bareConnection.addNewIdentifier(any(), any(), any())).thenThrow(
                 new IOException(EXCEPTION_IS_EXPECTED));
@@ -227,7 +229,8 @@ public class AddNewAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testAddNewAuthorityIdentifier_failingToReadAuthorityFromStream() throws Exception {
+    @DisplayName("handler Returns Internal Server Error Response When Failing To Read Authority From Stream")
+    public void handleReturnsInternalServerErrorWhenFailingToReadAuthorityFromStream() throws Exception {
 
         when(httpResponse.statusCode()).thenReturn(SC_OK);
         when(bareConnection.get(any())).thenReturn(null);
@@ -250,7 +253,8 @@ public class AddNewAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testAddNewAuthorityIdentifier_exceptionOnReadAuthorityFromBare() throws Exception {
+    @DisplayName("handler Returns Internal Server Error Response When Exception Getting Authority From Bare")
+    public void handlerReturnsInternalServerErrorWhenExceptionGettingAuthorityFromBare() throws Exception {
 
         when(httpResponse.statusCode()).thenReturn(SC_OK);
         when(bareConnection.get(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
@@ -273,7 +277,8 @@ public class AddNewAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testAddNewAuthorityIdentifier_unexpectedBareResponse() throws Exception {
+    @DisplayName("handler Returns Internal Server Error Response When Unexpected Response From Bare")
+    public void handlerReturnsInternalServerErrorWhenUnexpectedResponseFromBare() throws Exception {
 
         when(httpResponse.statusCode()).thenReturn(SC_FORBIDDEN);
         when(bareConnection.addNewIdentifier(any(), any(), any())).thenReturn(httpResponse);

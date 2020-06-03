@@ -176,7 +176,8 @@ public class DeleteAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testDeleteAuthorityIdentifierFeideId() throws Exception {
+    @DisplayName("handler Returns Ok Response When Input Is Valid And Authority Identifier Is Deleted Successfully")
+    public void handlerReturnsOkWhenInputIsValidAndAuthorityIdentifierIsDeletedSuccessfully() throws Exception {
 
         InputStream is =
                 DeleteAuthorityIdentifierHandler.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
@@ -199,7 +200,8 @@ public class DeleteAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testDeleteAuthorityBareConnectionError() throws Exception {
+    @DisplayName("handler Returns Internal Server Error Response When Bare Connection Error")
+    public void handlerReturnsInternalServerErrorWhenBareConnectionError() throws Exception {
 
         when(bareConnection.deleteIdentifier(any(), any(), any())).thenThrow(
                 new IOException(EXCEPTION_IS_EXPECTED));
@@ -222,7 +224,8 @@ public class DeleteAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testDeleteAuthorityIdentifier_failingToReadAuthorityFromStream() throws Exception {
+    @DisplayName("handler Returns Internal Server Error Response When Failing To Read Authority From Stream")
+    public void handleReturnsInternalServerErrorWhenFailingToReadAuthorityFromStream() throws Exception {
 
         when(httpResponse.statusCode()).thenReturn(SC_OK);
         when(bareConnection.get(any())).thenReturn(null);
@@ -245,7 +248,8 @@ public class DeleteAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testDeleteAuthorityIdentifier_exceptionOnReadAuthorityFromBare() throws Exception {
+    @DisplayName("handler Returns Internal Server Error Response When Exception Getting Authority From Bare")
+    public void handlerReturnsInternalServerErrorWhenExceptionGettingAuthorityFromBare() throws Exception {
 
         when(httpResponse.statusCode()).thenReturn(SC_OK);
         when(bareConnection.get(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
@@ -268,7 +272,8 @@ public class DeleteAuthorityIdentifierHandlerTest {
     }
 
     @Test
-    public void testDeleteAuthorityIdentifier_unexpectedBareResponse() throws Exception {
+    @DisplayName("handler Returns Internal Server Error Response When Unexpected Response From Bare")
+    public void handlerReturnsInternalServerErrorWhenUnexpectedResponseFromBare() throws Exception {
 
         when(httpResponse.statusCode()).thenReturn(SC_FORBIDDEN);
         when(bareConnection.deleteIdentifier(any(), any(), any())).thenReturn(httpResponse);
