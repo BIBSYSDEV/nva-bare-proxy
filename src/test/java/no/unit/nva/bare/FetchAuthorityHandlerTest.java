@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import static no.unit.nva.bare.AddAuthorityIdentifierHandlerTest.BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON;
+import static no.unit.nva.bare.FetchAuthorityHandler.ARPID_KEY;
 import static no.unit.nva.bare.FetchAuthorityHandler.QUERY_STRING_PARAMETERS_KEY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -83,6 +85,42 @@ public class FetchAuthorityHandlerTest {
         assertNotNull(content);
         String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
         assertEquals(postResponseBody, content);
+    }
+
+    @Test
+    public void handlerReturnsOkResponseWhenValidQueryParamArpIdProvided() throws Exception {
+        InputStream st = FetchAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
+        InputStreamReader reader = new InputStreamReader(st);
+        BareAuthority authority = new Gson().fromJson(reader, BareAuthority.class);
+
+        when(mockBareConnection.get(any())).thenReturn(authority);
+        Map<String, Object> event = new HashMap<>();
+
+        Map<String, String> queryParameters = new HashMap<>();
+        queryParameters.put(ARPID_KEY, SAMPLE_IDENTIFIER);
+        event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
+
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
+        GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
+        assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
+        String content = result.getBody();
+        assertNotNull(content);
+    }
+
+    @Test
+    public void handlerReturnsInternalServerErrorResponseWhenErrorGettingAuthority() throws Exception {
+        when(mockBareConnection.get(any())).thenThrow(new IOException(MY_MOCK_THROWS_AN_EXCEPTION));
+        Map<String, Object> event = new HashMap<>();
+        Map<String, String> queryParameters = new HashMap<>();
+        queryParameters.put(ARPID_KEY, SAMPLE_IDENTIFIER);
+        event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
+        GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), result.getStatusCode());
+        String content = result.getBody();
+        assertNotNull(content);
+        assertTrue(content.contains(MY_MOCK_THROWS_AN_EXCEPTION));
     }
 
     @Test
