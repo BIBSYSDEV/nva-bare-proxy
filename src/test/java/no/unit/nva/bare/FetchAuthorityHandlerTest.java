@@ -165,10 +165,10 @@ public class FetchAuthorityHandlerTest {
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        Type authorityListType = new TypeToken<ArrayList<AuthorityResponse>>(){}.getType();
-        List<AuthorityResponse> responseAuthority = new Gson().fromJson(content, authorityListType);
+        Type authorityListType = new TypeToken<ArrayList<Authority>>(){}.getType();
+        List<Authority> responseAuthority = new Gson().fromJson(content, authorityListType);
         String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
-        List<AuthorityResponse> expectedResponseAuthority = new Gson().fromJson(postResponseBody, authorityListType);
+        List<Authority> expectedResponseAuthority = new Gson().fromJson(postResponseBody, authorityListType);
         assertEquals(expectedResponseAuthority.get(0).getSystemControlNumber(),
                 responseAuthority.get(0).getSystemControlNumber());
         assertEquals(expectedResponseAuthority.get(0).getBirthDate(), responseAuthority.get(0).getBirthDate());
@@ -211,8 +211,8 @@ public class FetchAuthorityHandlerTest {
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        Type authorityListType = new TypeToken<ArrayList<AuthorityResponse>>(){}.getType();
-        List<AuthorityResponse> responseAuthority = new Gson().fromJson(content, authorityListType);
+        Type authorityListType = new TypeToken<ArrayList<Authority>>(){}.getType();
+        List<Authority> responseAuthority = new Gson().fromJson(content, authorityListType);
         assertTrue(responseAuthority.isEmpty());
     }
 

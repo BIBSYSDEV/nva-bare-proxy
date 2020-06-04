@@ -22,8 +22,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 /**
  * Handler for requests to Lambda function.
  */
-public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAuthorityIdentifierRequest,
-        AuthorityResponse> {
+public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAuthorityIdentifierRequest, Authority> {
 
     public static final String MISSING_PATH_PARAMETER_SCN = "Missing path parameter 'scn'.";
     public static final String MISSING_PATH_PARAMETER_QUALIFIER = "Missing path parameter 'qualifier'.";
@@ -62,8 +61,8 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
     }
 
     @Override
-    protected AuthorityResponse processInput(AddNewAuthorityIdentifierRequest input, RequestInfo requestInfo,
-                                             Context context) throws ApiGatewayException {
+    protected Authority processInput(AddNewAuthorityIdentifierRequest input, RequestInfo requestInfo,
+                                     Context context) throws ApiGatewayException {
 
         validateInput(input, requestInfo.getPathParameters());
 
@@ -101,7 +100,7 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
         }
     }
 
-    protected AuthorityResponse addNewIdentifier(String scn, String qualifier, String identifier)
+    protected Authority addNewIdentifier(String scn, String qualifier, String identifier)
             throws ApiGatewayException {
         try {
             HttpResponse<String> response = bareConnection.addNewIdentifier(scn, qualifier, identifier);
@@ -132,7 +131,7 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
     }
 
     @Override
-    protected Integer getSuccessStatusCode(AddNewAuthorityIdentifierRequest input, AuthorityResponse output) {
+    protected Integer getSuccessStatusCode(AddNewAuthorityIdentifierRequest input, Authority output) {
         return SC_OK;
     }
 

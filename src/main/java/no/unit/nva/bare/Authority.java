@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AuthorityResponse {
+public class Authority {
 
     public static final String EMPTY_STRING = "";
 
@@ -34,7 +34,7 @@ public class AuthorityResponse {
     /**
      * POJO to hold authority metadata.
      */
-    public AuthorityResponse() {
+    public Authority() {
         name = EMPTY_STRING;
         systemControlNumber = EMPTY_STRING;
         feideids = new HashSet<>();

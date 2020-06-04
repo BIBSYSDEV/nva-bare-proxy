@@ -22,8 +22,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 /**
  * Handler for requests to Lambda function.
  */
-public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAuthorityIdentifierRequest,
-        AuthorityResponse> {
+public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAuthorityIdentifierRequest, Authority> {
 
     public static final String MISSING_PATH_PARAMETER_SCN = "Missing path parameter 'scn'.";
     public static final String MISSING_PATH_PARAMETER_QUALIFIER = "Missing path parameter 'qualifier'.";
@@ -65,8 +64,8 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
     }
 
     @Override
-    protected AuthorityResponse processInput(UpdateAuthorityIdentifierRequest input, RequestInfo requestInfo,
-                                             Context context) throws ApiGatewayException {
+    protected Authority processInput(UpdateAuthorityIdentifierRequest input, RequestInfo requestInfo,
+                                     Context context) throws ApiGatewayException {
 
         validateInput(input, requestInfo.getPathParameters());
 
@@ -108,8 +107,8 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
         }
     }
 
-    protected AuthorityResponse updateIdentifier(String scn, String qualifier, String identifier,
-        String updatedIdentifier) throws BareCommunicationException, BareException {
+    protected Authority updateIdentifier(String scn, String qualifier, String identifier,
+                                         String updatedIdentifier) throws BareCommunicationException, BareException {
 
         try {
             HttpResponse<String> response = bareConnection.updateIdentifier(scn, qualifier, identifier,
@@ -142,7 +141,7 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
     }
 
     @Override
-    protected Integer getSuccessStatusCode(UpdateAuthorityIdentifierRequest input, AuthorityResponse output) {
+    protected Integer getSuccessStatusCode(UpdateAuthorityIdentifierRequest input, Authority output) {
         return SC_OK;
     }
 }

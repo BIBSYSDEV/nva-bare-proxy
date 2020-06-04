@@ -27,14 +27,14 @@ public class AuthorityConverter {
     private final transient Logger log = Logger.instance();
 
 
-    protected List<AuthorityResponse> extractAuthoritiesFrom(InputStreamReader reader) {
+    protected List<Authority> extractAuthoritiesFrom(InputStreamReader reader) {
         final BareQueryResponse bareQueryResponse = new Gson().fromJson(reader, BareQueryResponse.class);
         log.info(bareQueryResponse.toString());
         return Arrays.stream(bareQueryResponse.results).map(this::asAuthority).collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
-    protected AuthorityResponse asAuthority(BareAuthority bareAuthority) {
+    protected Authority asAuthority(BareAuthority bareAuthority) {
         log.info("AuthorityConverter.asAuthority incoming bareAuthorty=" + bareAuthority);
         final String name = this.findValueIn(bareAuthority, MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE);
         final String date = this.findValueIn(bareAuthority, MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE);
@@ -43,7 +43,7 @@ public class AuthorityConverter {
         Optional<List<String>> orcIdArray = Optional.ofNullable(bareAuthority.getIdentifiers(ORCID_KEY));
         Optional<List<String>> orgUnitIdArray = Optional.ofNullable(bareAuthority.getIdentifiers(ORGUNITID_KEY));
         Optional<List<String>> handleArray = Optional.ofNullable(bareAuthority.getIdentifiers(HANDLE_KEY));
-        AuthorityResponse authority = new AuthorityResponse();
+        Authority authority = new Authority();
         authority.setName(name);
         authority.setBirthDate(date);
         authority.setSystemControlNumber(id);

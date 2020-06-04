@@ -86,14 +86,14 @@ public class BareConnectionTest {
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());
 
-        AuthorityResponse updatedAuthority = new Gson().fromJson(httpResponse.body(), AuthorityResponse.class);
+        Authority updatedAuthority = new Gson().fromJson(httpResponse.body(), Authority.class);
 
         InputStream stream =
                 AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
         String st = IOUtils.toString(stream, Charset.defaultCharset());
-        Type authorityListType = new TypeToken<ArrayList<AuthorityResponse>>() {
+        Type authorityListType = new TypeToken<ArrayList<Authority>>() {
         }.getType();
-        List<AuthorityResponse> mockAuthorityList = new Gson().fromJson(st, authorityListType);
+        List<Authority> mockAuthorityList = new Gson().fromJson(st, authorityListType);
         assertEquals(mockAuthorityList.get(0).getSystemControlNumber(), updatedAuthority.getSystemControlNumber());
         assertNotNull(updatedAuthority.getFeideids());
         assertNotNull(updatedAuthority.getOrcids());
@@ -115,14 +115,14 @@ public class BareConnectionTest {
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());
 
-        AuthorityResponse updatedAuthority = new Gson().fromJson(httpResponse.body(), AuthorityResponse.class);
+        Authority updatedAuthority = new Gson().fromJson(httpResponse.body(), Authority.class);
 
         InputStream stream =
                 AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
         String st = IOUtils.toString(stream, Charset.defaultCharset());
-        Type authorityListType = new TypeToken<ArrayList<AuthorityResponse>>() {
+        Type authorityListType = new TypeToken<ArrayList<Authority>>() {
         }.getType();
-        List<AuthorityResponse> mockAuthorityList = new Gson().fromJson(st, authorityListType);
+        List<Authority> mockAuthorityList = new Gson().fromJson(st, authorityListType);
         assertEquals(mockAuthorityList.get(0).getSystemControlNumber(), updatedAuthority.getSystemControlNumber());
         assertNotNull(updatedAuthority.getFeideids());
         assertNotNull(updatedAuthority.getOrcids());
@@ -146,7 +146,7 @@ public class BareConnectionTest {
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());
 
-        AuthorityResponse updatedAuthority = new Gson().fromJson(httpResponse.body(), AuthorityResponse.class);
+        Authority updatedAuthority = new Gson().fromJson(httpResponse.body(), Authority.class);
 
     }
 

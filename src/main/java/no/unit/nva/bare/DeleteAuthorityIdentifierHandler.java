@@ -22,8 +22,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 /**
  * Handler for requests to Lambda function.
  */
-public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAuthorityIdentifierRequest,
-        AuthorityResponse> {
+public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAuthorityIdentifierRequest, Authority> {
 
     public static final String MISSING_PATH_PARAMETER_SCN = "Missing path parameter 'scn'.";
     public static final String MISSING_PATH_PARAMETER_QUALIFIER = "Missing path parameter 'qualifier'.";
@@ -62,8 +61,8 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
     }
 
     @Override
-    protected AuthorityResponse processInput(DeleteAuthorityIdentifierRequest input, RequestInfo requestInfo,
-                                             Context context) throws ApiGatewayException {
+    protected Authority processInput(DeleteAuthorityIdentifierRequest input, RequestInfo requestInfo,
+                                     Context context) throws ApiGatewayException {
 
         validateInput(input, requestInfo.getPathParameters());
 
@@ -102,7 +101,7 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
         }
     }
 
-    protected AuthorityResponse deleteIdentifier(String scn, String qualifier, String identifier)
+    protected Authority deleteIdentifier(String scn, String qualifier, String identifier)
             throws ApiGatewayException {
         try {
             HttpResponse<String> response = bareConnection.deleteIdentifier(scn, qualifier, identifier);
@@ -135,7 +134,7 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
     }
 
     @Override
-    protected Integer getSuccessStatusCode(DeleteAuthorityIdentifierRequest input, AuthorityResponse output) {
+    protected Integer getSuccessStatusCode(DeleteAuthorityIdentifierRequest input, Authority output) {
         return SC_OK;
     }
 }

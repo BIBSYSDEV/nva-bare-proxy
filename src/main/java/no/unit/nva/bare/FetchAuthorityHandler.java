@@ -59,7 +59,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
                 String arpId = queryStringParameters.get(ARPID_KEY);
                 try {
                     BareAuthority fetchedAuthority = bareConnection.get(arpId);
-                    AuthorityResponse authority = authorityConverter.asAuthority(fetchedAuthority);
+                    Authority authority = authorityConverter.asAuthority(fetchedAuthority);
                     gatewayResponse.setBody(gson.toJson(authority));
                     gatewayResponse.setStatusCode(SC_OK);
                     return gatewayResponse;
@@ -86,7 +86,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
                 URL bareUrl = bareConnection.generateQueryUrl(query);
                 log.info(bareUrl.toString());
                 try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
-                    final List<AuthorityResponse> fetchedAuthority =
+                    final List<Authority> fetchedAuthority =
                             authorityConverter.extractAuthoritiesFrom(streamReader);
                     log.info(gson.toJson(fetchedAuthority));
                     gatewayResponse.setBody(gson.toJson(fetchedAuthority));
