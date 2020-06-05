@@ -270,14 +270,34 @@ AWS$ aws s3 rb s3://BUCKET_NAME
       ]
     ```
 
-* POST to /authority/{scn}/identifiers/{qualifier}/{identifier}
+* POST to /authority/{scn}/identifiers/{qualifier}/add
+
+    ```json
+       {
+          "identifier": "identifierValue"
+       }
+    ```
 
   Adds a qualified identifier to authority
 
-* DELETE to /authority/{scn}/identifiers/{qualifier}/{identifier}
+* POST to /authority/{scn}/identifiers/{qualifier}/delete
+
+    ```json
+       {
+          "identifier": "identifierValue"
+       }
+    ```
 
   Removes a qualified identifier from authority
 
-* PUT to /authority/{scn}/identifiers/{qualifier}/{identifier}/update/{updatedIdentifier}
+* POST to /authority/{scn}/identifiers/{qualifier}/update
+
+    ```json
+       {
+          "identifier": "identifierValue",
+          "updatedIdentifier": "updatedIdentifierValue"
+       }
+    ```
 
   Updates a qualified identifier to a new value 
+
