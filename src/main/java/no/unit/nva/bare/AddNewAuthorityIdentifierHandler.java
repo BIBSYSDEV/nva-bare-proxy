@@ -35,8 +35,10 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
     public static final String QUALIFIER_KEY = "qualifier";
     public static final String REMOTE_SERVER_ERRORMESSAGE = "remote server errormessage: ";
 
-    public static final List<String> VALID_QUALIFIERS = asList(ValidIdentifierKey.FEIDEID.asString(),
-            ValidIdentifierKey.ORCID.asString(), ValidIdentifierKey.ORGUNITID.asString());
+    public static final List<String> VALID_QUALIFIERS = asList(
+            ValidIdentifierKey.FEIDEID.asString(),
+            ValidIdentifierKey.ORCID.asString(),
+            ValidIdentifierKey.ORGUNITID.asString());
 
     private transient BareConnection bareConnection;
 
