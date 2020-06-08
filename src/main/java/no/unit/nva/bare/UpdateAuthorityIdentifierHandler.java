@@ -115,28 +115,31 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
         try {
             HttpResponse<String> response = bareConnection.updateIdentifier(scn, qualifier, identifier,
                     updatedIdentifier);
-            logger.info("response (from bareConnection)=" + response);
             if (response.statusCode() == SC_OK) {
-                try {
-                    final BareAuthority updatedAuthority = bareConnection.get(scn);
-                    if (Objects.nonNull(updatedAuthority)) {
-                        AuthorityConverter authorityConverter = new AuthorityConverter();
-                        return authorityConverter.asAuthority(updatedAuthority);
-                    } else {
-                        logger.error(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);
-                        throw new BareCommunicationException(
-                                COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);
-                    }
-                } catch (IOException | URISyntaxException e) {
-                    logger.error(e.getMessage(), e);
-                    throw new BareException(e.getMessage());
-                }
+                return getAuthority(scn);
             } else {
                 logger.error(String.format("updatedIdentifier - ErrorCode=%s, reasonPhrase=%s", response.statusCode(),
                         response.body()));
                 throw new BareException(REMOTE_SERVER_ERRORMESSAGE + response.body());
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
+            logger.error(e.getMessage(), e);
+            throw new BareException(e.getMessage());
+        }
+    }
+
+    private Authority getAuthority(String scn) throws InterruptedException, BareCommunicationException, BareException {
+        try {
+            final BareAuthority updatedAuthority = bareConnection.get(scn);
+            if (Objects.nonNull(updatedAuthority)) {
+                AuthorityConverter authorityConverter = new AuthorityConverter();
+                return authorityConverter.asAuthority(updatedAuthority);
+            } else {
+                logger.error(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);
+                throw new BareCommunicationException(
+                        COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);
+            }
+        } catch (IOException | URISyntaxException e) {
             logger.error(e.getMessage(), e);
             throw new BareException(e.getMessage());
         }
