@@ -40,6 +40,7 @@ import static nva.commons.utils.JsonUtils.objectMapper;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
@@ -133,8 +134,6 @@ public class AddNewAuthorityIdentifierHandlerTest {
         Assertions.assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
-
-        assertThat(problem.getDetail(), containsString(INVALID_VALUE_PATH_PARAMETER_QUALIFIER));
         assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
         assertThat(problem.getStatus(), is(Status.BAD_REQUEST));
     }
