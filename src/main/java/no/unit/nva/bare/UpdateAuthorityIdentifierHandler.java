@@ -6,6 +6,7 @@ import nva.commons.handlers.ApiGatewayHandler;
 import nva.commons.handlers.RequestInfo;
 import nva.commons.utils.Environment;
 import nva.commons.utils.JacocoGenerated;
+import nva.commons.utils.RequestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 
@@ -71,8 +72,8 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
 
         validateInput(input, requestInfo.getPathParameters());
 
-        String scn = requestInfo.getPathParameters().get(SCN_KEY);
-        String inputQualifier = requestInfo.getPathParameters().get(QUALIFIER_KEY);
+        String scn = RequestUtils.getPathParameter(requestInfo,SCN_KEY);
+        String inputQualifier = RequestUtils.getPathParameter(requestInfo,QUALIFIER_KEY);
         String qualifier = transformQualifier(inputQualifier);
         String identifier = input.getIdentifier();
         String updatedIdentifier = input.getUpdatedIdentifier();
