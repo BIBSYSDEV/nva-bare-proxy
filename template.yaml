@@ -242,7 +242,7 @@ Resources:
                     $ref: '#/definitions/Problem'
                 '500':
                   description: Internal server error.
-                    schema:
+                  schema:
                     $ref: '#/definitions/Problem'
           /{scn}/identifiers/{qualifier}/update:
             post:
