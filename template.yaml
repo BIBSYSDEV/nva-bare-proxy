@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Lambda, api and base path mapping for maipulating persondata
+  Lambda, api and base path mapping for manipulating person data
 
 Metadata:
   AWS::ServerlessRepo::Application:
@@ -162,58 +162,7 @@ Resources:
                           error:
                             type: string
                             description: error message
-          /{scn}:
-            put:
-              summary: Adds an identifier to the authority identifier list.
-              parameters:
-                - in: path
-                  name: scn
-                  type: string
-                  description: authors systemControlNumber (scn).
-              security:
-                - CognitoUserPool: []
-              requestBody:
-                required: true
-                content:
-                  application/json:
-                    schema:
-                      $ref: '#/components/schemas/addIdentifierRequestBody'
-              x-amazon-apigateway-integration:
-                uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareAddIdentifierFunction.Arn}/invocations
-                responses: {}
-                httpMethod: POST
-                type: AWS_PROXY
-              responses:
-                '200':
-                  description: Identifier added to authority.
-                  content:
-                    application/json:
-                      schema:
-                        $ref: '#/components/schemas/addIdentifierResponseBody'
-                '400':
-                  description: Bad request.
-                  content:
-                    application/json:
-                      schema:
-                        title: 400 Bad request
-                        type: object
-                        properties:
-                          error:
-                            type: string
-                            description: error message
-                '404':
-                  description: The specified authority was not found.
-                  content:
-                    application/json:
-                      schema:
-                        title: 404 Not found
-                        type: object
-                        properties:
-                          error:
-                            type: string
-                            description: error message
-          /{scn}/identifiers/{qualifier}/{identifier}:
+          /{scn}/identifiers/{qualifier}/add:
             post:
               summary: Adds an identifier to the authority identifier list.
               parameters:
@@ -225,10 +174,6 @@ Resources:
                   name: qualifier
                   type: string
                   description: qualifier of identifier to add.
-                - in: path
-                  name: identifier
-                  type: string
-                  description: identifier to add.
               security:
                 - CognitoUserPool: []
               x-amazon-apigateway-integration:
@@ -237,36 +182,29 @@ Resources:
                 responses: {}
                 httpMethod: POST
                 type: AWS_PROXY
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/addAuthorityIdentifierRequestBody'
               responses:
                 '200':
                   description: Identifier added to authority.
                   content:
                     application/json:
                       schema:
-                        $ref: '#/components/schemas/addIdentifierResponseBody'
+                        $ref: '#/components/schemas/authorityResponseBody'
                 '400':
                   description: Bad request.
-                  content:
-                    application/json:
-                      schema:
-                        title: 400 Bad request
-                        type: object
-                        properties:
-                          error:
-                            type: string
-                            description: error message
-                '404':
-                  description: The specified authority was not found.
-                  content:
-                    application/json:
-                      schema:
-                        title: 404 Not found
-                        type: object
-                        properties:
-                          error:
-                            type: string
-                            description: error message
-            delete:
+                  schema:
+                    $ref: '#/definitions/Problem'
+                '500':
+                  description: Internal server error.
+                  schema:
+                    $ref: '#/definitions/Problem'
+          /{scn}/identifiers/{qualifier}/delete:
+            post:
               summary: Removes an identifier from the authority identifier list.
               parameters:
                 - in: path
@@ -276,11 +214,7 @@ Resources:
                 - in: path
                   name: qualifier
                   type: string
-                  description: qualifier of identifier to remove.
-                - in: path
-                  name: identifier
-                  type: string
-                  description: identifier to remove.
+                  description: qualifier of identifier to add.
               security:
                 - CognitoUserPool: []
               x-amazon-apigateway-integration:
@@ -289,39 +223,30 @@ Resources:
                 responses: {}
                 httpMethod: POST
                 type: AWS_PROXY
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/deleteAuthorityIdentifierRequestBody'
               responses:
                 '200':
                   description: Identifier removed from authority.
                   content:
                     application/json:
                       schema:
-                        $ref: '#/components/schemas/addIdentifierResponseBody'
+                        $ref: '#/components/schemas/authorityResponseBody'
                 '400':
                   description: Bad request.
-                  content:
-                    application/json:
-                      schema:
-                        title: 400 Bad Request
-                        type: object
-                        properties:
-                          error:
-                            type: string
-                            description: error message
-                '404':
-                  description: The specified authority was not found.
-                  content:
-                    application/json:
-                      schema:
-                        title: 404 Not found
-                        type: object
-                        properties:
-                          error:
-                            type: string
-                            description: error message
-
-          /{scn}/identifiers/{qualifier}/{identifier}/update/{updatedIdentifier}:
-            put:
-              summary: Updates the value of a identifier in the authority identifier list.
+                  schema:
+                    $ref: '#/definitions/Problem'
+                '500':
+                  description: Internal server error.
+                    schema:
+                    $ref: '#/definitions/Problem'
+          /{scn}/identifiers/{qualifier}/update:
+            post:
+              summary: Updates the value of an identifier in the authority identifier list.
               parameters:
                 - in: path
                   name: scn
@@ -331,14 +256,6 @@ Resources:
                   name: qualifier
                   type: string
                   description: qualifier of identifier to add.
-                - in: path
-                  name: identifier
-                  type: string
-                  description: current identifier.
-                - in: path
-                  name: updatedIdentifier
-                  type: string
-                  description: updated identifier.
               security:
                 - CognitoUserPool: []
               x-amazon-apigateway-integration:
@@ -347,35 +264,27 @@ Resources:
                 responses: {}
                 httpMethod: POST
                 type: AWS_PROXY
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/updateAuthorityIdentifierRequestBody'
               responses:
                 '200':
-                  description: 'Identifier updated in authority.'
+                  description: Identifier updated in authority.
                   content:
                     application/json:
                       schema:
-                        $ref: '#/components/schemas/addIdentifierResponseBody'
+                        $ref: '#/components/schemas/authorityResponseBody'
                 '400':
-                  description: 'Bad request.'
-                  content:
-                    application/json:
-                      schema:
-                        title: 400 Bad Request
-                        type: object
-                        properties:
-                          error:
-                            type: string
-                            description: error message
-                '404':
-                  description: The specified authority was not found.
-                  content:
-                    application/json:
-                      schema:
-                        title: 404 Not Found
-                        type: object
-                        properties:
-                          error:
-                            type: string
-                            description: error message
+                  description: Bad request.
+                  schema:
+                    $ref: '#/definitions/Problem'
+                '500':
+                  description: Internal server error.
+                  schema:
+                    $ref: '#/definitions/Problem'
 
         components:
           securitySchemes:
@@ -403,15 +312,28 @@ Resources:
               title: Adds an identifier to the auhority
               type: object
               properties:
-                feideid:
+                identifier:
                   type: string
-                  description: feideid
-                orcid:
+                  description: identifier
+
+            deleteIdentifierRequestBody:
+              title: Deletes an identifier from the auhority
+              type: object
+              properties:
+                identifier:
                   type: string
-                  description: orcid
-                orgunitid:
+                  description: identifier
+
+            updateIdentifierRequestBody:
+              title: Adds an identifier to the auhority
+              type: object
+              properties:
+                identifier:
                   type: string
-                  description: unitid from CRIStin
+                  description: identifier
+                updatedIdentifier:
+                  type: string
+                  description: updated identifier
 
             createAuthorityResponseBody:
               title: created authority
@@ -439,7 +361,7 @@ Resources:
                   type: object
                   description: list of handles
 
-            addIdentifierResponseBody:
+            authorityResponseBody:
               title: updated authority
               type: object
               properties:
@@ -491,6 +413,16 @@ Resources:
                   type: object
                   description: list of handles
 
+            Problem:
+              type: object
+              properties:
+                title:
+                  type: string
+                status:
+                  type: integer
+                detail:
+                  type: string
+
   NvaBareFetchAuthorityFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -509,25 +441,6 @@ Resources:
             RestApiId: !Ref NvaBareProxyApi
             Path: /
             Method: get
-
-  NvaBareAddIdentifierFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      Environment:
-        Variables:
-          BARE_HOST: !Ref BareHost
-          BARE_API_KEY: !Ref BareApiKey
-          ALLOWED_ORIGIN:  '*'
-      Handler: no.unit.nva.bare.AddAuthorityIdentifierHandler::handleRequest
-      Runtime: java11
-      MemorySize: 512
-      Events:
-        NvaBareAddIdentifierEvent:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            RestApiId: !Ref NvaBareProxyApi
-            Path: /{scn}
-            Method: put
 
   NvaBareAddNewIdentifierFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction

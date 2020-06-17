@@ -1,15 +1,9 @@
 package no.unit.nva.bare;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,13 +13,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_NOT_ACCEPTABLE;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class CreateAuthorityHandlerTest {
 
     public static final String BODY_KEY = "body";
@@ -37,13 +36,14 @@ public class CreateAuthorityHandlerTest {
     public static final String BARE_SINGLE_AUTHORITY_CREATE_RESPONSE = "/bareSingleAuthorityCreateResponse.json";
     public static final String MOCK_ERROR_MESSAGE = "I want to fail";
 
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
+    private BareConnection mockBareConnection;
+    private HttpResponse mockHttpResponse;
 
-    @Mock
-    BareConnection mockBareConnection;
-    @Mock
-    HttpResponse mockHttpResponse;
+    @BeforeEach
+    public void setUp() {
+        mockHttpResponse = mock(HttpResponse.class);
+        mockBareConnection = mock(BareConnection.class);
+    }
 
     @Test
     public void testCreateAuthority() throws IOException, URISyntaxException, InterruptedException {
@@ -53,13 +53,13 @@ public class CreateAuthorityHandlerTest {
                 CreateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_CREATE_RESPONSE);
         final String mockBody = IOUtils.toString(responseStream, StandardCharsets.UTF_8);
 
-        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.CREATED.getStatusCode());
+        when(mockHttpResponse.statusCode()).thenReturn(SC_CREATED);
         when(mockHttpResponse.body()).thenReturn(mockBody);
         when(mockBareConnection.createAuthority(any())).thenReturn(mockHttpResponse);
         CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection);
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatusCode());
+        assertEquals(SC_OK, response.getStatusCode());
         String resp = FetchAuthorityHandlerTest.readJsonStringFromFile(CREATE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
         assertEquals(resp, response.getBody());
     }
@@ -72,14 +72,14 @@ public class CreateAuthorityHandlerTest {
         InputStream emptyStream = new ByteArrayInputStream(new byte[0]);
         final String mockBody = IOUtils.toString(emptyStream, StandardCharsets.UTF_8);
 
-        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.CREATED.getStatusCode());
+        when(mockHttpResponse.statusCode()).thenReturn(SC_CREATED);
         when(mockHttpResponse.body()).thenReturn(mockBody);
         when(mockBareConnection.createAuthority(any())).thenReturn(mockHttpResponse);
 
         CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection);
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatusCode());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertTrue(response.getBody().contains(
                 String.format(CreateAuthorityHandler.COMMUNICATION_ERROR_WHILE_CREATING, MOCK_NAME)));
     }
@@ -89,13 +89,13 @@ public class CreateAuthorityHandlerTest {
             InterruptedException {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
-        when(mockHttpResponse.statusCode()).thenReturn(Response.Status.NOT_ACCEPTABLE.getStatusCode());
+        when(mockHttpResponse.statusCode()).thenReturn(SC_NOT_ACCEPTABLE);
         when(mockHttpResponse.body()).thenReturn(MOCK_ERROR_MESSAGE);
         when(mockBareConnection.createAuthority(any())).thenReturn(mockHttpResponse);
         CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection);
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatusCode());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertTrue(response.getBody().contains(MOCK_ERROR_MESSAGE));
     }
 
@@ -107,7 +107,7 @@ public class CreateAuthorityHandlerTest {
         CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection);
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatusCode());
+        assertEquals(SC_INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertTrue(response.getBody().contains(MOCK_ERROR_MESSAGE));
     }
 
@@ -118,7 +118,7 @@ public class CreateAuthorityHandlerTest {
         CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler();
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatusCode());
+        assertEquals(SC_BAD_REQUEST, response.getStatusCode());
         assertTrue(response.getBody().contains(CreateAuthorityHandler.BODY_ARGS_MISSING));
     }
 
@@ -129,7 +129,7 @@ public class CreateAuthorityHandlerTest {
         CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler();
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatusCode());
+        assertEquals(SC_BAD_REQUEST, response.getStatusCode());
         assertTrue(response.getBody().contains(CreateAuthorityHandler.MALFORMED_NAME_VALUE));
     }
 
@@ -139,7 +139,7 @@ public class CreateAuthorityHandlerTest {
         CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler();
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatusCode());
+        assertEquals(SC_BAD_REQUEST, response.getStatusCode());
         assertTrue(response.getBody().contains(CreateAuthorityHandler.MISSING_EVENT_ELEMENT_BODY));
     }
 }
