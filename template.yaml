@@ -187,7 +187,7 @@ Resources:
                 content:
                   application/json:
                     schema:
-                      $ref: '#/components/schemas/addAuthorityIdentifierRequestBody'
+                      $ref: '#/components/schemas/addIdentifierRequestBody'
               responses:
                 '200':
                   description: Identifier added to authority.
@@ -228,7 +228,7 @@ Resources:
                 content:
                   application/json:
                     schema:
-                      $ref: '#/components/schemas/deleteAuthorityIdentifierRequestBody'
+                      $ref: '#/components/schemas/deleteIdentifierRequestBody'
               responses:
                 '200':
                   description: Identifier removed from authority.
@@ -269,7 +269,7 @@ Resources:
                 content:
                   application/json:
                     schema:
-                      $ref: '#/components/schemas/updateAuthorityIdentifierRequestBody'
+                      $ref: '#/components/schemas/updateIdentifierRequestBody'
               responses:
                 '200':
                   description: Identifier updated in authority.
