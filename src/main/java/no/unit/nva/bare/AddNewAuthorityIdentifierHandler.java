@@ -73,7 +73,9 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
 
             validateInput(input);
             String identifier = input.getIdentifier();
-            return addNewIdentifier(scn, qualifier, identifier);
+            AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(qualifier, identifier);
+//            return addNewIdentifier(scn, qualifier, identifier);
+            return addNewIdentifier(scn, authorityIdentifier);
         } catch (IllegalArgumentException e) {
             throw new InvalidInputException(e.getMessage());
         }
@@ -97,10 +99,27 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
         }
     }
 
-    protected Authority addNewIdentifier(String scn, String qualifier, String identifier)
+//    protected Authority addNewIdentifier(String scn, String qualifier, String identifier)
+//            throws ApiGatewayException {
+//        try {
+//            HttpResponse<String> response = bareConnection.addNewIdentifier(scn, qualifier, identifier);
+//            if (response.statusCode() == SC_OK) {
+//                return getAuthority(scn);
+//            } else {
+//                logger.error(String.format("addNewIdentifier - ErrorCode=%s, reasonPhrase=%s", response.statusCode(),
+//                        response.body()));
+//                throw new BareException(REMOTE_SERVER_ERRORMESSAGE + response.body());
+//            }
+//        } catch (IOException | URISyntaxException | InterruptedException e) {
+//            logger.error(e.getMessage(), e);
+//            throw new BareException(e.getMessage());
+//        }
+//    }
+
+    protected Authority addNewIdentifier(String scn, AuthorityIdentifier authorityIdentifier)
             throws ApiGatewayException {
         try {
-            HttpResponse<String> response = bareConnection.addNewIdentifier(scn, qualifier, identifier);
+            HttpResponse<String> response = bareConnection.addIdentifier(scn, authorityIdentifier);
             if (response.statusCode() == SC_OK) {
                 return getAuthority(scn);
             } else {
@@ -113,6 +132,7 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
             throw new BareException(e.getMessage());
         }
     }
+
 
     private Authority getAuthority(String scn) throws InterruptedException, BareCommunicationException, BareException {
         try {

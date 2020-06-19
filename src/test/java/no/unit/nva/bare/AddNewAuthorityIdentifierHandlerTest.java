@@ -191,6 +191,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
         when(bareConnection.get(anyString())).thenReturn(bareAuthority);
         when(httpResponse.statusCode()).thenReturn(SC_OK);
         when(bareConnection.addNewIdentifier(any(), any(), any())).thenReturn(httpResponse);
+        when(bareConnection.addIdentifier(any(), any())).thenReturn(httpResponse);
 
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(environment, bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
@@ -209,6 +210,8 @@ public class AddNewAuthorityIdentifierHandlerTest {
     public void handlerReturnsInternalServerErrorWhenBareConnectionError() throws Exception {
 
         when(bareConnection.addNewIdentifier(any(), any(), any())).thenThrow(
+                new IOException(EXCEPTION_IS_EXPECTED));
+        when(bareConnection.addIdentifier(any(), any())).thenThrow(
                 new IOException(EXCEPTION_IS_EXPECTED));
 
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(environment, bareConnection);
@@ -234,6 +237,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
         when(httpResponse.statusCode()).thenReturn(SC_OK);
         when(bareConnection.get(any())).thenReturn(null);
         when(bareConnection.addNewIdentifier(any(), any(), any())).thenReturn(httpResponse);
+        when(bareConnection.addIdentifier(any(), any())).thenReturn(httpResponse);
 
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(environment, bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
@@ -258,6 +262,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
         when(httpResponse.statusCode()).thenReturn(SC_OK);
         when(bareConnection.get(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
         when(bareConnection.addNewIdentifier(any(), any(), any())).thenReturn(httpResponse);
+        when(bareConnection.addIdentifier(any(), any())).thenReturn(httpResponse);
 
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(environment, bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
@@ -281,7 +286,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
 
         when(httpResponse.statusCode()).thenReturn(SC_FORBIDDEN);
         when(bareConnection.addNewIdentifier(any(), any(), any())).thenReturn(httpResponse);
-
+        when(bareConnection.addIdentifier(any(), any())).thenReturn(httpResponse);
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(environment, bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
