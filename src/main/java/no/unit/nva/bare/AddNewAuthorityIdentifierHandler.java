@@ -75,7 +75,6 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
             validateInput(input);
             String identifier = input.getIdentifier();
             AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(qualifier, identifier);
-//            return addNewIdentifier(scn, qualifier, identifier);
             return addNewIdentifier(scn, authorityIdentifier);
         } catch (IllegalArgumentException e) {
             throw new InvalidInputException(e.getMessage());
