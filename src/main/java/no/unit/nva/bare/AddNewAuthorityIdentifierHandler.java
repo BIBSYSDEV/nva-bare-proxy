@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static java.util.Arrays.asList;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 
 /**
@@ -73,7 +74,8 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
 
             validateInput(input);
             String identifier = input.getIdentifier();
-            return addNewIdentifier(scn, qualifier, identifier);
+            AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(qualifier, identifier);
+            return addNewIdentifier(scn, authorityIdentifier);
         } catch (IllegalArgumentException e) {
             throw new InvalidInputException(e.getMessage());
         }
@@ -97,11 +99,12 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
         }
     }
 
-    protected Authority addNewIdentifier(String scn, String qualifier, String identifier)
+
+    protected Authority addNewIdentifier(String scn, AuthorityIdentifier authorityIdentifier)
             throws ApiGatewayException {
         try {
-            HttpResponse<String> response = bareConnection.addNewIdentifier(scn, qualifier, identifier);
-            if (response.statusCode() == SC_OK) {
+            HttpResponse<String> response = bareConnection.addIdentifier(scn, authorityIdentifier);
+            if (response.statusCode() == SC_OK || response.statusCode() == SC_NO_CONTENT) {
                 return getAuthority(scn);
             } else {
                 logger.error(String.format("addNewIdentifier - ErrorCode=%s, reasonPhrase=%s", response.statusCode(),
