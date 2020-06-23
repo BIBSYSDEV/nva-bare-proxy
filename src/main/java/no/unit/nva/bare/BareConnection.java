@@ -26,7 +26,7 @@ public class BareConnection {
     public static final String URI_LOG_STRING = "uri=";
     public static final String SPACE = " ";
 
-    public static final String PATH_SEGMENT_AUTHORITY = "authority_sg";
+    public static final String PATH_SEGMENT_AUTHORITY = "authority";
     public static final String PATH_SEGMENT_REST = "rest";
     public static final String PATH_SEGMENT_AUTHORITIES = "authorities";
     public static final String PATH_SEGMENT_V_2 = "v2";
