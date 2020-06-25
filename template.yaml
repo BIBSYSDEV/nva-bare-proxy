@@ -43,10 +43,15 @@ Parameters:
     Default: '{{resolve:ssm:bareHost:2}}'
 
 Resources:
+  ApiAccessLogGroup:
+    Type: AWS::Logs::LogGroup
 
   NvaBareProxyApi:
     Type: AWS::Serverless::Api
     Properties:
+      AccessLogSetting:
+        DestinationArn: !GetAtt ApiAccessLogGroup.Arn
+        Format: '{ "apiId": "$context.apiId", "requestId": "$context.requestId", "requestTime": "$context.requestTime", "requestTimeEpoch": "$context.requestTimeEpoch", "httpMethod": "$context.httpMethod", "path": "$context.path", "status": "$context.status",  "error.message": "$context.error.message" }'
       StageName: Prod
       Auth:
         Authorizers:
@@ -204,7 +209,7 @@ Resources:
                   schema:
                     $ref: '#/definitions/Problem'
           /{scn}/identifiers/{qualifier}/delete:
-            post:
+            delete:
               summary: Removes an identifier from the authority identifier list.
               parameters:
                 - in: path
@@ -477,7 +482,7 @@ Resources:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             RestApiId: !Ref NvaBareProxyApi
-            Path: /{scn}/identifiers/{qualifier}/{identifier}
+            Path: /{scn}/identifiers/{qualifier}/delete
             Method: delete
 
   NvaBareUpdateIdentifierFunction:

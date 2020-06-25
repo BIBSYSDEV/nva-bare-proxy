@@ -33,6 +33,8 @@ public class BareConnection {
     public static final String PATH_SEGMENT_IDENTIFIERS = "identifiers";
     public static final Duration TIMEOUT_DURATION = Duration.ofSeconds(15);
 
+    public static final String QUERYPARAMETER_IDENTIFIER = "identifier";
+
     private final transient HttpClient httpClient;
     private final transient Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final transient Logger log = Logger.instance();
@@ -202,7 +204,8 @@ public class BareConnection {
                 .setHost(Config.getInstance().getBareHost())
                 .setPathSegments(PATH_SEGMENT_AUTHORITY, PATH_SEGMENT_REST, PATH_SEGMENT_AUTHORITIES, PATH_SEGMENT_V_2,
                         systemControlNumber, PATH_SEGMENT_IDENTIFIERS,
-                        qualifier, identifier)
+                        qualifier)
+                .setParameter(QUERYPARAMETER_IDENTIFIER, identifier)
                 .build();
         log.info(URI_LOG_STRING + uri);
 
