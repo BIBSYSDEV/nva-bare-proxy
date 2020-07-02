@@ -1,78 +1,85 @@
 package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.google.gson.Gson;
+import nva.commons.exceptions.ApiGatewayException;
+import nva.commons.handlers.ApiGatewayHandler;
+import nva.commons.handlers.RequestInfo;
+import nva.commons.utils.Environment;
+import nva.commons.utils.JacocoGenerated;
+import nva.commons.utils.RequestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import static java.util.Arrays.asList;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_OK;
 
 /**
  * Handler for requests to Lambda function.
  */
-public class AddNewAuthorityIdentifierHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
+public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAuthorityIdentifierRequest, Authority> {
 
-    public static final String MISSING_PATH_PARAMETER_SCN = "Missing path parameter 'scn'.";
-    public static final String MISSING_PATH_PARAMETER_QUALIFIER = "Missing path parameter 'qualifier'.";
+    public static final String MISSING_PATH_PARAMETER_SCN = "Missing from pathParameters: scn";
+    public static final String MISSING_PATH_PARAMETER_QUALIFIER = "Missing from pathParameters: qualifier";
     public static final String INVALID_VALUE_PATH_PARAMETER_QUALIFIER = "Invalid path parameter 'qualifier'.";
-    public static final String MISSING_PATH_PARAMETER_IDENTIFIER = "Missing path parameter 'identifier'.";
+    public static final String MISSING_REQUEST_JSON_BODY = "Missing json in body.";
+    public static final String MISSING_ATTRIBUTE_IDENTIFIER = "Missing json attribute 'identifier'.";
     public static final String COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY =
-            "Communication failure while updating authority %s";
-    public static final String PATH_PARAMETERS_KEY = "pathParameters";
+            "Communication failure trying to update authority";
     public static final String SCN_KEY = "scn";
     public static final String QUALIFIER_KEY = "qualifier";
-    public static final String IDENTIFIER_KEY = "identifier";
-    public static final int ERROR_CALLING_REMOTE_SERVER = Response.Status.BAD_GATEWAY.getStatusCode();
     public static final String REMOTE_SERVER_ERRORMESSAGE = "remote server errormessage: ";
 
-    public static final List<String> VALID_QUALIFIERS = asList(ValidIdentifierKey.FEIDEID.asString(),
-            ValidIdentifierKey.ORCID.asString(), ValidIdentifierKey.ORGUNITID.asString());
+    public static final List<String> VALID_QUALIFIERS = asList(
+            ValidIdentifierKey.FEIDEID.asString(),
+            ValidIdentifierKey.ORCID.asString(),
+            ValidIdentifierKey.ORGUNITID.asString());
 
-    protected final transient BareConnection bareConnection;
-    private final transient Logger log = Logger.instance();
+    private transient BareConnection bareConnection;
 
-
+    /**
+     * Default constructor for AddNewAuthorityIdentifierHandler.
+     */
+    @JacocoGenerated
     public AddNewAuthorityIdentifierHandler() {
-        this.bareConnection = new BareConnection();
-    }
-
-    public AddNewAuthorityIdentifierHandler(BareConnection bareConnection) {
-        this.bareConnection = bareConnection;
+        this(new Environment(), new BareConnection());
     }
 
     /**
-     * Main lambda function to add a qualified identifier on an existing Bare authority.
+     * Constructor for AddNewAuthorityIdentifierHandler.
      *
-     * @param input payload with path-parameters
-     * @return a GatewayResponse
+     * @param environment    environment
+     * @param bareConnection bareConnection
      */
-    @Override
-    @SuppressWarnings("unchecked")
-    public GatewayResponse handleRequest(final Map<String, Object> input, Context context) {
-        GatewayResponse gatewayResponse = new GatewayResponse();
-        try {
-            this.checkParameters(input);
-        } catch (RuntimeException e) {
-            log.error(e);
-            gatewayResponse.setErrorBody(e.getMessage());
-            gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
-            return gatewayResponse;
-        }
-        Map<String, String> pathParameters = (Map<String, String>) input.get(PATH_PARAMETERS_KEY);
-        String scn = pathParameters.get(SCN_KEY);
-        String inputQualifier = pathParameters.get(QUALIFIER_KEY);
-        String qualifier = transformQualifier(inputQualifier);
-        String identifier = pathParameters.get(IDENTIFIER_KEY);
+    public AddNewAuthorityIdentifierHandler(Environment environment, BareConnection bareConnection) {
+        super(AddNewAuthorityIdentifierRequest.class, environment,
+                LoggerFactory.getLogger(AddNewAuthorityIdentifierHandler.class));
+        this.bareConnection = bareConnection;
+    }
 
-        return addNewIdentifier(scn, qualifier, identifier);
+    @Override
+    protected Authority processInput(AddNewAuthorityIdentifierRequest input, RequestInfo requestInfo,
+                                     Context context) throws ApiGatewayException {
+
+        try {
+            String scn = RequestUtils.getPathParameter(requestInfo, SCN_KEY);
+            String inputQualifier = RequestUtils.getPathParameter(requestInfo, QUALIFIER_KEY);
+            String qualifier = transformQualifier(inputQualifier);
+
+            validateInput(input);
+            String identifier = input.getIdentifier();
+            AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(qualifier, identifier);
+            return addNewIdentifier(scn, authorityIdentifier);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidInputException(e.getMessage());
+        }
+
     }
 
     private String transformQualifier(String inputQualifier) {
@@ -82,62 +89,54 @@ public class AddNewAuthorityIdentifierHandler implements RequestHandler<Map<Stri
         return inputQualifier;
     }
 
-    @SuppressWarnings("unchecked")
-    private void checkParameters(Map<String, Object> input) {
-        Map<String, String> pathParameters = (Map<String, String>) input.get(PATH_PARAMETERS_KEY);
-        if (Objects.isNull(pathParameters)) {
-            throw new RuntimeException(MISSING_PATH_PARAMETER_SCN);
+    private void validateInput(AddNewAuthorityIdentifierRequest input)
+            throws InvalidInputException {
+        if (Objects.isNull(input)) {
+            throw new InvalidInputException(MISSING_REQUEST_JSON_BODY);
         }
-        if (StringUtils.isEmpty(pathParameters.get(SCN_KEY))) {
-            throw new RuntimeException(MISSING_PATH_PARAMETER_SCN);
-        }
-        if (StringUtils.isEmpty(pathParameters.get(QUALIFIER_KEY))) {
-            throw new RuntimeException(MISSING_PATH_PARAMETER_QUALIFIER);
-        }
-        if (!VALID_QUALIFIERS.contains(pathParameters.get(QUALIFIER_KEY))) {
-            throw new RuntimeException(INVALID_VALUE_PATH_PARAMETER_QUALIFIER);
-        }
-        if (StringUtils.isEmpty(pathParameters.get(IDENTIFIER_KEY))) {
-            throw new RuntimeException(MISSING_PATH_PARAMETER_IDENTIFIER);
+        if (StringUtils.isEmpty(input.getIdentifier())) {
+            throw new InvalidInputException(MISSING_ATTRIBUTE_IDENTIFIER);
         }
     }
 
-    protected GatewayResponse addNewIdentifier(String scn, String qualifier, String identifier) {
-        GatewayResponse gatewayResponse = new GatewayResponse();
+
+    protected Authority addNewIdentifier(String scn, AuthorityIdentifier authorityIdentifier)
+            throws ApiGatewayException {
         try {
-            HttpResponse<String> response = bareConnection.addNewIdentifier(scn, qualifier, identifier);
-            log.info("response (from bareConnection)=" + response);
-            if (response.statusCode() == Response.Status.OK.getStatusCode()) {
-                try {
-                    final BareAuthority updatedAuthority = bareConnection.get(scn);
-                    if (Objects.nonNull(updatedAuthority)) {
-                        AuthorityConverter authorityConverter = new AuthorityConverter();
-                        final Authority authority = authorityConverter.asAuthority(updatedAuthority);
-                        gatewayResponse.setBody(new Gson().toJson(authority));
-                        gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
-                    } else {
-                        log.info(String.format(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY, scn));
-                        gatewayResponse.setErrorBody(String.format(
-                                COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY, scn));
-                        gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-                    }
-                } catch (IOException | URISyntaxException e) {
-                    log.error(e);
-                    gatewayResponse.setErrorBody(e.getMessage());
-                    gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-                }
+            HttpResponse<String> response = bareConnection.addIdentifier(scn, authorityIdentifier);
+            if (response.statusCode() == SC_OK || response.statusCode() == SC_NO_CONTENT) {
+                return getAuthority(scn);
             } else {
-                log.error(String.format("addNewIdentifier - ErrorCode=%s, reasonPhrase=%s", response.statusCode(),
+                logger.error(String.format("addNewIdentifier - ErrorCode=%s, reasonPhrase=%s", response.statusCode(),
                         response.body()));
-                gatewayResponse.setErrorBody(REMOTE_SERVER_ERRORMESSAGE + response.body());
-                gatewayResponse.setStatusCode(ERROR_CALLING_REMOTE_SERVER);
+                throw new BareException(REMOTE_SERVER_ERRORMESSAGE + response.body());
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
-            log.error(e);
-            gatewayResponse.setErrorBody(e.getMessage());
-            gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+            logger.error(e.getMessage(), e);
+            throw new BareException(e.getMessage());
         }
-        return gatewayResponse;
+    }
+
+    private Authority getAuthority(String scn) throws InterruptedException, BareCommunicationException, BareException {
+        try {
+            final BareAuthority updatedAuthority = bareConnection.get(scn);
+            if (Objects.nonNull(updatedAuthority)) {
+                AuthorityConverter authorityConverter = new AuthorityConverter();
+                return authorityConverter.asAuthority(updatedAuthority);
+            } else {
+                logger.info(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);
+                throw new BareCommunicationException(
+                        COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);
+            }
+        } catch (IOException | URISyntaxException e) {
+            logger.error(e.getMessage(), e);
+            throw new BareException(e.getMessage());
+        }
+    }
+
+    @Override
+    protected Integer getSuccessStatusCode(AddNewAuthorityIdentifierRequest input, Authority output) {
+        return SC_OK;
     }
 
 }

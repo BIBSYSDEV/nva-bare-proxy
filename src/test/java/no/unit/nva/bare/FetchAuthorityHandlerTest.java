@@ -2,19 +2,12 @@ package no.unit.nva.bare;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import org.mockito.runners.MockitoJUnitRunner;
+import no.unit.nva.testutils.TestHeaders;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,17 +19,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import static no.unit.nva.bare.AddAuthorityIdentifierHandlerTest.BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON;
+import static no.unit.nva.bare.AddNewAuthorityIdentifierHandlerTest.BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON;
 import static no.unit.nva.bare.FetchAuthorityHandler.ARPID_KEY;
 import static no.unit.nva.bare.FetchAuthorityHandler.QUERY_STRING_PARAMETERS_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class FetchAuthorityHandlerTest {
 
     public static final String BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE = "/bareSingleAuthorityResponse.json";
@@ -48,18 +42,14 @@ public class FetchAuthorityHandlerTest {
     public static final String ORCID_KEY = ValidIdentifierKey.ORCID.asString();
     public static final String SAMPLE_IDENTIFIER = "0000-1111-2222-3333";
 
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
-
-    @Mock
-    BareConnection mockBareConnection;
+    private BareConnection mockBareConnection;
 
     /**
      * Initialise mocks and Config.
      */
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        mockBareConnection = mock(BareConnection.class);
         final Config config = Config.getInstance();
         config.setBareHost(Config.BARE_HOST_KEY);
         config.setBareApikey(Config.BARE_APIKEY_KEY);
@@ -79,8 +69,8 @@ public class FetchAuthorityHandlerTest {
 
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
-        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
+        assertEquals(HttpStatus.SC_OK, result.getStatusCode());
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
         String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
@@ -102,8 +92,8 @@ public class FetchAuthorityHandlerTest {
 
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
-        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
+        assertEquals(HttpStatus.SC_OK, result.getStatusCode());
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
     }
@@ -117,7 +107,7 @@ public class FetchAuthorityHandlerTest {
         event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), result.getStatusCode());
+        assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, result.getStatusCode());
         String content = result.getBody();
         assertNotNull(content);
         assertTrue(content.contains(MY_MOCK_THROWS_AN_EXCEPTION));
@@ -136,8 +126,8 @@ public class FetchAuthorityHandlerTest {
         event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
-        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
+        assertEquals(HttpStatus.SC_OK, result.getStatusCode());
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
         String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
@@ -150,7 +140,7 @@ public class FetchAuthorityHandlerTest {
         event.put(QUERY_STRING_PARAMETERS_KEY, null);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
+        assertEquals(HttpStatus.SC_BAD_REQUEST, result.getStatusCode());
         String content = result.getBody();
         assertNotNull(content);
         assertTrue(content.contains(FetchAuthorityHandler.MISSING_PARAMETERS));
@@ -171,8 +161,8 @@ public class FetchAuthorityHandlerTest {
 
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
-        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
+        assertEquals(HttpStatus.SC_OK, result.getStatusCode());
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
         Type authorityListType = new TypeToken<ArrayList<Authority>>(){}.getType();
@@ -189,17 +179,17 @@ public class FetchAuthorityHandlerTest {
     public void testResponseWithoutQueryParams()  {
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(null, null);
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
+        assertEquals(HttpStatus.SC_BAD_REQUEST, result.getStatusCode());
 
         Map<String, Object> event = new HashMap<>();
         result = mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
+        assertEquals(HttpStatus.SC_BAD_REQUEST, result.getStatusCode());
 
 
         Map<String, String> queryParameters = new HashMap<>();
         event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
         result = mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
+        assertEquals(HttpStatus.SC_BAD_REQUEST, result.getStatusCode());
     }
 
     @Test
@@ -217,13 +207,13 @@ public class FetchAuthorityHandlerTest {
 
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.OK.getStatusCode(), result.getStatusCode());
-        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON);
+        assertEquals(HttpStatus.SC_OK, result.getStatusCode());
+        assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
         Type authorityListType = new TypeToken<ArrayList<Authority>>(){}.getType();
         List<Authority> responseAuthority = new Gson().fromJson(content, authorityListType);
-        assertTrue("The result should be an empty list", responseAuthority.isEmpty());
+        assertTrue(responseAuthority.isEmpty());
     }
 
     @Test
@@ -236,7 +226,7 @@ public class FetchAuthorityHandlerTest {
         event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection);
         GatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), result.getStatusCode());
+        assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, result.getStatusCode());
         String content = result.getBody();
         assertNotNull(content);
         assertTrue(content.contains(MY_MOCK_THROWS_AN_EXCEPTION));
@@ -247,7 +237,7 @@ public class FetchAuthorityHandlerTest {
         Map<String, Object> event = new HashMap<>();
         FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler();
         GatewayResponse result = fetchAuthorityHandler.handleRequest(event, null);
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatusCode());
+        assertEquals(HttpStatus.SC_BAD_REQUEST, result.getStatusCode());
         String content = result.getBody();
         assertNotNull(content);
         assertTrue(content.contains(FetchAuthorityHandler.MISSING_PARAMETERS));

@@ -1,24 +1,16 @@
 package no.unit.nva.bare;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.core.Response;
+import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-@RunWith(MockitoJUnitRunner.class)
 public class GatewayResponseTest {
 
     private static final String EMPTY_STRING = "";
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     public static final String CORS_HEADER = "CORS header";
     public static final String MOCK_BODY = "mock";
@@ -30,7 +22,7 @@ public class GatewayResponseTest {
         String expectedJson = ERROR_JSON;
         // calling real constructor (no need to mock as this is not talking to the internet)
         // but helps code coverage
-        GatewayResponse gatewayResponse = new GatewayResponse(MOCK_BODY, Response.Status.CREATED.getStatusCode());
+        GatewayResponse gatewayResponse = new GatewayResponse(MOCK_BODY, SC_CREATED);
         gatewayResponse.setErrorBody(ERROR_BODY);
         assertEquals(expectedJson, gatewayResponse.getBody());
     }
@@ -40,12 +32,12 @@ public class GatewayResponseTest {
         final Config config = Config.getInstance();
         config.setCorsHeader(EMPTY_STRING);
         final String corsHeader = config.getCorsHeader();
-        GatewayResponse gatewayResponse = new GatewayResponse(MOCK_BODY, Response.Status.CREATED.getStatusCode());
+        GatewayResponse gatewayResponse = new GatewayResponse(MOCK_BODY, SC_CREATED);
         assertFalse(gatewayResponse.getHeaders().containsKey(GatewayResponse.CORS_ALLOW_ORIGIN_HEADER));
         assertFalse(gatewayResponse.getHeaders().containsValue(corsHeader));
 
         config.setCorsHeader(CORS_HEADER);
-        GatewayResponse gatewayResponse1 = new GatewayResponse(MOCK_BODY, Response.Status.CREATED.getStatusCode());
+        GatewayResponse gatewayResponse1 = new GatewayResponse(MOCK_BODY, SC_CREATED);
         assertTrue(gatewayResponse1.getHeaders().containsKey(GatewayResponse.CORS_ALLOW_ORIGIN_HEADER));
     }
 

@@ -1,5 +1,7 @@
 package no.unit.nva.bare;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -7,12 +9,26 @@ import java.util.Set;
 public class Authority {
 
     public static final String EMPTY_STRING = "";
+
+    @JsonProperty("name")
     private String name;
+
+    @JsonProperty("systemControlNumber")
     private String systemControlNumber;
+
+    @JsonProperty("feideids")
     private final Set<String> feideids;
+
+    @JsonProperty("orcids")
     private final Set<String> orcids;
+
+    @JsonProperty("orgunitids")
     private final Set<String> orgunitids;
+
+    @JsonProperty("birthDate")
     private String birthDate;
+
+    @JsonProperty("handles")
     private final Set<String> handles;
 
     /**

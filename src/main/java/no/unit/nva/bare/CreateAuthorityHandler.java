@@ -8,12 +8,16 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.Objects;
+
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_OK;
 
 /**
  * Handler for requests to Lambda function creating an authority in ARP.
@@ -49,7 +53,7 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
         } catch (RuntimeException e) {
             log.error(e);
             gatewayResponse.setErrorBody(e.getMessage());
-            gatewayResponse.setStatusCode(Response.Status.BAD_REQUEST.getStatusCode());
+            gatewayResponse.setStatusCode(SC_BAD_REQUEST);
             return gatewayResponse;
         }
         String bodyEvent = (String) input.get(BODY_KEY);
@@ -66,28 +70,28 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
         try {
             HttpResponse<String> response = bareConnection.createAuthority(bareAuthority);
             log.info("response (from bareConnection)=" + response);
-            if (response.statusCode() == Response.Status.CREATED.getStatusCode()
-                    || response.statusCode() == Response.Status.OK.getStatusCode()) { //201
+            if (response.statusCode() == SC_CREATED
+                    || response.statusCode() == SC_OK) { //201
                 BareAuthority createdAuthority = gson.fromJson(response.body(), BareAuthority.class);
                 if (Objects.nonNull(createdAuthority)) {
                     final Authority authority = authorityConverter.asAuthority(createdAuthority);
                     gatewayResponse.setBody(gson.toJson(authority, Authority.class));
-                    gatewayResponse.setStatusCode(Response.Status.OK.getStatusCode());
+                    gatewayResponse.setStatusCode(SC_OK);
                 } else {
                     log.error(String.format(COMMUNICATION_ERROR_WHILE_CREATING, name));
                     gatewayResponse.setErrorBody(String.format(COMMUNICATION_ERROR_WHILE_CREATING, name));
-                    gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+                    gatewayResponse.setStatusCode(SC_INTERNAL_SERVER_ERROR);
                 }
             } else {
                 log.error("Error: " + response.body());
                 log.error("new authority looked like this: \n" + gson.toJson(bareAuthority));
                 gatewayResponse.setErrorBody(response.statusCode() + ": " + response.body());
-                gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+                gatewayResponse.setStatusCode(SC_INTERNAL_SERVER_ERROR);
             }
         } catch (IOException | URISyntaxException | InterruptedException e) {
             log.error(e);
             gatewayResponse.setErrorBody(e.getMessage());
-            gatewayResponse.setStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+            gatewayResponse.setStatusCode(SC_INTERNAL_SERVER_ERROR);
         }
         return gatewayResponse;
     }
