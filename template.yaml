@@ -40,7 +40,6 @@ Parameters:
   BareHost:
     Type: String
     Description: Address to bare
-    Default: '{{resolve:ssm:bareHost:2}}'
 
 Resources:
   ApiAccessLogGroup:
