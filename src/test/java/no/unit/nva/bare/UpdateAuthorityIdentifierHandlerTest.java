@@ -251,7 +251,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
         UpdateAuthorityIdentifierRequest requestObject =
                 new UpdateAuthorityIdentifierRequest(MOCK_IDENTIFIER_URI.toString(),
                         MOCK_UPDATED_IDENTIFIER_URI.toString());
-        Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
+        Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.ORGUNITID.asString());
         InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
                 TestHeaders.getRequestHeaders(), pathParams, null);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);

@@ -116,6 +116,7 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
                                          String updatedIdentifier) throws BareCommunicationException, BareException {
 
         try {
+            logger.debug("updating {} for scn {}",qualifier, scn);
             HttpResponse<String> response = bareConnection.updateIdentifier(scn, qualifier, identifier,
                     updatedIdentifier);
             if (response.statusCode() == SC_OK) {
