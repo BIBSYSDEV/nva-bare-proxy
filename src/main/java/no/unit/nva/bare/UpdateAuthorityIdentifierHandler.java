@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -75,8 +77,8 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
         String scn = RequestUtils.getPathParameter(requestInfo,SCN_KEY);
         String inputQualifier = RequestUtils.getPathParameter(requestInfo,QUALIFIER_KEY);
         String qualifier = transformQualifier(inputQualifier);
-        String identifier = input.getIdentifier();
-        String updatedIdentifier = input.getUpdatedIdentifier();
+        String identifier = URLEncoder.encode(input.getIdentifier(), StandardCharsets.UTF_8);
+        String updatedIdentifier = URLEncoder.encode(input.getUpdatedIdentifier(), StandardCharsets.UTF_8);
 
         return updateIdentifier(scn, qualifier, identifier, updatedIdentifier);
     }
@@ -129,7 +131,8 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
         }
     }
 
-    private Authority getAuthority(String scn) throws InterruptedException, BareCommunicationException, BareException {
+    protected Authority getAuthority(String scn)
+            throws InterruptedException, BareCommunicationException, BareException {
         try {
             final BareAuthority updatedAuthority = bareConnection.get(scn);
             if (Objects.nonNull(updatedAuthority)) {

@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +45,9 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 public class UpdateAuthorityIdentifierHandlerTest {
@@ -52,6 +56,11 @@ public class UpdateAuthorityIdentifierHandlerTest {
     public static final String MOCK_FEIDEID_VALUE = "feideid";
     public static final String BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON = "/bareSingleAuthorityGetResponse.json";
     public static final String EXCEPTION_IS_EXPECTED = "Exception is expected.";
+
+
+    public static final URI MOCK_IDENTIFIER_URI = URI.create("https://example.org/originalidentifier");
+    public static final URI MOCK_UPDATED_IDENTIFIER_URI = URI.create("https://example.org/originalidentifier");
+
 
     private Environment environment;
     private Context context;
@@ -220,6 +229,39 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
         assertEquals(SC_OK, gatewayResponse.getStatusCode());
     }
+
+    @Test
+    @DisplayName("handler Returns Ok Response When Input Is Valid URI And Authority Identifier Is Updated Successfully")
+    public void handlerReturnsOkWhenInputIsValidUriAndAuthorityIdentifierIsUpdatedSuccessfully() throws Exception {
+
+        InputStream is =
+                UpdateAuthorityIdentifierHandler.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
+        final BareAuthority bareAuthority = new Gson().fromJson(new InputStreamReader(is), BareAuthority.class);
+        Config.getInstance().setBareHost("localhost");
+        HttpClient httpClient = mock(HttpClient.class);
+        HttpResponse mockHttpResponse = mock(HttpResponse.class);
+        when(mockHttpResponse.statusCode()).thenReturn(SC_OK);
+        when(httpClient.send(any(), any())).thenReturn(mockHttpResponse);
+        bareConnection = new BareConnection(httpClient);
+
+        updateAuthorityIdentifierHandler = spy(new UpdateAuthorityIdentifierHandler(environment, bareConnection));
+        Authority mockAuthority = mock(Authority.class);
+        doReturn(mockAuthority).when(updateAuthorityIdentifierHandler).getAuthority(any());
+
+        UpdateAuthorityIdentifierRequest requestObject =
+                new UpdateAuthorityIdentifierRequest(MOCK_IDENTIFIER_URI.toString(),
+                        MOCK_UPDATED_IDENTIFIER_URI.toString());
+        Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
+        InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
+                TestHeaders.getRequestHeaders(), pathParams, null);
+        updateAuthorityIdentifierHandler.handleRequest(input, output, context);
+        nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
+                nva.commons.handlers.GatewayResponse.class);
+
+        assertEquals(SC_OK, gatewayResponse.getStatusCode());
+    }
+
+
 
 
     @Test
