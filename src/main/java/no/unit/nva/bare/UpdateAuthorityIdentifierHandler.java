@@ -6,15 +6,12 @@ import nva.commons.handlers.ApiGatewayHandler;
 import nva.commons.handlers.RequestInfo;
 import nva.commons.utils.Environment;
 import nva.commons.utils.JacocoGenerated;
-import nva.commons.utils.RequestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -74,11 +71,11 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
 
         validateInput(input, requestInfo.getPathParameters());
 
-        String scn = RequestUtils.getPathParameter(requestInfo,SCN_KEY);
-        String inputQualifier = RequestUtils.getPathParameter(requestInfo,QUALIFIER_KEY);
+        String scn = requestInfo.getPathParameter(SCN_KEY);
+        String inputQualifier = requestInfo.getPathParameter(QUALIFIER_KEY);
         String qualifier = transformQualifier(inputQualifier);
-        String identifier = URLEncoder.encode(input.getIdentifier(), StandardCharsets.UTF_8);
-        String updatedIdentifier = URLEncoder.encode(input.getUpdatedIdentifier(), StandardCharsets.UTF_8);
+        String identifier = input.getIdentifier();
+        String updatedIdentifier = input.getUpdatedIdentifier();
 
         return updateIdentifier(scn, qualifier, identifier, updatedIdentifier);
     }

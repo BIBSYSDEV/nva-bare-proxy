@@ -6,7 +6,6 @@ import nva.commons.handlers.ApiGatewayHandler;
 import nva.commons.handlers.RequestInfo;
 import nva.commons.utils.Environment;
 import nva.commons.utils.JacocoGenerated;
-import nva.commons.utils.RequestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 
@@ -69,8 +68,8 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
 
         validateInput(input, requestInfo.getPathParameters());
 
-        String scn = RequestUtils.getPathParameter(requestInfo, SCN_KEY);
-        String inputQualifier = RequestUtils.getPathParameter(requestInfo,QUALIFIER_KEY);
+        String scn = requestInfo.getPathParameter(SCN_KEY);
+        String inputQualifier = requestInfo.getPathParameter(QUALIFIER_KEY);
         String qualifier = transformQualifier(inputQualifier);
         String identifier = input.getIdentifier();
 

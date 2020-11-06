@@ -7,13 +7,11 @@ import org.apache.http.client.utils.URIBuilder;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import static org.apache.http.HttpStatus.SC_OK;
@@ -233,8 +231,11 @@ public class BareConnection {
                 .setScheme(HTTPS)
                 .setHost(Config.getInstance().getBareHost())
                 .setPathSegments(PATH_SEGMENT_AUTHORITY, PATH_SEGMENT_REST, PATH_SEGMENT_AUTHORITIES, PATH_SEGMENT_V_2,
-                        systemControlNumber, PATH_SEGMENT_IDENTIFIERS, qualifier, identifier, "update",
-                        updatedIdentifier)
+                        systemControlNumber, PATH_SEGMENT_IDENTIFIERS,
+                        qualifier,
+                        URLEncoder.encode(identifier, StandardCharsets.UTF_8),
+                        "update",
+                        URLEncoder.encode(updatedIdentifier, StandardCharsets.UTF_8))
                 .build();
         log.info(URI_LOG_STRING + uri);
 
