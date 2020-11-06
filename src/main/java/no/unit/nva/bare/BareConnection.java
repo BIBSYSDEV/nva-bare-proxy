@@ -11,11 +11,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import static org.apache.http.HttpStatus.SC_OK;
@@ -237,9 +235,10 @@ public class BareConnection {
                 .setPathSegments(PATH_SEGMENT_AUTHORITY, PATH_SEGMENT_REST, PATH_SEGMENT_AUTHORITIES, PATH_SEGMENT_V_2,
                         systemControlNumber, PATH_SEGMENT_IDENTIFIERS,
                         qualifier,
-                        URLEncoder.encode(identifier, StandardCharsets.UTF_8),
+                        identifier, //  URLEncoder.encode(identifier, StandardCharsets.UTF_8),
                         "update",
-                        URLEncoder.encode(updatedIdentifier, StandardCharsets.UTF_8))
+                        updatedIdentifier // URLEncoder.encode(updatedIdentifier, StandardCharsets.UTF_8)
+                )
                 .build();
         log.info(URI_LOG_STRING + uri);
 
