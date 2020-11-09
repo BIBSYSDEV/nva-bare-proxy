@@ -229,18 +229,11 @@ public class BareConnection {
     public HttpResponse<String> updateIdentifier(String systemControlNumber, String qualifier, String identifier,
                                                  String updatedIdentifier) throws IOException, URISyntaxException,
             InterruptedException {
-        URI uri = new URIBuilder()
-                .setScheme(HTTPS)
-                .setHost(Config.getInstance().getBareHost())
-                .setPathSegments(PATH_SEGMENT_AUTHORITY, PATH_SEGMENT_REST, PATH_SEGMENT_AUTHORITIES, PATH_SEGMENT_V_2,
-                        systemControlNumber, PATH_SEGMENT_IDENTIFIERS, qualifier, identifier, "update",
-                        updatedIdentifier)
-                .build();
-        log.info(URI_LOG_STRING + uri);
 
-        final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
-        HttpRequest request = requestBuilder.PUT(HttpRequest.BodyPublishers.noBody()).build();
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        deleteIdentifier(systemControlNumber, qualifier, identifier);
+        AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(qualifier, updatedIdentifier);
+        return addIdentifier(systemControlNumber, authorityIdentifier);
+
     }
 
     private HttpRequest.Builder getHttpRequestBuilder(URI uri) {
