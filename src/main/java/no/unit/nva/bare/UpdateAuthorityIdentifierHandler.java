@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static java.util.Arrays.asList;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 
 /**
@@ -118,7 +119,7 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
         try {
             HttpResponse<String> response = bareConnection.updateIdentifier(scn, qualifier, identifier,
                     updatedIdentifier);
-            if (response.statusCode() == SC_OK) {
+            if (response.statusCode() == SC_OK || response.statusCode() == SC_NO_CONTENT) {
                 return getAuthority(scn);
             } else {
                 logger.error(String.format("updatedIdentifier - ErrorCode=%s, reasonPhrase=%s", response.statusCode(),
