@@ -1,6 +1,7 @@
 package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import nva.commons.exceptions.ApiGatewayException;
 import nva.commons.handlers.ApiGatewayHandler;
 import nva.commons.handlers.RequestInfo;
@@ -42,13 +43,14 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
             ValidIdentifierKey.ORCID.asString(),
             ValidIdentifierKey.ORGUNITID.asString());
 
-    private transient BareConnection bareConnection;
+    private final transient BareConnection bareConnection;
 
 
     /**
      * Default constructor for UpdateAuthorityIdentifierHandler.
      */
     @JacocoGenerated
+    @JsonCreator
     public UpdateAuthorityIdentifierHandler() {
         this(new Environment(), new BareConnection());
     }
@@ -109,11 +111,11 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
         }
     }
 
+
     protected Authority updateIdentifier(String scn, String qualifier, String identifier,
                                          String updatedIdentifier) throws BareCommunicationException, BareException {
 
         try {
-            logger.debug("updating {} for scn {}",qualifier, scn);
             HttpResponse<String> response = bareConnection.updateIdentifier(scn, qualifier, identifier,
                     updatedIdentifier);
             if (response.statusCode() == SC_OK) {
