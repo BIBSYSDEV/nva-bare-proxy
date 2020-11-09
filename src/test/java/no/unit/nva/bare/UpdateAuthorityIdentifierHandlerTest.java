@@ -60,7 +60,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
     public static final URI MOCK_IDENTIFIER_URI = URI.create("https://example.org/originalidentifier");
     public static final URI MOCK_UPDATED_IDENTIFIER_URI = URI.create("https://example.org/originalidentifier");
-
+    public static final String MOCK_BAREHOST = "localhost";
 
     private Environment environment;
     private Context context;
@@ -68,6 +68,25 @@ public class UpdateAuthorityIdentifierHandlerTest {
     private OutputStream output;
     private UpdateAuthorityIdentifierHandler updateAuthorityIdentifierHandler;
     private HttpResponse httpResponse;
+
+    private void initMockUpdateAuthorityIdentifierHandler() throws
+            InterruptedException, BareCommunicationException, BareException {
+        updateAuthorityIdentifierHandler = spy(new UpdateAuthorityIdentifierHandler(environment, bareConnection));
+        Authority mockAuthority = mock(Authority.class);
+        doReturn(mockAuthority).when(updateAuthorityIdentifierHandler).getAuthority(any());
+    }
+
+    private void initMockBareConnection() throws IOException, InterruptedException {
+        InputStream is =
+                UpdateAuthorityIdentifierHandler.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
+        final BareAuthority bareAuthority = new Gson().fromJson(new InputStreamReader(is), BareAuthority.class);
+        Config.getInstance().setBareHost(MOCK_BAREHOST);
+        HttpClient httpClient = mock(HttpClient.class);
+        HttpResponse mockHttpResponse = mock(HttpResponse.class);
+        when(mockHttpResponse.statusCode()).thenReturn(SC_OK);
+        when(httpClient.send(any(), any())).thenReturn(mockHttpResponse);
+        bareConnection = new BareConnection(httpClient);
+    }
 
     /**
      * Initialize mocks.
@@ -234,19 +253,8 @@ public class UpdateAuthorityIdentifierHandlerTest {
     @DisplayName("handler Returns Ok Response When Input Is Valid URI And Authority Identifier Is Updated Successfully")
     public void handlerReturnsOkWhenInputIsValidUriAndAuthorityIdentifierIsUpdatedSuccessfully() throws Exception {
 
-        InputStream is =
-                UpdateAuthorityIdentifierHandler.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
-        final BareAuthority bareAuthority = new Gson().fromJson(new InputStreamReader(is), BareAuthority.class);
-        Config.getInstance().setBareHost("localhost");
-        HttpClient httpClient = mock(HttpClient.class);
-        HttpResponse mockHttpResponse = mock(HttpResponse.class);
-        when(mockHttpResponse.statusCode()).thenReturn(SC_OK);
-        when(httpClient.send(any(), any())).thenReturn(mockHttpResponse);
-        bareConnection = new BareConnection(httpClient);
-
-        updateAuthorityIdentifierHandler = spy(new UpdateAuthorityIdentifierHandler(environment, bareConnection));
-        Authority mockAuthority = mock(Authority.class);
-        doReturn(mockAuthority).when(updateAuthorityIdentifierHandler).getAuthority(any());
+        initMockBareConnection();
+        initMockUpdateAuthorityIdentifierHandler();
 
         UpdateAuthorityIdentifierRequest requestObject =
                 new UpdateAuthorityIdentifierRequest(MOCK_IDENTIFIER_URI.toString(),
@@ -260,7 +268,6 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
         assertEquals(SC_OK, gatewayResponse.getStatusCode());
     }
-
 
 
 
