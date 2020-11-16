@@ -478,6 +478,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN:  '*'
+          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
       Runtime: java11
       MemorySize: 512
@@ -497,6 +498,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN:  '*'
+          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
       Runtime: java11
       MemorySize: 512
@@ -516,6 +518,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN:  '*'
+          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.AddNewAuthorityIdentifierHandler::handleRequest
       Runtime: java11
       MemorySize: 512
@@ -535,6 +538,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN:  '*'
+          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.DeleteAuthorityIdentifierHandler::handleRequest
       Runtime: java11
       MemorySize: 512
@@ -573,6 +577,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN:  '*'
+          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.CreateAuthorityHandler::handleRequest
       Runtime: java11
       MemorySize: 512
