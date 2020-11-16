@@ -166,6 +166,49 @@ Resources:
                           error:
                             type: string
                             description: error message
+          /{scn}:
+            get:
+              summary:  Fetches authority by uri (systemcontrolnumber)
+              parameters:
+                - in: path
+                  name: scn
+                  type: string
+                  description: authors systemControlNumber (scn).
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareGetAuthorityByURIFunction.Arn}/invocations
+                responses: {}
+                httpMethod: POST
+                type: AWS_PROXY
+              responses:
+                '200':
+                  description: authority
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/fetchAuthorityResponseBody'
+                '400':
+                  description: Bad request.
+                  content:
+                    application/json:
+                      schema:
+                        title: 400 Bad request
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
+                '404':
+                  description: Authority not found.
+                  content:
+                    application/json:
+                      schema:
+                        title: 404 Not found
+                        type: object
+                        properties:
+                          error:
+                            type: string
+                            description: error message
           /{scn}/identifiers/{qualifier}/add:
             post:
               summary: Adds an identifier to the authority identifier list.
@@ -444,6 +487,25 @@ Resources:
           Properties:
             RestApiId: !Ref NvaBareProxyApi
             Path: /
+            Method: get
+
+  NvaBareGetAuthorityByURIFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+          ALLOWED_ORIGIN:  '*'
+      Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
+      Runtime: java11
+      MemorySize: 512
+      Events:
+        NvaBareFetchEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref NvaBareProxyApi
+            Path: /{scn}
             Method: get
 
   NvaBareAddNewIdentifierFunction:
