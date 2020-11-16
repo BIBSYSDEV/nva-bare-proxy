@@ -27,10 +27,15 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
     protected final transient AuthorityConverter authorityConverter;
     protected final transient BareConnection bareConnection;
     public static final String QUERY_STRING_PARAMETERS_KEY = "queryStringParameters";
+    public static final String PATH_PARAMETERS_KEY = "pathParameters";
+
+
     public static final String NAME_KEY = "name";
     public static final String FEIDE_KEY = "feideid";
     public static final String ORCID_KEY = "orcid";
     public static final String ARPID_KEY = "arpId";
+    public static final String SCN_KEY = "scn";
+
     private final transient Logger log = Logger.instance();
 
     @JacocoGenerated
@@ -56,55 +61,70 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
         GatewayResponse gatewayResponse  = new GatewayResponse();
         Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
 
-        if (input != null && input.containsKey(QUERY_STRING_PARAMETERS_KEY)) {
-            Map<String, String> queryStringParameters = (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
-            if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(ARPID_KEY)) {
-                String arpId = queryStringParameters.get(ARPID_KEY);
-                try {
-                    BareAuthority fetchedAuthority = bareConnection.get(arpId);
-                    Authority authority = authorityConverter.asAuthority(fetchedAuthority);
-                    gatewayResponse.setBody(gson.toJson(authority));
-                    gatewayResponse.setStatusCode(SC_OK);
-                    return gatewayResponse;
-                } catch (URISyntaxException | IOException | InterruptedException e) {
-                    gatewayResponse.setErrorBody(e.getMessage());
-                    gatewayResponse.setStatusCode(SC_INTERNAL_SERVER_ERROR);
+        if (input != null && input.containsKey(PATH_PARAMETERS_KEY)) {
+            Map<String, String> pathParameters = (Map<String, String>) input.get(PATH_PARAMETERS_KEY);
+            String scn = pathParameters.get(SCN_KEY);
+            return getAuthorityAndMakeGatewayResponse(gatewayResponse, gson, scn);
+
+        } else {
+            if (input != null && input.containsKey(QUERY_STRING_PARAMETERS_KEY)) {
+                Map<String, String> queryStringParameters =
+                        (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
+                if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(ARPID_KEY)) {
+                    String arpId = queryStringParameters.get(ARPID_KEY);
+                    return getAuthorityAndMakeGatewayResponse(gatewayResponse, gson, arpId);
+                }
+
+                String query;
+                if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(FEIDE_KEY)) {
+                    query = queryStringParameters.get(FEIDE_KEY);
+                } else if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(ORCID_KEY)) {
+                    query = queryStringParameters.get(ORCID_KEY);
+                } else if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(NAME_KEY)) {
+                    query = queryStringParameters.get(NAME_KEY);
+                } else {
+                    gatewayResponse.setErrorBody(MISSING_PARAMETERS);
+                    gatewayResponse.setStatusCode(SC_BAD_REQUEST);
                     return gatewayResponse;
                 }
-            }
+                try {
+                    URL bareUrl = bareConnection.generateQueryUrl(query);
+                    log.info(bareUrl.toString());
+                    try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
+                        final List<Authority> fetchedAuthority =
+                                authorityConverter.extractAuthoritiesFrom(streamReader);
+                        log.info(gson.toJson(fetchedAuthority));
+                        gatewayResponse.setBody(gson.toJson(fetchedAuthority));
+                        gatewayResponse.setStatusCode(SC_OK);
+                    }
+                } catch (IOException | URISyntaxException e) {
+                    gatewayResponse.setErrorBody(e.getMessage());
+                    gatewayResponse.setStatusCode(SC_INTERNAL_SERVER_ERROR);
+                }
 
-            String query;
-            if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(FEIDE_KEY)) {
-                query = queryStringParameters.get(FEIDE_KEY);
-            } else if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(ORCID_KEY)) {
-                query = queryStringParameters.get(ORCID_KEY);
-            } else if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(NAME_KEY)) {
-                query = queryStringParameters.get(NAME_KEY);
             } else {
                 gatewayResponse.setErrorBody(MISSING_PARAMETERS);
                 gatewayResponse.setStatusCode(SC_BAD_REQUEST);
-                return gatewayResponse;
             }
-            try {
-                URL bareUrl = bareConnection.generateQueryUrl(query);
-                log.info(bareUrl.toString());
-                try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
-                    final List<Authority> fetchedAuthority =
-                            authorityConverter.extractAuthoritiesFrom(streamReader);
-                    log.info(gson.toJson(fetchedAuthority));
-                    gatewayResponse.setBody(gson.toJson(fetchedAuthority));
-                    gatewayResponse.setStatusCode(SC_OK);
-                }
-            } catch (IOException | URISyntaxException e) {
-                gatewayResponse.setErrorBody(e.getMessage());
-                gatewayResponse.setStatusCode(SC_INTERNAL_SERVER_ERROR);
-            }
-        } else {
-            gatewayResponse.setErrorBody(MISSING_PARAMETERS);
-            gatewayResponse.setStatusCode(SC_BAD_REQUEST);
         }
 
         return gatewayResponse;
+    }
+
+    private GatewayResponse getAuthorityAndMakeGatewayResponse(GatewayResponse gatewayResponse,
+                                                               Gson gson,
+                                                               String arpId) {
+        try {
+            BareAuthority fetchedAuthority = bareConnection.get(arpId);
+            Authority authority = authorityConverter.asAuthority(fetchedAuthority);
+            gatewayResponse.setBody(gson.toJson(authority));
+            gatewayResponse.setStatusCode(SC_OK);
+            return gatewayResponse;
+        } catch (URISyntaxException | IOException | InterruptedException e) {
+            gatewayResponse.setErrorBody(e.getMessage());
+            gatewayResponse.setStatusCode(SC_INTERNAL_SERVER_ERROR);
+            return gatewayResponse;
+        }
     }
 
 }
