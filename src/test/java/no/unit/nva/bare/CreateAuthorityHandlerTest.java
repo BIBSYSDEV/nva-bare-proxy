@@ -1,5 +1,6 @@
 package no.unit.nva.bare;
 
+import nva.commons.utils.Environment;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
@@ -36,13 +38,22 @@ public class CreateAuthorityHandlerTest {
     public static final String BARE_SINGLE_AUTHORITY_CREATE_RESPONSE = "/bareSingleAuthorityCreateResponse.json";
     public static final String MOCK_ERROR_MESSAGE = "I want to fail";
 
+
     private BareConnection mockBareConnection;
     private HttpResponse mockHttpResponse;
+    private Environment mockEnvironment;
 
+    /**
+     * Initialize test environment.
+     */
     @BeforeEach
     public void setUp() {
         mockHttpResponse = mock(HttpResponse.class);
         mockBareConnection = mock(BareConnection.class);
+        mockEnvironment = mock(Environment.class);
+        when(mockEnvironment.readEnv(AuthorityConverter.PERSON_AUTHORITY_BASE_ADDRESS_KEY))
+                .thenReturn(HTTPS_LOCALHOST_PERSON);
+
     }
 
     @Test
@@ -56,7 +67,7 @@ public class CreateAuthorityHandlerTest {
         when(mockHttpResponse.statusCode()).thenReturn(SC_CREATED);
         when(mockHttpResponse.body()).thenReturn(mockBody);
         when(mockBareConnection.createAuthority(any())).thenReturn(mockHttpResponse);
-        CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection);
+        CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection, mockEnvironment);
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
         assertEquals(SC_OK, response.getStatusCode());
@@ -76,7 +87,7 @@ public class CreateAuthorityHandlerTest {
         when(mockHttpResponse.body()).thenReturn(mockBody);
         when(mockBareConnection.createAuthority(any())).thenReturn(mockHttpResponse);
 
-        CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection);
+        CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection, mockEnvironment);
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
         assertEquals(SC_INTERNAL_SERVER_ERROR, response.getStatusCode());
@@ -92,7 +103,7 @@ public class CreateAuthorityHandlerTest {
         when(mockHttpResponse.statusCode()).thenReturn(SC_NOT_ACCEPTABLE);
         when(mockHttpResponse.body()).thenReturn(MOCK_ERROR_MESSAGE);
         when(mockBareConnection.createAuthority(any())).thenReturn(mockHttpResponse);
-        CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection);
+        CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection, mockEnvironment);
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
         assertEquals(SC_INTERNAL_SERVER_ERROR, response.getStatusCode());
@@ -104,7 +115,7 @@ public class CreateAuthorityHandlerTest {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
         when(mockBareConnection.createAuthority(any())).thenThrow(new IOException(MOCK_ERROR_MESSAGE));
-        CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection);
+        CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection, mockEnvironment);
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
         assertEquals(SC_INTERNAL_SERVER_ERROR, response.getStatusCode());

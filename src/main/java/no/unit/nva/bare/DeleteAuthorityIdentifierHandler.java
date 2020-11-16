@@ -76,7 +76,6 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
         return deleteIdentifier(scn, qualifier, identifier);
     }
 
-
     private String transformQualifier(String inputQualifier) {
         if (inputQualifier.equals(ValidIdentifierKey.FEIDEID.asString())) {
             return ValidIdentifierSource.feide.asString();
@@ -125,7 +124,7 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
         try {
             final BareAuthority updatedAuthority = bareConnection.get(scn);
             if (Objects.nonNull(updatedAuthority)) {
-                AuthorityConverter authorityConverter = new AuthorityConverter();
+                AuthorityConverter authorityConverter = new AuthorityConverter(environment);
                 return authorityConverter.asAuthority(updatedAuthority);
             } else {
                 logger.error(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);

@@ -22,6 +22,7 @@ import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON;
 import static no.unit.nva.bare.DeleteAuthorityIdentifierHandler.COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY;
 import static no.unit.nva.bare.DeleteAuthorityIdentifierHandler.INVALID_VALUE_PATH_PARAMETER_QUALIFIER;
 import static no.unit.nva.bare.DeleteAuthorityIdentifierHandler.MISSING_ATTRIBUTE_IDENTIFIER;
@@ -52,7 +53,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
     public static final String BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON = "/bareSingleAuthorityGetResponse.json";
     public static final String EXCEPTION_IS_EXPECTED = "Exception is expected.";
 
-    private Environment environment;
+    private Environment mockEnvironment;
     private Context context;
     private BareConnection bareConnection;
     private OutputStream output;
@@ -64,8 +65,11 @@ public class DeleteAuthorityIdentifierHandlerTest {
      */
     @BeforeEach
     public void setUp() {
-        environment = mock(Environment.class);
-        when(environment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
+        mockEnvironment = mock(Environment.class);
+        when(mockEnvironment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
+        when(mockEnvironment.readEnv(AuthorityConverter.PERSON_AUTHORITY_BASE_ADDRESS_KEY))
+                .thenReturn(HTTPS_LOCALHOST_PERSON);
+
         context = new TestContext();
         output = new ByteArrayOutputStream();
         bareConnection = mock(BareConnection.class);
@@ -78,7 +82,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
     public void handlerReturnsBadRequestWhenScnPathParameterIsMissing() throws IOException {
 
         InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(null);
-        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(environment, bareConnection);
+        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         deleteAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
@@ -98,7 +102,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, null);
         InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(null,
                 TestHeaders.getRequestHeaders(), pathParams, null);
-        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(environment, bareConnection);
+        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         deleteAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
@@ -119,7 +123,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
                 ValidIdentifierKey.ORGUNITID.asString() + "invalid");
         InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(null,
                 TestHeaders.getRequestHeaders(), pathParams, null);
-        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(environment, bareConnection);
+        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         deleteAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
@@ -136,7 +140,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
     @DisplayName("handler Returns Bad Request Response When Missing JSON In Body")
     public void handlerReturnsBadRequestWhenMissingJsonInBody() throws IOException {
 
-        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(environment, bareConnection);
+        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.ORGUNITID.asString());
         InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(null,
                 TestHeaders.getRequestHeaders(), pathParams, null);
@@ -157,7 +161,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
     @DisplayName("handler Returns Bad Request Response When Missing Attribute Value In Body Json")
     public void handlerReturnsBadRequestWhenMissingAttributeValueInBodyJson() throws IOException {
 
-        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(environment, bareConnection);
+        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         DeleteAuthorityIdentifierRequest requestObject = new DeleteAuthorityIdentifierRequest(null);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.ORGUNITID.asString());
         InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
@@ -187,7 +191,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
         when(httpResponse.statusCode()).thenReturn(SC_OK);
         when(bareConnection.deleteIdentifier(any(), any(), any())).thenReturn(httpResponse);
 
-        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(environment, bareConnection);
+        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         DeleteAuthorityIdentifierRequest requestObject = new DeleteAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
@@ -207,7 +211,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
                 new IOException(EXCEPTION_IS_EXPECTED));
 
         deleteAuthorityIdentifierHandler =
-                new DeleteAuthorityIdentifierHandler(environment, bareConnection);
+                new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         DeleteAuthorityIdentifierRequest requestObject = new DeleteAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
@@ -231,7 +235,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
         when(bareConnection.get(any())).thenReturn(null);
         when(bareConnection.deleteIdentifier(any(), any(), any())).thenReturn(httpResponse);
 
-        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(environment, bareConnection);
+        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         DeleteAuthorityIdentifierRequest requestObject = new DeleteAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
@@ -255,7 +259,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
         when(bareConnection.get(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
         when(bareConnection.deleteIdentifier(any(), any(), any())).thenReturn(httpResponse);
 
-        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(environment, bareConnection);
+        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         DeleteAuthorityIdentifierRequest requestObject = new DeleteAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
@@ -278,7 +282,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
         when(httpResponse.statusCode()).thenReturn(SC_FORBIDDEN);
         when(bareConnection.deleteIdentifier(any(), any(), any())).thenReturn(httpResponse);
 
-        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(environment, bareConnection);
+        deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         DeleteAuthorityIdentifierRequest requestObject = new DeleteAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,

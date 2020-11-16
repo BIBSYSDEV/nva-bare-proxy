@@ -112,7 +112,7 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
         }
     }
 
-
+    @JacocoGenerated
     protected Authority updateIdentifier(String scn, String qualifier, String identifier,
                                          String updatedIdentifier) throws BareCommunicationException, BareException {
 
@@ -137,7 +137,7 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
         try {
             final BareAuthority updatedAuthority = bareConnection.get(scn);
             if (Objects.nonNull(updatedAuthority)) {
-                AuthorityConverter authorityConverter = new AuthorityConverter();
+                AuthorityConverter authorityConverter = new AuthorityConverter(environment);
                 return authorityConverter.asAuthority(updatedAuthority);
             } else {
                 logger.error(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);

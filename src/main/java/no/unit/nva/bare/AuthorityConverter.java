@@ -1,8 +1,10 @@
 package no.unit.nva.bare;
 
 import com.google.gson.Gson;
+import nva.commons.utils.Environment;
 
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.stream.Collectors;
 
 public class AuthorityConverter {
 
+    public static final String PERSON_AUTHORITY_BASE_ADDRESS_KEY = "PERSON_AUTHORITY_BASE_ADDRESS";
     public static final String MARC_TAG_PERSONAL_NAME_FIELD_CODE = "100";
     public static final String MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE = "a";
     public static final String MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE = "d";
@@ -26,6 +29,20 @@ public class AuthorityConverter {
     public static final String SUBCODE_A = "a";
     private final transient Logger log = Logger.instance();
 
+    private final transient String personAuthorityBaseAddress;
+
+    /**
+     * Converts marc based Bare AuthorityRecord to something useful.
+     * @param environment settings for endpoint
+     */
+    public AuthorityConverter(Environment environment) {
+        String authorityBaseAddress = environment.readEnv(PERSON_AUTHORITY_BASE_ADDRESS_KEY);
+        if (!authorityBaseAddress.endsWith("/")) {
+            personAuthorityBaseAddress = authorityBaseAddress.concat("/");
+        } else {
+            personAuthorityBaseAddress = authorityBaseAddress;
+        }
+    }
 
     protected List<Authority> extractAuthoritiesFrom(InputStreamReader reader) {
         final BareQueryResponse bareQueryResponse = new Gson().fromJson(reader, BareQueryResponse.class);
@@ -38,15 +55,16 @@ public class AuthorityConverter {
         log.info("AuthorityConverter.asAuthority incoming bareAuthorty=" + bareAuthority);
         final String name = this.findValueIn(bareAuthority, MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE);
         final String date = this.findValueIn(bareAuthority, MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE);
-        final String id = bareAuthority.systemControlNumber;
+        final String scn = bareAuthority.systemControlNumber;
         Optional<List<String>> feideArray = Optional.ofNullable(bareAuthority.getIdentifiers(FEIDE_KEY));
         Optional<List<String>> orcIdArray = Optional.ofNullable(bareAuthority.getIdentifiers(ORCID_KEY));
         Optional<List<String>> orgUnitIdArray = Optional.ofNullable(bareAuthority.getIdentifiers(ORGUNITID_KEY));
         Optional<List<String>> handleArray = Optional.ofNullable(bareAuthority.getIdentifiers(HANDLE_KEY));
         Authority authority = new Authority();
+        authority.setId(generateId(scn));
         authority.setName(name);
         authority.setBirthDate(date);
-        authority.setSystemControlNumber(id);
+        authority.setSystemControlNumber(scn);
         authority.setFeideids(feideArray.orElse(Collections.EMPTY_LIST));
         authority.setOrcids(orcIdArray.orElse(Collections.EMPTY_LIST));
         authority.setOrgunitids(orgUnitIdArray.orElse(Collections.EMPTY_LIST));
@@ -56,6 +74,7 @@ public class AuthorityConverter {
     }
 
     protected BareAuthority buildAuthority(String name) {
+        // TODO Should we add id 856$u
         BareAuthority authority = new BareAuthority();
         authority.status = KAT1;
         Marc21 marcdata = new Marc21();
@@ -78,6 +97,10 @@ public class AuthorityConverter {
                 .map(subfield -> subfield.value)
                 .collect(Collectors.toList());
         return !values.isEmpty() ? values.get(0) : EMPTY_STRING;
+    }
+
+    private URI generateId(String scn) {
+        return URI.create(personAuthorityBaseAddress.concat(scn));
     }
 
 }

@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import nva.commons.utils.Environment;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -36,13 +37,15 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
     protected final transient BareConnection bareConnection;
     private final transient Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
     private final transient Logger log = Logger.instance();
+    private final transient Environment environment;
 
-    public CreateAuthorityHandler(BareConnection bareConnection) {
+    public CreateAuthorityHandler(BareConnection bareConnection, Environment environment) {
         this.bareConnection = bareConnection;
+        this.environment = environment;
     }
 
     public CreateAuthorityHandler() {
-        this.bareConnection = new BareConnection();
+        this(new BareConnection(), new Environment());
     }
 
     @Override
@@ -65,7 +68,7 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
 
     protected GatewayResponse createAuthorityOnBare(String name) {
         GatewayResponse gatewayResponse = new GatewayResponse();
-        AuthorityConverter authorityConverter = new AuthorityConverter();
+        AuthorityConverter authorityConverter = new AuthorityConverter(environment);
         BareAuthority bareAuthority = authorityConverter.buildAuthority(name);
         try {
             HttpResponse<String> response = bareConnection.createAuthority(bareAuthority);

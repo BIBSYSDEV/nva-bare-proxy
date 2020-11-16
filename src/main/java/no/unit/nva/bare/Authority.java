@@ -2,6 +2,7 @@ package no.unit.nva.bare;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -9,6 +10,10 @@ import java.util.Set;
 public class Authority {
 
     public static final String EMPTY_STRING = "";
+    private static final URI UNDEFINED_ID = null;
+
+    @JsonProperty("id")
+    private URI id;
 
     @JsonProperty("name")
     private String name;
@@ -35,6 +40,7 @@ public class Authority {
      * POJO to hold authority metadata.
      */
     public Authority() {
+        id = UNDEFINED_ID;
         name = EMPTY_STRING;
         systemControlNumber = EMPTY_STRING;
         feideids = new HashSet<>();
@@ -42,6 +48,10 @@ public class Authority {
         orgunitids = new HashSet<>();
         birthDate = EMPTY_STRING;
         handles = new HashSet<>();
+    }
+
+    public URI getId() {
+        return id;
     }
 
     public String getName() {
@@ -70,6 +80,10 @@ public class Authority {
 
     public Set<String> getHandles() {
         return handles;
+    }
+
+    public void setId(URI id) {
+        this.id = id;
     }
 
     public void setName(String name) {

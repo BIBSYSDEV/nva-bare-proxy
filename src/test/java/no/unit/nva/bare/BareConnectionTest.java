@@ -2,6 +2,7 @@ package no.unit.nva.bare;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import nva.commons.utils.Environment;
 import org.apache.commons.io.IOUtils;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON;
 import static org.apache.http.HttpStatus.SC_NOT_ACCEPTABLE;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,6 +44,7 @@ public class BareConnectionTest {
 
     private HttpClient mockHttpClient;
     private HttpResponse mockHttpResponse;
+    private Environment mockEnvironment;
 
     /**
      * Initialize mocks.
@@ -51,6 +54,10 @@ public class BareConnectionTest {
         Config.getInstance().setBareHost(MOCK_BARE_HOST);
         mockHttpClient = mock(HttpClient.class);
         mockHttpResponse = mock(HttpResponse.class);
+        mockEnvironment = mock(Environment.class);
+        when(mockEnvironment.readEnv(AuthorityConverter.PERSON_AUTHORITY_BASE_ADDRESS_KEY))
+                .thenReturn(HTTPS_LOCALHOST_PERSON);
+
     }
 
     @Test
@@ -181,7 +188,7 @@ public class BareConnectionTest {
 
         BareConnection mockBareConnection = new BareConnection(mockHttpClient);
 
-        AuthorityConverter authorityConverter = new AuthorityConverter();
+        AuthorityConverter authorityConverter = new AuthorityConverter(mockEnvironment);
         BareAuthority bareAuthority = authorityConverter.buildAuthority(MOCK_NAME);
         HttpResponse<String> httpResponse = mockBareConnection.createAuthority(bareAuthority);
 

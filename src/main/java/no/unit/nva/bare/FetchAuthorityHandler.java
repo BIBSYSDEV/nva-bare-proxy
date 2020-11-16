@@ -3,6 +3,8 @@ package no.unit.nva.bare;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.gson.Gson;
+import nva.commons.utils.Environment;
+import nva.commons.utils.JacocoGenerated;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,7 +24,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
     protected static final String MISSING_PARAMETERS = "Missing parameters! Query parameter not set.";
-    protected final transient AuthorityConverter authorityConverter = new AuthorityConverter();
+    protected final transient AuthorityConverter authorityConverter;
     protected final transient BareConnection bareConnection;
     public static final String QUERY_STRING_PARAMETERS_KEY = "queryStringParameters";
     public static final String NAME_KEY = "name";
@@ -31,13 +33,14 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
     public static final String ARPID_KEY = "arpId";
     private final transient Logger log = Logger.instance();
 
-
+    @JacocoGenerated
     public FetchAuthorityHandler() {
-        this.bareConnection = new BareConnection();
+        this(new BareConnection(), new Environment());
     }
 
-    public FetchAuthorityHandler(BareConnection bareConnection) {
+    public FetchAuthorityHandler(BareConnection bareConnection, Environment environment) {
         this.bareConnection = bareConnection;
+        this.authorityConverter = new AuthorityConverter(environment);
     }
 
     /**
