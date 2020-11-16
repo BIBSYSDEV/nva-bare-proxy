@@ -61,7 +61,8 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
         GatewayResponse gatewayResponse  = new GatewayResponse();
         Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
 
-        if (input != null && input.containsKey(PATH_PARAMETERS_KEY)) {
+        if (input != null && input.containsKey(PATH_PARAMETERS_KEY)
+                && Objects.nonNull(((Map<String, String>) input.get(PATH_PARAMETERS_KEY)).get(SCN_KEY))) {
             Map<String, String> pathParameters = (Map<String, String>) input.get(PATH_PARAMETERS_KEY);
             String scn = pathParameters.get(SCN_KEY);
             return getAuthorityAndMakeGatewayResponse(gatewayResponse, gson, scn);
