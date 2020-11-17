@@ -19,8 +19,7 @@ public class Authority {
     @JsonProperty("name")
     private String name;
 
-//    @JsonProperty("systemControlNumber")
-//    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String systemControlNumber;
 
     @JsonProperty("feideids")
