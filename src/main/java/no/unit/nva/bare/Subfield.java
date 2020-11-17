@@ -19,8 +19,8 @@ public class Subfield {
             return false;
         }
         Subfield subfield = (Subfield) o;
-        return Objects.equals(subcode, subfield.subcode) &&
-                Objects.equals(value, subfield.value);
+        return Objects.equals(subcode, subfield.subcode)
+            && Objects.equals(value, subfield.value);
     }
 
     @Override
@@ -30,9 +30,9 @@ public class Subfield {
 
     @Override
     public String toString() {
-        return "Subfield{" +
-                "subcode='" + subcode + '\'' +
-                ", value='" + value + '\'' +
-                '}';
+        return "Subfield{"
+              + "subcode='" + subcode + '\''
+              + ", value='" + value + '\''
+              + '}';
     }
 }

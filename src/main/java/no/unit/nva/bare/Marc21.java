@@ -37,11 +37,11 @@ public class Marc21 {
 
     @Override
     public String toString() {
-        return "Marc21{" +
-                "tag='" + tag + '\'' +
-                ", ind1='" + ind1 + '\'' +
-                ", ind2='" + ind2 + '\'' +
-                ", subfields=" + Arrays.toString(subfields) +
-                '}';
+        return "Marc21{"
+              + "tag='" + tag + '\''
+              + ", ind1='" + ind1 + '\''
+              + ", ind2='" + ind2 + '\''
+              + ", subfields=" + Arrays.toString(subfields)
+              + '}';
     }
 }

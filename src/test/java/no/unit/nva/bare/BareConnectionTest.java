@@ -100,8 +100,6 @@ public class BareConnectionTest {
         InputStream stream =
                 AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
         String st = IOUtils.toString(stream, Charset.defaultCharset());
-//        Type authorityListType = new TypeToken<ArrayList<Authority>>() {
-//        }.getType();
         List<Authority> mockAuthorityList = mapper.readValue(st, new TypeReference<List<Authority>>(){});
         assertEquals(mockAuthorityList.get(0).getSystemControlNumber(), updatedAuthority.getSystemControlNumber());
         assertNotNull(updatedAuthority.getFeideids());
@@ -129,8 +127,6 @@ public class BareConnectionTest {
         InputStream stream =
                 AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
         String st = IOUtils.toString(stream, Charset.defaultCharset());
-//        Type authorityListType = new TypeToken<ArrayList<Authority>>() {
-//        }.getType();
         List<Authority> mockAuthorityList = mapper.readValue(st, new TypeReference<List<Authority>>(){});
         assertEquals(mockAuthorityList.get(0).getSystemControlNumber(), updatedAuthority.getSystemControlNumber());
         assertNotNull(updatedAuthority.getFeideids());

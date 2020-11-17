@@ -292,7 +292,7 @@ Resources:
                   schema:
                     $ref: '#/definitions/Problem'
           /{scn}/identifiers/{qualifier}/update:
-            post:
+            put:
               summary: Updates the value of an identifier in the authority identifier list.
               parameters:
                 - in: path
@@ -567,7 +567,7 @@ Resources:
           Properties:
             RestApiId: !Ref NvaBareProxyApi
             Path: /{scn}/identifiers/{qualifier}/update
-            Method: post
+            Method: put
 
   NvaBareCreateAuthorityFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction

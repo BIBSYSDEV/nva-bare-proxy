@@ -4,16 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nva.commons.utils.Environment;
 import nva.commons.utils.IoUtils;
 import nva.commons.utils.JsonUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +48,7 @@ public class CreateAuthorityHandlerTest {
     /**
      * Initialize test environment.
      */
+
     @BeforeEach
     public void setUp() {
         mockHttpResponse = mock(HttpResponse.class);
@@ -58,23 +56,19 @@ public class CreateAuthorityHandlerTest {
         mockEnvironment = mock(Environment.class);
         when(mockEnvironment.readEnv(AuthorityConverter.PERSON_AUTHORITY_BASE_ADDRESS_KEY))
                 .thenReturn(HTTPS_LOCALHOST_PERSON);
-
     }
 
     @Test
     public void testCreateAuthority() throws IOException, URISyntaxException, InterruptedException {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
-//        InputStream responseStream =
-//                CreateAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_CREATE_RESPONSE);
-//        final String mockBody = IOUtils.toString(responseStream, StandardCharsets.UTF_8);
         InputStream is = IoUtils.inputStreamFromResources(Paths.get(BARE_SINGLE_AUTHORITY_CREATE_RESPONSE));
         final String mockBody = IoUtils.streamToString(is);
-
 
         when(mockHttpResponse.statusCode()).thenReturn(SC_CREATED);
         when(mockHttpResponse.body()).thenReturn(mockBody);
         when(mockBareConnection.createAuthority(any())).thenReturn(mockHttpResponse);
+
         CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection, mockEnvironment);
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
@@ -90,7 +84,6 @@ public class CreateAuthorityHandlerTest {
             InterruptedException {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
-//        InputStream emptyStream = new ByteArrayInputStream(new byte[0]);
         final String mockBody = EMPTY_BODY; // IOUtils.toString(emptyStream, StandardCharsets.UTF_8);
 
         when(mockHttpResponse.statusCode()).thenReturn(SC_CREATED);
@@ -101,8 +94,6 @@ public class CreateAuthorityHandlerTest {
         final GatewayResponse response = createAuthorityHandler.handleRequest(requestEvent, null);
         assertNotNull(response);
         assertEquals(SC_INTERNAL_SERVER_ERROR, response.getStatusCode());
-//        assertTrue(response.getBody().contains(
-//                String.format(CreateAuthorityHandler.COMMUNICATION_ERROR_WHILE_CREATING, MOCK_NAME)));
     }
 
     @Test

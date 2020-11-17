@@ -15,17 +15,7 @@ public class GatewayResponseTest {
     public static final String CORS_HEADER = "CORS header";
     public static final String MOCK_BODY = "mock";
     public static final String ERROR_BODY = "error";
-    public static final String ERROR_JSON = "{\"error\":\"error\"}";
-
-//    @Test
-    public void testErrorResponse() {
-        String expectedJson = ERROR_JSON;
-        // calling real constructor (no need to mock as this is not talking to the internet)
-        // but helps code coverage
-        GatewayResponse gatewayResponse = new GatewayResponse(MOCK_BODY, SC_CREATED);
-        gatewayResponse.setErrorBody(ERROR_BODY);
-        assertEquals(expectedJson, gatewayResponse.getBody());
-    }
+    public static final String ERROR_JSON = "{\"error\" : \"error\"}";
 
     @Test
     public void testNoCorsHeaders() {
