@@ -20,7 +20,7 @@ public class Authority {
     private String name;
 
 //    @JsonProperty("systemControlNumber")
-    @JsonIgnore
+//    @JsonIgnore
     private String systemControlNumber;
 
     @JsonProperty("feideids")
@@ -72,6 +72,7 @@ public class Authority {
         return orgunitids;
     }
 
+    @JsonIgnore
     public String getSystemControlNumber() {
         return systemControlNumber;
     }
