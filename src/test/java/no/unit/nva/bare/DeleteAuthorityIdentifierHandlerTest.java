@@ -1,11 +1,12 @@
 package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import no.unit.nva.testutils.HandlerUtils;
 import no.unit.nva.testutils.TestContext;
 import no.unit.nva.testutils.TestHeaders;
 import nva.commons.utils.Environment;
+import nva.commons.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -59,6 +60,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
     private OutputStream output;
     private DeleteAuthorityIdentifierHandler deleteAuthorityIdentifierHandler;
     private HttpResponse httpResponse;
+    private static final ObjectMapper mapper = JsonUtils.objectMapper;
 
     /**
      * Initialize mocks.
@@ -185,7 +187,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
 
         InputStream is =
                 DeleteAuthorityIdentifierHandler.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
-        final BareAuthority bareAuthority = new Gson().fromJson(new InputStreamReader(is), BareAuthority.class);
+        final BareAuthority bareAuthority = mapper.readValue(new InputStreamReader(is), BareAuthority.class);
 
         when(bareConnection.get(anyString())).thenReturn(bareAuthority);
         when(httpResponse.statusCode()).thenReturn(SC_OK);

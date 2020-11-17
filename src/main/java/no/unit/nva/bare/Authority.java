@@ -2,10 +2,12 @@ package no.unit.nva.bare;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nva.commons.utils.JacocoGenerated;
 
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class Authority {
@@ -114,5 +116,39 @@ public class Authority {
 
     public void setHandles(Collection<String> handles) {
         this.handles.addAll(handles);
+    }
+
+    @JacocoGenerated
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Authority)) {
+            return false;
+        }
+        Authority authority = (Authority) o;
+
+        return Objects.equals(getId(), authority.getId())
+            && Objects.equals(getName(), authority.getName())
+            && Objects.equals(getSystemControlNumber(), authority.getSystemControlNumber())
+            && Objects.equals(getFeideids(), authority.getFeideids())
+            && Objects.equals(getOrcids(), authority.getOrcids())
+            && Objects.equals(getOrgunitids(), authority.getOrgunitids())
+            && Objects.equals(getBirthDate(), authority.getBirthDate())
+            && Objects.equals(getHandles(), authority.getHandles());
+    }
+
+    @JacocoGenerated
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(),
+                getName(),
+                getSystemControlNumber(),
+                getFeideids(),
+                getOrcids(),
+                getOrgunitids(),
+                getBirthDate(),
+                getHandles());
     }
 }

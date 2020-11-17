@@ -1,11 +1,12 @@
 package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import no.unit.nva.testutils.HandlerUtils;
 import no.unit.nva.testutils.TestContext;
 import no.unit.nva.testutils.TestHeaders;
 import nva.commons.utils.Environment;
+import nva.commons.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -69,6 +70,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
     private OutputStream output;
     private UpdateAuthorityIdentifierHandler updateAuthorityIdentifierHandler;
     private HttpResponse httpResponse;
+    private static final ObjectMapper mapper = JsonUtils.objectMapper;
 
     private void initMockUpdateAuthorityIdentifierHandler() throws
             InterruptedException, BareCommunicationException, BareException {
@@ -80,7 +82,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
     private void initMockBareConnection() throws IOException, InterruptedException {
         InputStream is =
                 UpdateAuthorityIdentifierHandler.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
-        final BareAuthority bareAuthority = new Gson().fromJson(new InputStreamReader(is), BareAuthority.class);
+        final BareAuthority bareAuthority = mapper.readValue(new InputStreamReader(is), BareAuthority.class);
         Config.getInstance().setBareHost(MOCK_BAREHOST);
         HttpClient httpClient = mock(HttpClient.class);
         HttpResponse mockHttpResponse = mock(HttpResponse.class);
@@ -234,7 +236,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
         InputStream is =
                 UpdateAuthorityIdentifierHandler.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
-        final BareAuthority bareAuthority = new Gson().fromJson(new InputStreamReader(is), BareAuthority.class);
+        final BareAuthority bareAuthority = mapper.readValue(new InputStreamReader(is), BareAuthority.class);
         when(bareConnection.get(anyString())).thenReturn(bareAuthority);
         when(httpResponse.statusCode()).thenReturn(SC_OK);
         when(bareConnection.updateIdentifier(any(), any(), any(), any())).thenReturn(httpResponse);

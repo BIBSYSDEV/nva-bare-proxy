@@ -1,17 +1,46 @@
 package no.unit.nva.bare;
 
+import nva.commons.utils.JacocoGenerated;
+
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@SuppressWarnings("PMD")
 public class BareAuthority {
 
-    public String authorityType = "PERSON";
-    public String status;
-    public String systemControlNumber;
-    public Marc21[] marcdata;
+    private String authorityType = "PERSON";
+    private String status;
+    private String systemControlNumber;
+    private Marc21[] marcdata;
     private Map<String, List<String>> identifiersMap;
+
+
+    public void setAuthorityType(String authorityType) {
+        this.authorityType = authorityType;
+    }
+
+    public String getAuthorityType() {
+        return authorityType;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Marc21[] getMarcdata() {
+        return marcdata;
+    }
+
+    public void setMarcdata(Marc21[] marcdata) {
+        this.marcdata = marcdata;
+    }
 
     public Map<String, List<String>> getIdentifiersMap() {
         return identifiersMap;
@@ -55,10 +84,40 @@ public class BareAuthority {
         return Collections.emptyList();
     }
 
+    @JacocoGenerated
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BareAuthority)) {
+            return false;
+        }
+        BareAuthority that = (BareAuthority) o;
+        return Objects.equals(authorityType, that.authorityType)
+            && Objects.equals(status, that.status)
+            && Objects.equals(getSystemControlNumber(), that.getSystemControlNumber())
+            && Arrays.equals(marcdata, that.marcdata)
+            && Objects.equals(getIdentifiersMap(), that.getIdentifiersMap());
+    }
+
+    @JacocoGenerated
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(authorityType, status, getSystemControlNumber(), getIdentifiersMap());
+        result = 31 * result + Arrays.hashCode(marcdata);
+        return result;
+    }
+
+    @JacocoGenerated
     @Override
     public String toString() {
         return "BareAuthority{"
-                + "systemControlNumber='" + systemControlNumber + '\''
-                + ", identifiersMap=" + identifiersMap + '}';
+             + "authorityType='" + authorityType + '\''
+             + ", status='" + status + '\''
+             + ", systemControlNumber='" + systemControlNumber + '\''
+             + ", marcdata=" + Arrays.toString(marcdata)
+             + ", identifiersMap=" + identifiersMap
+             + '}';
     }
 }

@@ -1,8 +1,9 @@
 package no.unit.nva.bare;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nva.commons.utils.Environment;
+import nva.commons.utils.JsonUtils;
 import org.apache.commons.io.IOUtils;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -45,6 +46,7 @@ public class BareConnectionTest {
     private HttpClient mockHttpClient;
     private HttpResponse mockHttpResponse;
     private Environment mockEnvironment;
+    private static final ObjectMapper mapper = JsonUtils.objectMapper;
 
     /**
      * Initialize mocks.
@@ -93,14 +95,14 @@ public class BareConnectionTest {
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());
 
-        Authority updatedAuthority = new Gson().fromJson(httpResponse.body(), Authority.class);
+        Authority updatedAuthority = mapper.readValue(httpResponse.body(), Authority.class);
 
         InputStream stream =
                 AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
         String st = IOUtils.toString(stream, Charset.defaultCharset());
-        Type authorityListType = new TypeToken<ArrayList<Authority>>() {
-        }.getType();
-        List<Authority> mockAuthorityList = new Gson().fromJson(st, authorityListType);
+//        Type authorityListType = new TypeToken<ArrayList<Authority>>() {
+//        }.getType();
+        List<Authority> mockAuthorityList = mapper.readValue(st, new TypeReference<List<Authority>>(){});
         assertEquals(mockAuthorityList.get(0).getSystemControlNumber(), updatedAuthority.getSystemControlNumber());
         assertNotNull(updatedAuthority.getFeideids());
         assertNotNull(updatedAuthority.getOrcids());
@@ -122,14 +124,14 @@ public class BareConnectionTest {
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());
 
-        Authority updatedAuthority = new Gson().fromJson(httpResponse.body(), Authority.class);
+        Authority updatedAuthority = mapper.readValue(httpResponse.body(), Authority.class);
 
         InputStream stream =
                 AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
         String st = IOUtils.toString(stream, Charset.defaultCharset());
-        Type authorityListType = new TypeToken<ArrayList<Authority>>() {
-        }.getType();
-        List<Authority> mockAuthorityList = new Gson().fromJson(st, authorityListType);
+//        Type authorityListType = new TypeToken<ArrayList<Authority>>() {
+//        }.getType();
+        List<Authority> mockAuthorityList = mapper.readValue(st, new TypeReference<List<Authority>>(){});
         assertEquals(mockAuthorityList.get(0).getSystemControlNumber(), updatedAuthority.getSystemControlNumber());
         assertNotNull(updatedAuthority.getFeideids());
         assertNotNull(updatedAuthority.getOrcids());
@@ -153,7 +155,7 @@ public class BareConnectionTest {
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());
 
-        Authority updatedAuthority = new Gson().fromJson(httpResponse.body(), Authority.class);
+        Authority updatedAuthority = mapper.readValue(httpResponse.body(), Authority.class);
 
     }
 
@@ -195,7 +197,7 @@ public class BareConnectionTest {
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());
 
-        BareAuthority createdAuthority = new Gson().fromJson(httpResponse.body(), BareAuthority.class);
+        BareAuthority createdAuthority = mapper.readValue(httpResponse.body(), BareAuthority.class);
         assertEquals(MOCK_NAME, authorityConverter.asAuthority(createdAuthority).getName());
     }
 

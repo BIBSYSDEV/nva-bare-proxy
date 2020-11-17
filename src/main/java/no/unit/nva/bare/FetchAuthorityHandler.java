@@ -2,9 +2,10 @@ package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nva.commons.utils.Environment;
 import nva.commons.utils.JacocoGenerated;
+import nva.commons.utils.JsonUtils;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -37,6 +38,8 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
     public static final String SCN_KEY = "scn";
 
     private final transient Logger log = Logger.instance();
+    private static final ObjectMapper mapper = JsonUtils.objectMapper;
+
 
     @JacocoGenerated
     public FetchAuthorityHandler() {
@@ -59,7 +62,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
         log.info(input);
         Config.getInstance().checkProperties();
         GatewayResponse gatewayResponse  = new GatewayResponse();
-        Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
+
 
         if (input != null && input.containsKey(PATH_PARAMETERS_KEY)
                 && Objects.nonNull(input.get(PATH_PARAMETERS_KEY))
@@ -67,7 +70,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
         ) {
             Map<String, String> pathParameters = (Map<String, String>) input.get(PATH_PARAMETERS_KEY);
             String scn = pathParameters.get(SCN_KEY);
-            return getAuthorityAndMakeGatewayResponse(gatewayResponse, gson, scn);
+            return getAuthorityAndMakeGatewayResponse(gatewayResponse, scn);
 
         } else {
             if (input != null && input.containsKey(QUERY_STRING_PARAMETERS_KEY)) {
@@ -75,7 +78,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
                         (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
                 if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(ARPID_KEY)) {
                     String arpId = queryStringParameters.get(ARPID_KEY);
-                    return getAuthorityAndMakeGatewayResponse(gatewayResponse, gson, arpId);
+                    return getAuthorityAndMakeGatewayResponse(gatewayResponse, arpId);
                 }
 
                 String query;
@@ -96,8 +99,8 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
                     try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
                         final List<Authority> fetchedAuthority =
                                 authorityConverter.extractAuthoritiesFrom(streamReader);
-                        log.info(gson.toJson(fetchedAuthority));
-                        gatewayResponse.setBody(gson.toJson(fetchedAuthority));
+                        log.info(mapper.writeValueAsString(fetchedAuthority));
+                        gatewayResponse.setBody(mapper.writeValueAsString(fetchedAuthority));
                         gatewayResponse.setStatusCode(SC_OK);
                     }
                 } catch (IOException | URISyntaxException e) {
@@ -115,12 +118,11 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
     }
 
     private GatewayResponse getAuthorityAndMakeGatewayResponse(GatewayResponse gatewayResponse,
-                                                               Gson gson,
                                                                String arpId) {
         try {
             BareAuthority fetchedAuthority = bareConnection.get(arpId);
             Authority authority = authorityConverter.asAuthority(fetchedAuthority);
-            gatewayResponse.setBody(gson.toJson(authority));
+            gatewayResponse.setBody(mapper.writeValueAsString(authority));
             gatewayResponse.setStatusCode(SC_OK);
             return gatewayResponse;
         } catch (URISyntaxException | IOException | InterruptedException e) {
