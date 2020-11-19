@@ -558,6 +558,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN:  '*'
+          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.UpdateAuthorityIdentifierHandler::handleRequest
       Runtime: java11
       MemorySize: 512
