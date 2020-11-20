@@ -2,10 +2,11 @@ package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import nva.commons.utils.Environment;
+import nva.commons.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -25,7 +26,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 public class CreateAuthorityHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
 
     public static final String BODY_KEY = "body";
-    public static final String NAME_KEY = "invertedname";
+    public static final String NAME_KEY = "/invertedname";
     public static final String EMPTY_STRING = "";
     public static final String MISSING_EVENT_ELEMENT_BODY = "Missing event element 'body'.";
     public static final String BODY_ARGS_MISSING = "Nothing to create. 'name' is missing.";
@@ -34,15 +35,19 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
     public static final String COMMA = ",";
     public static final String MALFORMED_NAME_VALUE = "The name value seems not to be in inverted form.";
     protected final transient BareConnection bareConnection;
-    private final transient Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
     private final transient Logger log = Logger.instance();
+    private final transient Environment environment;
 
-    public CreateAuthorityHandler(BareConnection bareConnection) {
+    private static final ObjectMapper mapper = JsonUtils.objectMapper;
+
+
+    public CreateAuthorityHandler(BareConnection bareConnection, Environment environment) {
         this.bareConnection = bareConnection;
+        this.environment = environment;
     }
 
     public CreateAuthorityHandler() {
-        this.bareConnection = new BareConnection();
+        this(new BareConnection(), new Environment());
     }
 
     @Override
@@ -65,17 +70,17 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
 
     protected GatewayResponse createAuthorityOnBare(String name) {
         GatewayResponse gatewayResponse = new GatewayResponse();
-        AuthorityConverter authorityConverter = new AuthorityConverter();
+        AuthorityConverter authorityConverter = new AuthorityConverter(environment);
         BareAuthority bareAuthority = authorityConverter.buildAuthority(name);
         try {
             HttpResponse<String> response = bareConnection.createAuthority(bareAuthority);
             log.info("response (from bareConnection)=" + response);
             if (response.statusCode() == SC_CREATED
                     || response.statusCode() == SC_OK) { //201
-                BareAuthority createdAuthority = gson.fromJson(response.body(), BareAuthority.class);
+                BareAuthority createdAuthority =  mapper.readValue(response.body(), BareAuthority.class);
                 if (Objects.nonNull(createdAuthority)) {
                     final Authority authority = authorityConverter.asAuthority(createdAuthority);
-                    gatewayResponse.setBody(gson.toJson(authority, Authority.class));
+                    gatewayResponse.setBody(mapper.writeValueAsString(authority));
                     gatewayResponse.setStatusCode(SC_OK);
                 } else {
                     log.error(String.format(COMMUNICATION_ERROR_WHILE_CREATING, name));
@@ -84,7 +89,7 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
                 }
             } else {
                 log.error("Error: " + response.body());
-                log.error("new authority looked like this: \n" + gson.toJson(bareAuthority));
+                log.error("new authority looked like this: \n" + mapper.writeValueAsString(bareAuthority));
                 gatewayResponse.setErrorBody(response.statusCode() + ": " + response.body());
                 gatewayResponse.setStatusCode(SC_INTERNAL_SERVER_ERROR);
             }
@@ -96,11 +101,14 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
         return gatewayResponse;
     }
 
-
     protected String getValueFromJsonObject(String body, String key) {
-        JsonObject jsonObject = (JsonObject) JsonParser.parseString(body);
-        JsonElement jsonElement = jsonObject.get(key);
-        return Objects.isNull(jsonElement) ? EMPTY_STRING : jsonElement.getAsString();
+        try {
+            JsonNode jsonNode = mapper.readTree(body).at(key);
+            return Objects.isNull(jsonNode) ? EMPTY_STRING : jsonNode.textValue();
+        } catch (JsonProcessingException e) {
+            log.error(e);
+            return EMPTY_STRING;
+        }
     }
 
     private void checkParameters(Map<String, Object> input) {

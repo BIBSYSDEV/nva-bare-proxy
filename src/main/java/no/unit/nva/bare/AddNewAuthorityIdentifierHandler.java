@@ -98,7 +98,6 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
         }
     }
 
-
     protected Authority addNewIdentifier(String scn, AuthorityIdentifier authorityIdentifier)
             throws ApiGatewayException {
         try {
@@ -120,7 +119,7 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
         try {
             final BareAuthority updatedAuthority = bareConnection.get(scn);
             if (Objects.nonNull(updatedAuthority)) {
-                AuthorityConverter authorityConverter = new AuthorityConverter();
+                AuthorityConverter authorityConverter = new AuthorityConverter(environment);
                 return authorityConverter.asAuthority(updatedAuthority);
             } else {
                 logger.info(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);

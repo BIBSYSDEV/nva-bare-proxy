@@ -1,7 +1,7 @@
 package no.unit.nva.bare;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import nva.commons.utils.JsonUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.URIBuilder;
 
@@ -36,8 +36,8 @@ public class BareConnection {
     public static final String QUERYPARAMETER_IDENTIFIER = "identifier";
 
     private final transient HttpClient httpClient;
-    private final transient Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final transient Logger log = Logger.instance();
+    private static final ObjectMapper mapper = JsonUtils.objectMapper;
 
     /**
      * Constructor for testability reasons.
@@ -95,7 +95,7 @@ public class BareConnection {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() == SC_OK) {
             final String body = response.body();
-            return gson.fromJson(body, BareAuthority.class);
+            return mapper.readValue(body, BareAuthority.class);
         } else {
             log.error("Error..? " + response.body());
             throw new IOException(response.body());
@@ -123,7 +123,7 @@ public class BareConnection {
                 .build();
         log.info("uri=" + uri);
 
-        final String body = gson.toJson(authorityIdentifier, AuthorityIdentifier.class);
+        final String body = mapper.writeValueAsString(authorityIdentifier);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(body);
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.POST(bodyPublisher).build();
@@ -149,7 +149,7 @@ public class BareConnection {
                 .build();
         log.info(URI_LOG_STRING + uri);
 
-        final String payload = gson.toJson(bareAuthority, BareAuthority.class);
+        final String payload = mapper.writeValueAsString(bareAuthority);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(payload);
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);

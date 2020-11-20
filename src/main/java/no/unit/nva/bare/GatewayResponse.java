@@ -1,11 +1,12 @@
 package no.unit.nva.bare;
 
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import nva.commons.utils.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,6 +21,8 @@ public class GatewayResponse {
     public static final String CORS_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
     public static final String EMPTY_JSON = "{}";
     public static final transient String ERROR_KEY = "error";
+    private static final ObjectMapper mapper = JsonUtils.objectMapper;
+    private final transient Logger logger = Logger.instance();
     private String body;
     private transient Map<String, String> headers;
     private int statusCode;
@@ -46,16 +49,16 @@ public class GatewayResponse {
         return body;
     }
 
+    public void setBody(String body) {
+        this.body = body;
+    }
+
     public Map<String, String> getHeaders() {
         return headers;
     }
 
     public int getStatusCode() {
         return statusCode;
-    }
-
-    public void setBody(String body) {
-        this.body = body;
     }
 
     public void setStatusCode(int status) {
@@ -68,9 +71,13 @@ public class GatewayResponse {
      * @param message message from exception
      */
     public void setErrorBody(String message) {
-        JsonObject json = new JsonObject();
-        json.addProperty(ERROR_KEY, message);
-        this.body = json.toString();
+        Map<String, String> bodyContent = new ConcurrentHashMap<>();
+        bodyContent.put(ERROR_KEY, message);
+        try {
+            this.body = mapper.writeValueAsString(bodyContent);
+        } catch (JsonProcessingException e) {
+            logger.error(e);
+        }
     }
 
     private void generateDefaultHeaders() {
@@ -80,7 +87,7 @@ public class GatewayResponse {
         if (StringUtils.isNotEmpty(corsAllowDomain)) {
             headers.put(CORS_ALLOW_ORIGIN_HEADER, corsAllowDomain);
         }
-        this.headers = Collections.unmodifiableMap(new HashMap<>(headers));
+        this.headers = Collections.unmodifiableMap(new ConcurrentHashMap<>(headers));
     }
 
 }
