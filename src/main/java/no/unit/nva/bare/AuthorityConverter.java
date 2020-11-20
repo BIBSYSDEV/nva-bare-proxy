@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 
 public class AuthorityConverter {
 
+    public static final String AUTHORITY_INCOMING_BARE_AUTHORTY_MESSAGE = "AuthorityConverter.asAuthority incoming bareAuthorty=";
+    public static final String CONVERTER_AS_AUTHORITY_AUTHORITY_SCN_MESSAGE = "AuthorityConverter.asAuthority:authority.scn={}";
     public static final String PERSON_AUTHORITY_BASE_ADDRESS_KEY = "PERSON_AUTHORITY_BASE_ADDRESS";
     public static final String MARC_TAG_PERSONAL_NAME_FIELD_CODE = "100";
     public static final String MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE = "a";
@@ -29,6 +31,7 @@ public class AuthorityConverter {
     public static final String IND_1 = "1";
     public static final String MARCTAG_100 = "100";
     public static final String SUBCODE_A = "a";
+    public static final String SLASH = "/";
     private final transient Logger log = Logger.instance();
     private static final ObjectMapper mapper = JsonUtils.objectMapper;
 
@@ -40,7 +43,7 @@ public class AuthorityConverter {
      */
     public AuthorityConverter(Environment environment) {
         String authorityBaseAddress = environment.readEnv(PERSON_AUTHORITY_BASE_ADDRESS_KEY);
-        if (!authorityBaseAddress.endsWith("/")) {
+        if (!authorityBaseAddress.endsWith(SLASH)) {
             personAuthorityBaseAddress = authorityBaseAddress.concat("/");
         } else {
             personAuthorityBaseAddress = authorityBaseAddress;
@@ -55,7 +58,7 @@ public class AuthorityConverter {
 
     @SuppressWarnings("unchecked")
     protected Authority asAuthority(BareAuthority bareAuthority) {
-        log.info("AuthorityConverter.asAuthority incoming bareAuthorty=" + bareAuthority);
+        log.info(AUTHORITY_INCOMING_BARE_AUTHORTY_MESSAGE + bareAuthority);
         final String name = this.findValueIn(bareAuthority, MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE);
         final String date = this.findValueIn(bareAuthority, MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE);
         final String scn = bareAuthority.getSystemControlNumber();
@@ -72,7 +75,7 @@ public class AuthorityConverter {
         authority.setOrcids(orcIdArray.orElse(Collections.EMPTY_LIST));
         authority.setOrgunitids(orgUnitIdArray.orElse(Collections.EMPTY_LIST));
         authority.setHandles(handleArray.orElse(Collections.EMPTY_LIST));
-        log.info("AuthorityConverter.asAuthority:authority.scn=" + authority.getSystemControlNumber());
+        log.info(CONVERTER_AS_AUTHORITY_AUTHORITY_SCN_MESSAGE + authority.getSystemControlNumber());
         return authority;
     }
 
