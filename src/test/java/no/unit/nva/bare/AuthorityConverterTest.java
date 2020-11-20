@@ -78,8 +78,8 @@ public class AuthorityConverterTest {
         final BareAuthority bareAuthority = authorityConverter.buildAuthority(INVERTED_NAME);
         assertEquals(expectedAuth.getStatus(), bareAuthority.getStatus());
         assertEquals(expectedAuth.getAuthorityType(), bareAuthority.getAuthorityType());
-        assertEquals(expectedAuth.getMarcdata()[0].subfields[0].value,
-                bareAuthority.getMarcdata()[0].subfields[0].value);
+        assertEquals(expectedAuth.getMarcdata()[0].getSubfields()[0].getValue(),
+                bareAuthority.getMarcdata()[0].getSubfields()[0].getValue());
 
         assertEquals(expectedAuth, bareAuthority);
     }

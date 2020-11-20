@@ -5,13 +5,15 @@ import nva.commons.utils.JacocoGenerated;
 import java.util.Arrays;
 import java.util.Objects;
 
+/**
+    This class resembles the pseudo-marc structure used in Bare.
+*/
 @JacocoGenerated
-@SuppressWarnings("PMD")
 public class Marc21 {
-    public String tag;
-    public String ind1;
-    public String ind2;
-    public Subfield[] subfields;
+    private String tag;
+    private String ind1;
+    private String ind2;
+    private Subfield[] subfields;
 
     @Override
     public boolean equals(Object o) {
@@ -22,26 +24,58 @@ public class Marc21 {
             return false;
         }
         Marc21 marc21 = (Marc21) o;
-        return Objects.equals(tag, marc21.tag)
-            && Objects.equals(ind1, marc21.ind1)
-            && Objects.equals(ind2, marc21.ind2)
-            && Arrays.equals(subfields, marc21.subfields);
+        return Objects.equals(getTag(), marc21.getTag())
+            && Objects.equals(getInd1(), marc21.getInd1())
+            && Objects.equals(getInd2(), marc21.getInd2())
+            && Arrays.equals(getSubfields(), marc21.getSubfields());
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(tag, ind1, ind2);
-        result = 31 * result + Arrays.hashCode(subfields);
+        int result = Objects.hash(getTag(), getInd1(), getInd2());
+        result = 31 * result + Arrays.hashCode(getSubfields());
         return result;
     }
 
     @Override
     public String toString() {
         return "Marc21{"
-              + "tag='" + tag + '\''
-              + ", ind1='" + ind1 + '\''
-              + ", ind2='" + ind2 + '\''
-              + ", subfields=" + Arrays.toString(subfields)
+              + "tag='" + getTag() + '\''
+              + ", ind1='" + getInd1() + '\''
+              + ", ind2='" + getInd2() + '\''
+              + ", subfields=" + Arrays.toString(getSubfields())
               + '}';
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public String getInd1() {
+        return ind1;
+    }
+
+    public void setInd1(String ind1) {
+        this.ind1 = ind1;
+    }
+
+    public String getInd2() {
+        return ind2;
+    }
+
+    public void setInd2(String ind2) {
+        this.ind2 = ind2;
+    }
+
+    public Subfield[] getSubfields() {
+        return subfields.clone();
+    }
+
+    public void setSubfields(Subfield...subfields) {
+        this.subfields = subfields.clone();
     }
 }

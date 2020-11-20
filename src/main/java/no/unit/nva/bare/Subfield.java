@@ -5,10 +5,9 @@ import nva.commons.utils.JacocoGenerated;
 import java.util.Objects;
 
 @JacocoGenerated
-@SuppressWarnings("PMD")
 public class Subfield {
-    public String subcode;
-    public String value;
+    private String subcode;
+    private String value;
 
     @Override
     public boolean equals(Object o) {
@@ -19,20 +18,36 @@ public class Subfield {
             return false;
         }
         Subfield subfield = (Subfield) o;
-        return Objects.equals(subcode, subfield.subcode)
-            && Objects.equals(value, subfield.value);
+        return Objects.equals(getSubcode(), subfield.getSubcode())
+            && Objects.equals(getValue(), subfield.getValue());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(subcode, value);
+        return Objects.hash(getSubcode(), getValue());
     }
 
     @Override
     public String toString() {
         return "Subfield{"
-              + "subcode='" + subcode + '\''
-              + ", value='" + value + '\''
+              + "subcode='" + getSubcode() + '\''
+              + ", value='" + getValue() + '\''
               + '}';
+    }
+
+    public String getSubcode() {
+        return subcode;
+    }
+
+    public void setSubcode(String subcode) {
+        this.subcode = subcode;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 }

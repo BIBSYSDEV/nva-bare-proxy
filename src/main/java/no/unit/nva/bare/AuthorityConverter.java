@@ -81,23 +81,23 @@ public class AuthorityConverter {
         BareAuthority authority = new BareAuthority();
         authority.setStatus(KAT1);
         Marc21 marcdata = new Marc21();
-        marcdata.tag = MARCTAG_100;
-        marcdata.ind1 = IND_1;
-        marcdata.ind2 = BLANK;
+        marcdata.setTag(MARCTAG_100);
+        marcdata.setInd1(IND_1);
+        marcdata.setInd2(BLANK);
         Subfield subfield = new Subfield();
-        subfield.subcode = SUBCODE_A;
-        subfield.value = name;
-        marcdata.subfields = new Subfield[]{subfield};
+        subfield.setSubcode(SUBCODE_A);
+        subfield.setValue(name);
+        marcdata.setSubfields(new Subfield[]{subfield});
         authority.setMarcdata(new Marc21[]{marcdata});
         return authority;
     }
 
     protected String findValueIn(BareAuthority bareAuthority, String marcSubfieldTag) {
         List<String> values = Arrays.stream(bareAuthority.getMarcdata())
-                .filter(marc -> Arrays.asList(new String[]{MARC_TAG_PERSONAL_NAME_FIELD_CODE}).contains(marc.tag))
-                .flatMap(marc -> Arrays.stream(marc.subfields))
-                .filter(subfield -> marcSubfieldTag.equals(subfield.subcode))
-                .map(subfield -> subfield.value)
+                .filter(marc -> Arrays.asList(new String[]{MARC_TAG_PERSONAL_NAME_FIELD_CODE}).contains(marc.getTag()))
+                .flatMap(marc -> Arrays.stream(marc.getSubfields()))
+                .filter(subfield -> marcSubfieldTag.equals(subfield.getSubcode()))
+                .map(subfield -> subfield.getValue())
                 .collect(Collectors.toList());
         return !values.isEmpty() ? values.get(0) : EMPTY_STRING;
     }

@@ -13,8 +13,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
+import static java.util.Objects.nonNull;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -64,29 +64,29 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
         GatewayResponse gatewayResponse  = new GatewayResponse();
 
 
-        if (input != null && input.containsKey(PATH_PARAMETERS_KEY)
-                && Objects.nonNull(input.get(PATH_PARAMETERS_KEY))
-                && Objects.nonNull(((Map<String, String>) input.get(PATH_PARAMETERS_KEY)).get(SCN_KEY))
+        if (nonNull(input) && input.containsKey(PATH_PARAMETERS_KEY)
+                && nonNull(input.get(PATH_PARAMETERS_KEY))
+                && nonNull(((Map<String, String>) input.get(PATH_PARAMETERS_KEY)).get(SCN_KEY))
         ) {
             Map<String, String> pathParameters = (Map<String, String>) input.get(PATH_PARAMETERS_KEY);
             String scn = pathParameters.get(SCN_KEY);
             return getAuthorityAndMakeGatewayResponse(gatewayResponse, scn);
 
         } else {
-            if (input != null && input.containsKey(QUERY_STRING_PARAMETERS_KEY)) {
+            if (nonNull(input) && input.containsKey(QUERY_STRING_PARAMETERS_KEY)) {
                 Map<String, String> queryStringParameters =
                         (Map<String, String>) input.get(QUERY_STRING_PARAMETERS_KEY);
-                if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(ARPID_KEY)) {
+                if (nonNull(queryStringParameters) && queryStringParameters.containsKey(ARPID_KEY)) {
                     String arpId = queryStringParameters.get(ARPID_KEY);
                     return getAuthorityAndMakeGatewayResponse(gatewayResponse, arpId);
                 }
 
                 String query;
-                if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(FEIDE_KEY)) {
+                if (nonNull(queryStringParameters) && queryStringParameters.containsKey(FEIDE_KEY)) {
                     query = queryStringParameters.get(FEIDE_KEY);
-                } else if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(ORCID_KEY)) {
+                } else if (nonNull(queryStringParameters) && queryStringParameters.containsKey(ORCID_KEY)) {
                     query = queryStringParameters.get(ORCID_KEY);
-                } else if (!Objects.isNull(queryStringParameters) && queryStringParameters.containsKey(NAME_KEY)) {
+                } else if (nonNull(queryStringParameters) && queryStringParameters.containsKey(NAME_KEY)) {
                     query = queryStringParameters.get(NAME_KEY);
                 } else {
                     gatewayResponse.setErrorBody(MISSING_PARAMETERS);
