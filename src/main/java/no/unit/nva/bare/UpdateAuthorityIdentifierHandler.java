@@ -1,12 +1,12 @@
 package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import nva.commons.exceptions.ApiGatewayException;
 import nva.commons.handlers.ApiGatewayHandler;
 import nva.commons.handlers.RequestInfo;
 import nva.commons.utils.Environment;
 import nva.commons.utils.JacocoGenerated;
-import nva.commons.utils.RequestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static java.util.Arrays.asList;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 
 /**
@@ -43,13 +44,14 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
             ValidIdentifierKey.ORCID.asString(),
             ValidIdentifierKey.ORGUNITID.asString());
 
-    private transient BareConnection bareConnection;
+    private final transient BareConnection bareConnection;
 
 
     /**
      * Default constructor for UpdateAuthorityIdentifierHandler.
      */
     @JacocoGenerated
+    @JsonCreator
     public UpdateAuthorityIdentifierHandler() {
         this(new Environment(), new BareConnection());
     }
@@ -72,8 +74,8 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
 
         validateInput(input, requestInfo.getPathParameters());
 
-        String scn = RequestUtils.getPathParameter(requestInfo,SCN_KEY);
-        String inputQualifier = RequestUtils.getPathParameter(requestInfo,QUALIFIER_KEY);
+        String scn = requestInfo.getPathParameter(SCN_KEY);
+        String inputQualifier = requestInfo.getPathParameter(QUALIFIER_KEY);
         String qualifier = transformQualifier(inputQualifier);
         String identifier = input.getIdentifier();
         String updatedIdentifier = input.getUpdatedIdentifier();
@@ -110,13 +112,14 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
         }
     }
 
+    @JacocoGenerated
     protected Authority updateIdentifier(String scn, String qualifier, String identifier,
                                          String updatedIdentifier) throws BareCommunicationException, BareException {
 
         try {
             HttpResponse<String> response = bareConnection.updateIdentifier(scn, qualifier, identifier,
                     updatedIdentifier);
-            if (response.statusCode() == SC_OK) {
+            if (response.statusCode() == SC_OK || response.statusCode() == SC_NO_CONTENT) {
                 return getAuthority(scn);
             } else {
                 logger.error(String.format("updatedIdentifier - ErrorCode=%s, reasonPhrase=%s", response.statusCode(),
@@ -129,11 +132,12 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
         }
     }
 
-    private Authority getAuthority(String scn) throws InterruptedException, BareCommunicationException, BareException {
+    protected Authority getAuthority(String scn)
+            throws InterruptedException, BareCommunicationException, BareException {
         try {
             final BareAuthority updatedAuthority = bareConnection.get(scn);
             if (Objects.nonNull(updatedAuthority)) {
-                AuthorityConverter authorityConverter = new AuthorityConverter();
+                AuthorityConverter authorityConverter = new AuthorityConverter(environment);
                 return authorityConverter.asAuthority(updatedAuthority);
             } else {
                 logger.error(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);

@@ -6,7 +6,6 @@ import nva.commons.handlers.ApiGatewayHandler;
 import nva.commons.handlers.RequestInfo;
 import nva.commons.utils.Environment;
 import nva.commons.utils.JacocoGenerated;
-import nva.commons.utils.RequestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 
@@ -68,8 +67,8 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
                                      Context context) throws ApiGatewayException {
 
         try {
-            String scn = RequestUtils.getPathParameter(requestInfo, SCN_KEY);
-            String inputQualifier = RequestUtils.getPathParameter(requestInfo, QUALIFIER_KEY);
+            String scn = requestInfo.getPathParameter(SCN_KEY);
+            String inputQualifier = requestInfo.getPathParameter(QUALIFIER_KEY);
             String qualifier = transformQualifier(inputQualifier);
 
             validateInput(input);
@@ -99,7 +98,6 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
         }
     }
 
-
     protected Authority addNewIdentifier(String scn, AuthorityIdentifier authorityIdentifier)
             throws ApiGatewayException {
         try {
@@ -121,7 +119,7 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
         try {
             final BareAuthority updatedAuthority = bareConnection.get(scn);
             if (Objects.nonNull(updatedAuthority)) {
-                AuthorityConverter authorityConverter = new AuthorityConverter();
+                AuthorityConverter authorityConverter = new AuthorityConverter(environment);
                 return authorityConverter.asAuthority(updatedAuthority);
             } else {
                 logger.info(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);

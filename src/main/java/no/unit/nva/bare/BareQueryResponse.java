@@ -1,9 +1,10 @@
 package no.unit.nva.bare;
 
-import com.google.gson.annotations.SerializedName;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BareQueryResponse {
-    @SerializedName(value = "q", alternate = "query")
+    @JsonProperty("q")
     public String query;
     public String startRow;
     public String maxRows;

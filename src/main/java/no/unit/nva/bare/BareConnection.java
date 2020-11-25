@@ -1,7 +1,7 @@
 package no.unit.nva.bare;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import nva.commons.utils.JsonUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.URIBuilder;
 
@@ -36,8 +36,8 @@ public class BareConnection {
     public static final String QUERYPARAMETER_IDENTIFIER = "identifier";
 
     private final transient HttpClient httpClient;
-    private final transient Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final transient Logger log = Logger.instance();
+    private static final ObjectMapper mapper = JsonUtils.objectMapper;
 
     /**
      * Constructor for testability reasons.
@@ -95,7 +95,7 @@ public class BareConnection {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() == SC_OK) {
             final String body = response.body();
-            return gson.fromJson(body, BareAuthority.class);
+            return mapper.readValue(body, BareAuthority.class);
         } else {
             log.error("Error..? " + response.body());
             throw new IOException(response.body());
@@ -123,7 +123,7 @@ public class BareConnection {
                 .build();
         log.info("uri=" + uri);
 
-        final String body = gson.toJson(authorityIdentifier, AuthorityIdentifier.class);
+        final String body = mapper.writeValueAsString(authorityIdentifier);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(body);
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.POST(bodyPublisher).build();
@@ -149,7 +149,7 @@ public class BareConnection {
                 .build();
         log.info(URI_LOG_STRING + uri);
 
-        final String payload = gson.toJson(bareAuthority, BareAuthority.class);
+        final String payload = mapper.writeValueAsString(bareAuthority);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(payload);
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
@@ -229,18 +229,11 @@ public class BareConnection {
     public HttpResponse<String> updateIdentifier(String systemControlNumber, String qualifier, String identifier,
                                                  String updatedIdentifier) throws IOException, URISyntaxException,
             InterruptedException {
-        URI uri = new URIBuilder()
-                .setScheme(HTTPS)
-                .setHost(Config.getInstance().getBareHost())
-                .setPathSegments(PATH_SEGMENT_AUTHORITY, PATH_SEGMENT_REST, PATH_SEGMENT_AUTHORITIES, PATH_SEGMENT_V_2,
-                        systemControlNumber, PATH_SEGMENT_IDENTIFIERS, qualifier, identifier, "update",
-                        updatedIdentifier)
-                .build();
-        log.info(URI_LOG_STRING + uri);
 
-        final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
-        HttpRequest request = requestBuilder.PUT(HttpRequest.BodyPublishers.noBody()).build();
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        deleteIdentifier(systemControlNumber, qualifier, identifier);
+        AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(qualifier, updatedIdentifier);
+        return addIdentifier(systemControlNumber, authorityIdentifier);
+
     }
 
     private HttpRequest.Builder getHttpRequestBuilder(URI uri) {
