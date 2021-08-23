@@ -15,8 +15,10 @@ import java.util.stream.Collectors;
 
 public class AuthorityConverter {
 
-    public static final String AUTHORITY_INCOMING_BARE_AUTHORTY_MESSAGE = "AuthorityConverter.asAuthority incoming bareAuthorty=";
-    public static final String CONVERTER_AS_AUTHORITY_AUTHORITY_SCN_MESSAGE = "AuthorityConverter.asAuthority:authority.scn={}";
+    public static final String AUTHORITY_INCOMING_BARE_AUTHORTY_MESSAGE =
+        "AuthorityConverter.asAuthority incoming bareAuthorty=";
+    public static final String CONVERTER_AS_AUTHORITY_AUTHORITY_SCN_MESSAGE =
+        "AuthorityConverter.asAuthority:authority.scn={}";
     public static final String PERSON_AUTHORITY_BASE_ADDRESS_KEY = "PERSON_AUTHORITY_BASE_ADDRESS";
     public static final String MARC_TAG_PERSONAL_NAME_FIELD_CODE = "100";
     public static final String MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE = "a";

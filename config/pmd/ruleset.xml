@@ -78,7 +78,8 @@
         //TODO investigate if we replace the handler's RuntimeException with something else
    -->
     <exclude name="AvoidThrowingRawExceptionTypes"/>
-
+    <!-- TODO remove the rule to use the default value after refactoring the code -->
+    <exclude name="CognitiveComplexity"/>
   </rule>
 
 </ruleset>
