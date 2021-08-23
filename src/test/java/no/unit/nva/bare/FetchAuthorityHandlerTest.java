@@ -1,28 +1,10 @@
 package no.unit.nva.bare;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import no.unit.nva.testutils.TestHeaders;
-import nva.commons.utils.Environment;
-import nva.commons.utils.IoUtils;
-import nva.commons.utils.JsonUtils;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import static no.unit.nva.bare.AddNewAuthorityIdentifierHandlerTest.BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON;
 import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON_WITHOUT_TRAILING_SLASH;
 import static no.unit.nva.bare.FetchAuthorityHandler.ARPID_KEY;
 import static no.unit.nva.bare.FetchAuthorityHandler.QUERY_STRING_PARAMETERS_KEY;
+import static nva.commons.core.JsonUtils.objectMapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,6 +12,21 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import no.unit.nva.testutils.TestHeaders;
+import nva.commons.core.Environment;
+import nva.commons.core.ioutils.IoUtils;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class FetchAuthorityHandlerTest {
 
@@ -44,7 +41,6 @@ public class FetchAuthorityHandlerTest {
 
     private BareConnection mockBareConnection;
     private Environment mockEnvironment;
-    private static final ObjectMapper mapper = JsonUtils.objectMapper;
 
     /**
      * Initialise mocks and Config.
@@ -62,7 +58,7 @@ public class FetchAuthorityHandlerTest {
 
     @Test
     public void testSuccessfulResponseWithNameParam() throws Exception {
-        InputStream st = IoUtils.inputStreamFromResources(Paths.get(BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE));
+        InputStream st = IoUtils.inputStreamFromResources(BARE_SINGLE_AUTHORITY_RESPONSE_JSON_FILE);
         InputStreamReader bareResponseStreamReader = new InputStreamReader(st);
         when(mockBareConnection.connect(any())).thenReturn(bareResponseStreamReader);
         when(mockBareConnection.generateQueryUrl(anyString())).thenCallRealMethod();
@@ -80,17 +76,17 @@ public class FetchAuthorityHandlerTest {
         assertNotNull(content);
         String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
 
-        Authority expected = mapper.readValue(postResponseBody, new TypeReference<List<Authority>>(){}).get(0);
-        Authority actual = mapper.readValue(content, new TypeReference<List<Authority>>(){}).get(0);
+        Authority expected = objectMapper.readValue(postResponseBody, new TypeReference<List<Authority>>(){}).get(0);
+        Authority actual = objectMapper.readValue(content, new TypeReference<List<Authority>>(){}).get(0);
         assertEquals(expected, actual);
 
     }
 
     @Test
     public void handlerReturnsOkResponseWhenValidQueryParamArpIdProvided() throws Exception {
-        InputStream st = FetchAuthorityHandlerTest.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
+        InputStream st = IoUtils.inputStreamFromResources(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
         InputStreamReader reader = new InputStreamReader(st);
-        BareAuthority authority = mapper.readValue(reader, BareAuthority.class);
+        BareAuthority authority = objectMapper.readValue(reader, BareAuthority.class);
 
 
         when(mockBareConnection.get(any())).thenReturn(authority);
@@ -140,8 +136,8 @@ public class FetchAuthorityHandlerTest {
         String content = result.getBody();
         assertNotNull(content);
         String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
-        Authority expected = mapper.readValue(postResponseBody, new TypeReference<List<Authority>>(){}).get(0);
-        Authority actual = mapper.readValue(content, new TypeReference<List<Authority>>(){}).get(0);
+        Authority expected = objectMapper.readValue(postResponseBody, new TypeReference<List<Authority>>(){}).get(0);
+        Authority actual = objectMapper.readValue(content, new TypeReference<List<Authority>>(){}).get(0);
         assertEquals(expected, actual);
     }
 
@@ -175,10 +171,10 @@ public class FetchAuthorityHandlerTest {
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        List<Authority> responseAuthority = mapper.readValue(content, new TypeReference<List<Authority>>(){});
+        List<Authority> responseAuthority = objectMapper.readValue(content, new TypeReference<List<Authority>>(){});
         String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
-        List<Authority> expectedResponseAuthority = mapper.readValue(postResponseBody,
-                new TypeReference<List<Authority>>(){});
+        List<Authority> expectedResponseAuthority = objectMapper.readValue(postResponseBody,
+                                                                           new TypeReference<List<Authority>>(){});
         assertEquals(expectedResponseAuthority.get(0).getSystemControlNumber(),
                 responseAuthority.get(0).getSystemControlNumber());
         assertEquals(expectedResponseAuthority.get(0).getBirthDate(), responseAuthority.get(0).getBirthDate());
@@ -220,7 +216,7 @@ public class FetchAuthorityHandlerTest {
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        List<Authority> responseAuthority = mapper.readValue(content, new TypeReference<List<Authority>>(){});
+        List<Authority> responseAuthority = objectMapper.readValue(content, new TypeReference<List<Authority>>(){});
         assertTrue(responseAuthority.isEmpty());
     }
 

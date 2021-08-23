@@ -1,23 +1,20 @@
 package no.unit.nva.bare;
 
+import static java.util.Objects.nonNull;
+import static nva.commons.core.JsonUtils.objectMapper;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_OK;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import nva.commons.utils.Environment;
-import nva.commons.utils.JacocoGenerated;
-import nva.commons.utils.JsonUtils;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
-
-import static java.util.Objects.nonNull;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_OK;
+import nva.commons.core.Environment;
+import nva.commons.core.JacocoGenerated;
 
 /**
  * Handler for requests to Lambda function.
@@ -38,7 +35,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
     public static final String SCN_KEY = "scn";
 
     private final transient Logger log = Logger.instance();
-    private static final ObjectMapper mapper = JsonUtils.objectMapper;
+
 
 
     @JacocoGenerated
@@ -99,8 +96,8 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
                     try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
                         final List<Authority> fetchedAuthority =
                                 authorityConverter.extractAuthoritiesFrom(streamReader);
-                        log.info(mapper.writeValueAsString(fetchedAuthority));
-                        gatewayResponse.setBody(mapper.writeValueAsString(fetchedAuthority));
+                        log.info(objectMapper.writeValueAsString(fetchedAuthority));
+                        gatewayResponse.setBody(objectMapper.writeValueAsString(fetchedAuthority));
                         gatewayResponse.setStatusCode(SC_OK);
                     }
                 } catch (IOException | URISyntaxException e) {
@@ -122,7 +119,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
         try {
             BareAuthority fetchedAuthority = bareConnection.get(arpId);
             Authority authority = authorityConverter.asAuthority(fetchedAuthority);
-            gatewayResponse.setBody(mapper.writeValueAsString(authority));
+            gatewayResponse.setBody(objectMapper.writeValueAsString(authority));
             gatewayResponse.setStatusCode(SC_OK);
             return gatewayResponse;
         } catch (URISyntaxException | IOException | InterruptedException e) {

@@ -1,8 +1,7 @@
 package no.unit.nva.bare;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nva.commons.utils.Environment;
-import nva.commons.utils.JsonUtils;
+import nva.commons.core.Environment;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import nva.commons.core.JsonUtils;
 
 public class AuthorityConverter {
 

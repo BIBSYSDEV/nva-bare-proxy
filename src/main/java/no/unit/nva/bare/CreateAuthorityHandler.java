@@ -1,24 +1,21 @@
 package no.unit.nva.bare;
 
+import static nva.commons.core.JsonUtils.objectMapper;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_OK;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import nva.commons.utils.Environment;
-import nva.commons.utils.JsonUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.Objects;
-
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_OK;
+import nva.commons.core.Environment;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Handler for requests to Lambda function creating an authority in ARP.
@@ -38,7 +35,7 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
     private final transient Logger log = Logger.instance();
     private final transient Environment environment;
 
-    private static final ObjectMapper mapper = JsonUtils.objectMapper;
+
 
 
     public CreateAuthorityHandler(BareConnection bareConnection, Environment environment) {
@@ -77,10 +74,10 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
             log.info("response (from bareConnection)=" + response);
             if (response.statusCode() == SC_CREATED
                     || response.statusCode() == SC_OK) { //201
-                BareAuthority createdAuthority =  mapper.readValue(response.body(), BareAuthority.class);
+                BareAuthority createdAuthority =  objectMapper.readValue(response.body(), BareAuthority.class);
                 if (Objects.nonNull(createdAuthority)) {
                     final Authority authority = authorityConverter.asAuthority(createdAuthority);
-                    gatewayResponse.setBody(mapper.writeValueAsString(authority));
+                    gatewayResponse.setBody(objectMapper.writeValueAsString(authority));
                     gatewayResponse.setStatusCode(SC_OK);
                 } else {
                     log.error(String.format(COMMUNICATION_ERROR_WHILE_CREATING, name));
@@ -89,7 +86,7 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
                 }
             } else {
                 log.error("Error: " + response.body());
-                log.error("new authority looked like this: \n" + mapper.writeValueAsString(bareAuthority));
+                log.error("new authority looked like this: \n" + objectMapper.writeValueAsString(bareAuthority));
                 gatewayResponse.setErrorBody(response.statusCode() + ": " + response.body());
                 gatewayResponse.setStatusCode(SC_INTERNAL_SERVER_ERROR);
             }
@@ -103,7 +100,7 @@ public class CreateAuthorityHandler implements RequestHandler<Map<String, Object
 
     protected String getValueFromJsonObject(String body, String key) {
         try {
-            JsonNode jsonNode = mapper.readTree(body).at(key);
+            JsonNode jsonNode = objectMapper.readTree(body).at(key);
             return Objects.isNull(jsonNode) ? EMPTY_STRING : jsonNode.textValue();
         } catch (JsonProcessingException e) {
             log.error(e);

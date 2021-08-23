@@ -1,32 +1,5 @@
 package no.unit.nva.bare;
 
-import com.amazonaws.services.lambda.runtime.Context;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import no.unit.nva.testutils.HandlerUtils;
-import no.unit.nva.testutils.TestContext;
-import no.unit.nva.testutils.TestHeaders;
-import nva.commons.utils.Environment;
-
-import nva.commons.utils.JsonUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-
-import org.junit.jupiter.api.Test;
-import org.zalando.problem.Problem;
-import org.zalando.problem.Status;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.http.HttpResponse;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import static no.unit.nva.bare.AddNewAuthorityIdentifierHandler.COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY;
 import static no.unit.nva.bare.AddNewAuthorityIdentifierHandler.MISSING_ATTRIBUTE_IDENTIFIER;
 import static no.unit.nva.bare.AddNewAuthorityIdentifierHandler.MISSING_PATH_PARAMETER_QUALIFIER;
@@ -36,35 +9,53 @@ import static no.unit.nva.bare.AddNewAuthorityIdentifierHandler.QUALIFIER_KEY;
 import static no.unit.nva.bare.AddNewAuthorityIdentifierHandler.REMOTE_SERVER_ERRORMESSAGE;
 import static no.unit.nva.bare.AddNewAuthorityIdentifierHandler.SCN_KEY;
 import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON;
-import static nva.commons.handlers.ApiGatewayHandler.ALLOWED_ORIGIN_ENV;
-import static nva.commons.utils.JsonUtils.objectMapper;
+import static nva.commons.apigateway.ApiGatewayHandler.ALLOWED_ORIGIN_ENV;
+import static nva.commons.core.JsonUtils.objectMapper;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import com.amazonaws.services.lambda.runtime.Context;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.http.HttpResponse;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import no.unit.nva.testutils.HandlerRequestBuilder;
+import no.unit.nva.testutils.IoUtils;
+import no.unit.nva.testutils.TestHeaders;
+import nva.commons.apigateway.GatewayResponse;
+import nva.commons.core.Environment;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.zalando.problem.Problem;
+import org.zalando.problem.Status;
 
 public class AddNewAuthorityIdentifierHandlerTest {
 
     public static final String MOCK_SCN_VALUE = "scn";
     public static final String MOCK_FEIDEID_VALUE = "feideid";
-    public static final String BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON = "/bareSingleAuthorityGetResponse.json";
+    public static final String BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON = "bareSingleAuthorityGetResponse.json";
     public static final String EXCEPTION_IS_EXPECTED = "Exception is expected.";
 
     private Environment mockEnvironment;
     private Context context;
     private BareConnection bareConnection;
-    private OutputStream output;
+    private ByteArrayOutputStream output;
     private AddNewAuthorityIdentifierHandler addNewAuthorityIdentifierHandler;
     private HttpResponse httpResponse;
-    private static final ObjectMapper mapper = JsonUtils.objectMapper;
 
     /**
      * Initialize mocks.
@@ -74,68 +65,63 @@ public class AddNewAuthorityIdentifierHandlerTest {
         mockEnvironment = mock(Environment.class);
         when(mockEnvironment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
         when(mockEnvironment.readEnv(AuthorityConverter.PERSON_AUTHORITY_BASE_ADDRESS_KEY))
-                .thenReturn(HTTPS_LOCALHOST_PERSON);
-        context = new TestContext();
+            .thenReturn(HTTPS_LOCALHOST_PERSON);
+        context = mock(Context.class);
         output = new ByteArrayOutputStream();
         bareConnection = mock(BareConnection.class);
         httpResponse = mock(HttpResponse.class);
     }
 
-
-    @org.junit.jupiter.api.Test
+    @Test
     @DisplayName("handler Returns Bad Request Response When SCN Path Parameter Is Missing")
     public void handlerReturnsBadRequestWhenScnPathParameterIsMissing() throws IOException {
 
-        InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(null);
+        InputStream input = new HandlerRequestBuilder<AddNewAuthorityIdentifierRequest>(objectMapper)
+            .build();
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
-                nva.commons.handlers.GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         Assertions.assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
-        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
-
+        Problem problem = gatewayResponse.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_PATH_PARAMETER_SCN));
         assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
         assertThat(problem.getStatus(), is(Status.BAD_REQUEST));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     @DisplayName("handler Returns Bad Request Response When Qualifier Path Parameter Is Missing")
     public void handlerReturnsBadRequestWhenQualifierPathParameterIsMissing() throws IOException {
 
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, null);
-        InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(null,
-                TestHeaders.getRequestHeaders(), pathParams, null);
+        InputStream input = createRequest(pathParams, null);
+
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
-                nva.commons.handlers.GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         Assertions.assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
-        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
+        Problem problem = gatewayResponse.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_PATH_PARAMETER_QUALIFIER));
         assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
         assertThat(problem.getStatus(), is(Status.BAD_REQUEST));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     @DisplayName("handler Returns Bad Request Response When Qualifier Path Parameter Is Invalid")
     public void handlerReturnsBadRequestWhenQualifierPathParameterIsInvalid() throws IOException {
 
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE,
-                ValidIdentifierKey.ORGUNITID.asString() + "invalid");
-        InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(null,
-                TestHeaders.getRequestHeaders(), pathParams, null);
+                                                           ValidIdentifierKey.ORGUNITID.asString() + "invalid");
+        InputStream input = createRequest(pathParams, null);
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
-                nva.commons.handlers.GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         Assertions.assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
-        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
+        Problem problem = gatewayResponse.getBodyObject(Problem.class);
 
         assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
         assertThat(problem.getStatus(), is(Status.BAD_REQUEST));
@@ -146,16 +132,14 @@ public class AddNewAuthorityIdentifierHandlerTest {
     public void handlerReturnsBadRequestWhenMissingJsonInBody() throws IOException {
 
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.ORGUNITID.asString());
-        InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(null,
-                TestHeaders.getRequestHeaders(), pathParams, null);
+        InputStream input = createRequest(pathParams, null);
+
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
-                nva.commons.handlers.GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         Assertions.assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
-        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
-
+        Problem problem = gatewayResponse.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_REQUEST_JSON_BODY));
         assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
@@ -168,16 +152,18 @@ public class AddNewAuthorityIdentifierHandlerTest {
 
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(null);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.ORGUNITID.asString());
-        InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
-                TestHeaders.getRequestHeaders(), pathParams, null);
+        InputStream input = new HandlerRequestBuilder<AddNewAuthorityIdentifierRequest>(objectMapper)
+            .withBody(requestObject)
+            .withPathParameters(pathParams)
+            .withHeaders(TestHeaders.getRequestHeaders())
+            .build();
+
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
-                nva.commons.handlers.GatewayResponse.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
         Assertions.assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
-        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
-
+        Problem problem = gatewayResponse.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_ATTRIBUTE_IDENTIFIER));
         assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
@@ -188,9 +174,8 @@ public class AddNewAuthorityIdentifierHandlerTest {
     @DisplayName("handler Returns Ok Response When Input Is Valid And Authority Identifier Is Added Successfully")
     public void handlerReturnsOkWhenInputIsValidAndAuthorityIdentifierIsAddedSuccessfully() throws Exception {
 
-        InputStream is =
-                AddNewAuthorityIdentifierHandler.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
-        final BareAuthority bareAuthority = mapper.readValue(new InputStreamReader(is), BareAuthority.class);
+        InputStream is = IoUtils.inputStreamFromResources(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
+        final BareAuthority bareAuthority = objectMapper.readValue(new InputStreamReader(is), BareAuthority.class);
         when(bareConnection.get(anyString())).thenReturn(bareAuthority);
         when(httpResponse.statusCode()).thenReturn(SC_OK);
         when(bareConnection.addNewIdentifier(any(), any(), any())).thenReturn(httpResponse);
@@ -199,12 +184,10 @@ public class AddNewAuthorityIdentifierHandlerTest {
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
-        InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
-                TestHeaders.getRequestHeaders(), pathParams, null);
-        addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
-        nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
-                nva.commons.handlers.GatewayResponse.class);
+        InputStream input = createRequest(pathParams, requestObject);
 
+        addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
+        GatewayResponse<Authority> gatewayResponse = GatewayResponse.fromOutputStream(output);
         assertEquals(SC_OK, gatewayResponse.getStatusCode());
     }
 
@@ -213,20 +196,18 @@ public class AddNewAuthorityIdentifierHandlerTest {
     public void handlerReturnsInternalServerErrorWhenBareConnectionError() throws Exception {
 
         when(bareConnection.addNewIdentifier(any(), any(), any())).thenThrow(
-                new IOException(EXCEPTION_IS_EXPECTED));
+            new IOException(EXCEPTION_IS_EXPECTED));
         when(bareConnection.addIdentifier(any(), any())).thenThrow(
-                new IOException(EXCEPTION_IS_EXPECTED));
+            new IOException(EXCEPTION_IS_EXPECTED));
 
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
-        InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
-                TestHeaders.getRequestHeaders(), pathParams, null);
+        InputStream input = createRequest(pathParams, requestObject);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
-                nva.commons.handlers.GatewayResponse.class);
-        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
+        Problem problem = gatewayResponse.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(), containsString(EXCEPTION_IS_EXPECTED));
         assertThat(problem.getTitle(), containsString(Status.INTERNAL_SERVER_ERROR.getReasonPhrase()));
@@ -245,13 +226,11 @@ public class AddNewAuthorityIdentifierHandlerTest {
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
-        InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
-                TestHeaders.getRequestHeaders(), pathParams, null);
+        InputStream input = createRequest(pathParams, requestObject);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
-                nva.commons.handlers.GatewayResponse.class);
-        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
+        Problem problem = gatewayResponse.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(), containsString(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY));
         assertThat(problem.getTitle(), containsString(Status.INTERNAL_SERVER_ERROR.getReasonPhrase()));
@@ -270,13 +249,11 @@ public class AddNewAuthorityIdentifierHandlerTest {
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
-        InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
-                TestHeaders.getRequestHeaders(), pathParams, null);
+        InputStream input = createRequest(pathParams, requestObject);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
-                nva.commons.handlers.GatewayResponse.class);
-        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
+        GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
+        Problem problem = gatewayResponse.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(), containsString(EXCEPTION_IS_EXPECTED));
         assertThat(problem.getTitle(), containsString(Status.INTERNAL_SERVER_ERROR.getReasonPhrase()));
@@ -293,17 +270,25 @@ public class AddNewAuthorityIdentifierHandlerTest {
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
-        InputStream input = new HandlerUtils(objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
-                TestHeaders.getRequestHeaders(), pathParams, null);
+        InputStream input = createRequest(pathParams, requestObject);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.handlers.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
-                nva.commons.handlers.GatewayResponse.class);
-        Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
+        nva.commons.apigateway.GatewayResponse<Problem> gatewayResponse =
+            nva.commons.apigateway.GatewayResponse.fromOutputStream(output);
+        Problem problem = gatewayResponse.getBodyObject(Problem.class);
 
         assertThat(problem.getDetail(), containsString(REMOTE_SERVER_ERRORMESSAGE));
         assertThat(problem.getTitle(), containsString(Status.INTERNAL_SERVER_ERROR.getReasonPhrase()));
         assertThat(problem.getStatus(), is(Status.INTERNAL_SERVER_ERROR));
+    }
+
+    private <T> InputStream createRequest(Map<String, String> pathParams, T requestBody)
+        throws com.fasterxml.jackson.core.JsonProcessingException {
+        return new HandlerRequestBuilder<T>(objectMapper)
+            .withBody(requestBody)
+            .withHeaders(TestHeaders.getRequestHeaders())
+            .withPathParameters(pathParams)
+            .build();
     }
 
     private Map<String, String> getPathParameters(String scn, String qualifier) {
@@ -316,5 +301,4 @@ public class AddNewAuthorityIdentifierHandlerTest {
         }
         return pathParams;
     }
-
 }

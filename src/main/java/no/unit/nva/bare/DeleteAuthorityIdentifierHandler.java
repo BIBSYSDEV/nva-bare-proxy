@@ -1,23 +1,23 @@
 package no.unit.nva.bare;
 
+import static java.util.Arrays.asList;
+import static org.apache.http.HttpStatus.SC_OK;
 import com.amazonaws.services.lambda.runtime.Context;
-import nva.commons.exceptions.ApiGatewayException;
-import nva.commons.handlers.ApiGatewayHandler;
-import nva.commons.handlers.RequestInfo;
-import nva.commons.utils.Environment;
-import nva.commons.utils.JacocoGenerated;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import nva.commons.apigateway.ApiGatewayHandler;
+import nva.commons.apigateway.RequestInfo;
+import nva.commons.apigateway.exceptions.ApiGatewayException;
 
-import static java.util.Arrays.asList;
-import static org.apache.http.HttpStatus.SC_OK;
+import nva.commons.core.Environment;
+import nva.commons.core.JacocoGenerated;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler for requests to Lambda function.
@@ -41,6 +41,7 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
             ValidIdentifierKey.ORGUNITID.asString());
 
     private transient BareConnection bareConnection;
+    private static final Logger logger = LoggerFactory.getLogger(DeleteAuthorityIdentifierHandler.class);
 
     /**
      * Default constructor for DeleteAuthorityIdentifierHandler.
@@ -57,8 +58,7 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
      * @param bareConnection bareConnection
      */
     public DeleteAuthorityIdentifierHandler(Environment environment, BareConnection bareConnection) {
-        super(DeleteAuthorityIdentifierRequest.class, environment,
-                LoggerFactory.getLogger(DeleteAuthorityIdentifierHandler.class));
+        super(DeleteAuthorityIdentifierRequest.class, environment);
         this.bareConnection = bareConnection;
     }
 
@@ -103,7 +103,7 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
     }
 
     protected Authority deleteIdentifier(String scn, String qualifier, String identifier)
-            throws ApiGatewayException {
+        throws BareException, BareCommunicationException {
         try {
             HttpResponse<String> response = bareConnection.deleteIdentifier(scn, qualifier, identifier);
             int responseCode = response.statusCode();

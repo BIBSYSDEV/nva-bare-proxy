@@ -1,8 +1,7 @@
 package no.unit.nva.bare;
 
-import nva.commons.utils.JacocoGenerated;
-
 import java.util.Objects;
+import nva.commons.core.JacocoGenerated;
 
 @JacocoGenerated
 public class Subfield {
