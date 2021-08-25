@@ -1,8 +1,8 @@
 package no.unit.nva.bare;
 
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.utils.URIBuilder;
-
+import static nva.commons.core.JsonUtils.objectMapper;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -13,10 +13,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-
-import static nva.commons.core.JsonUtils.objectMapper;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.entity.ContentType.APPLICATION_JSON;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.utils.URIBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BareConnection {
 
@@ -35,7 +35,7 @@ public class BareConnection {
     public static final String QUERYPARAMETER_IDENTIFIER = "identifier";
 
     private final transient HttpClient httpClient;
-    private final transient Logger log = Logger.instance();
+    private final transient Logger logger = LoggerFactory.getLogger(BareConnection.class);
 
 
     /**
@@ -87,7 +87,7 @@ public class BareConnection {
                         systemControlNumber)
                 .setParameter("format", "json")
                 .build();
-        log.info("bareConnection.get(" + getUrl + ")");
+        logger.info("bareConnection.get(" + getUrl + ")");
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(getUrl);
         HttpRequest request = requestBuilder.GET().build();
@@ -96,7 +96,7 @@ public class BareConnection {
             final String body = response.body();
             return objectMapper.readValue(body, BareAuthority.class);
         } else {
-            log.error("Error..? " + response.body());
+            logger.error("Error..? " + response.body());
             throw new IOException(response.body());
         }
     }
@@ -120,13 +120,13 @@ public class BareConnection {
                 .setPathSegments(PATH_SEGMENT_AUTHORITY, PATH_SEGMENT_REST, PATH_SEGMENT_AUTHORITIES, PATH_SEGMENT_V_2,
                         authoritySystemControlNumber, PATH_SEGMENT_IDENTIFIERS)
                 .build();
-        log.info("uri=" + uri);
+        logger.info("uri=" + uri);
 
         final String body = objectMapper.writeValueAsString(authorityIdentifier);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(body);
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.POST(bodyPublisher).build();
-        log.info("httpPost=" + request.toString());
+        logger.info("httpPost=" + request.toString());
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
@@ -146,15 +146,15 @@ public class BareConnection {
                 .setHost(Config.getInstance().getBareHost())
                 .setPath(Config.BARE_CREATE_PATH)
                 .build();
-        log.info(URI_LOG_STRING + uri);
+        logger.info(URI_LOG_STRING + uri);
 
         final String payload = objectMapper.writeValueAsString(bareAuthority);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(payload);
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.POST(bodyPublisher).build();
-        log.info("httpPost=" + request.toString());
-        log.info("payload: " + payload);
+        logger.info("httpPost=" + request.toString());
+        logger.info("payload: " + payload);
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
@@ -178,7 +178,7 @@ public class BareConnection {
                         systemControlNumber, PATH_SEGMENT_IDENTIFIERS,
                         qualifier, identifier)
                 .build();
-        log.info(URI_LOG_STRING + uri);
+        logger.info(URI_LOG_STRING + uri);
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.POST(HttpRequest.BodyPublishers.noBody()).build();
@@ -206,7 +206,7 @@ public class BareConnection {
                         qualifier)
                 .setParameter(QUERYPARAMETER_IDENTIFIER, identifier)
                 .build();
-        log.info(URI_LOG_STRING + uri);
+        logger.info(URI_LOG_STRING + uri);
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.DELETE().build();

@@ -34,8 +34,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import no.unit.nva.testutils.HandlerUtils;
 import no.unit.nva.testutils.TestHeaders;
+import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
-import org.apache.commons.lang3.StringUtils;
+import nva.commons.core.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -291,8 +292,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
                                                                      TestHeaders.getRequestHeaders(), pathParams, null);
         deleteAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
-                                                                                        nva.commons.apigateway.GatewayResponse.class);
+        GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(), GatewayResponse.class);
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(REMOTE_SERVER_ERRORMESSAGE));
@@ -302,10 +302,10 @@ public class DeleteAuthorityIdentifierHandlerTest {
 
     private Map<String, String> getPathParameters(String scn, String qualifier) {
         Map<String, String> pathParams = new ConcurrentHashMap<>();
-        if (!org.apache.commons.lang3.StringUtils.isEmpty(scn)) {
+        if (StringUtils.isNotEmpty(scn)) {
             pathParams.put(SCN_KEY, scn);
         }
-        if (!StringUtils.isEmpty(qualifier)) {
+        if (StringUtils.isNotEmpty(qualifier)) {
             pathParams.put(QUALIFIER_KEY, qualifier);
         }
         return pathParams;

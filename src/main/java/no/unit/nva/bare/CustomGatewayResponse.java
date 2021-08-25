@@ -7,18 +7,20 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.commons.lang3.StringUtils;
+import nva.commons.core.StringUtils;
 import org.apache.http.HttpHeaders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * POJO containing response object for API Gateway.
  */
-public class GatewayResponse {
+public class CustomGatewayResponse {
 
     public static final String CORS_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
     public static final String EMPTY_JSON = "{}";
     public static final transient String ERROR_KEY = "error";
-    private final transient Logger logger = Logger.instance();
+    private final transient Logger logger = LoggerFactory.getLogger(CustomGatewayResponse.class);
     private String body;
     private transient Map<String, String> headers;
     private int statusCode;
@@ -26,7 +28,7 @@ public class GatewayResponse {
     /**
      * GatewayResponse contains response status, response headers and body with payload resp. error messages.
      */
-    public GatewayResponse() {
+    public CustomGatewayResponse() {
         this.statusCode = SC_INTERNAL_SERVER_ERROR;
         this.body = EMPTY_JSON;
         this.generateDefaultHeaders();
@@ -35,7 +37,7 @@ public class GatewayResponse {
     /**
      * GatewayResponse convenience constructor to set response status and body with payload direct.
      */
-    public GatewayResponse(final String body, final int status) {
+    public CustomGatewayResponse(final String body, final int status) {
         this.statusCode = status;
         this.body = body;
         this.generateDefaultHeaders();
@@ -72,7 +74,7 @@ public class GatewayResponse {
         try {
             this.body = objectMapper.writeValueAsString(bodyContent);
         } catch (JsonProcessingException e) {
-            logger.error(e);
+            logger.error(e.getMessage(),e);
         }
     }
 

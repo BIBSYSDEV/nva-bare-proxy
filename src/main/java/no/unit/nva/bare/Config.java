@@ -1,6 +1,6 @@
 package no.unit.nva.bare;
 
-import org.apache.commons.lang3.StringUtils;
+import nva.commons.core.StringUtils;
 
 public class Config {
 

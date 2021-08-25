@@ -15,7 +15,8 @@ import nva.commons.apigateway.exceptions.ApiGatewayException;
 
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
-import org.apache.commons.lang3.StringUtils;
+import nva.commons.core.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
             ValidIdentifierKey.ORCID.asString(),
             ValidIdentifierKey.ORGUNITID.asString());
 
-    private transient BareConnection bareConnection;
+    private final transient BareConnection bareConnection;
     private static final Logger logger = LoggerFactory.getLogger(DeleteAuthorityIdentifierHandler.class);
 
     /**

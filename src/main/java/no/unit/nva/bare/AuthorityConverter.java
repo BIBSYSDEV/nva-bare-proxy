@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import nva.commons.core.JsonUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AuthorityConverter {
 
@@ -34,7 +36,7 @@ public class AuthorityConverter {
     public static final String MARCTAG_100 = "100";
     public static final String SUBCODE_A = "a";
     public static final String SLASH = "/";
-    private final transient Logger log = Logger.instance();
+    private final transient Logger logger = LoggerFactory.getLogger(AuthorityConverter.class);
     private static final ObjectMapper mapper = JsonUtils.objectMapper;
 
     private final transient String personAuthorityBaseAddress;
@@ -54,13 +56,13 @@ public class AuthorityConverter {
 
     protected List<Authority> extractAuthoritiesFrom(InputStreamReader reader) throws IOException {
         final BareQueryResponse bareQueryResponse = mapper.readValue(reader, BareQueryResponse.class);
-        log.info(bareQueryResponse.toString());
+        logger.info(bareQueryResponse.toString());
         return Arrays.stream(bareQueryResponse.results).map(this::asAuthority).collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
     protected Authority asAuthority(BareAuthority bareAuthority) {
-        log.info(AUTHORITY_INCOMING_BARE_AUTHORTY_MESSAGE + bareAuthority);
+        logger.info(AUTHORITY_INCOMING_BARE_AUTHORTY_MESSAGE + bareAuthority);
         final String name = this.findValueIn(bareAuthority, MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE);
         final String date = this.findValueIn(bareAuthority, MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE);
         final String scn = bareAuthority.getSystemControlNumber();
@@ -77,7 +79,7 @@ public class AuthorityConverter {
         authority.setOrcids(orcIdArray.orElse(Collections.EMPTY_LIST));
         authority.setOrgunitids(orgUnitIdArray.orElse(Collections.EMPTY_LIST));
         authority.setHandles(handleArray.orElse(Collections.EMPTY_LIST));
-        log.info(CONVERTER_AS_AUTHORITY_AUTHORITY_SCN_MESSAGE + authority.getSystemControlNumber());
+        logger.info(CONVERTER_AS_AUTHORITY_AUTHORITY_SCN_MESSAGE, authority.getSystemControlNumber());
         return authority;
     }
 
@@ -108,6 +110,7 @@ public class AuthorityConverter {
     }
 
     private URI generateId(String scn) {
+
         return URI.create(personAuthorityBaseAddress.concat(scn));
     }
 

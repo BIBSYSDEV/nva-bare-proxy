@@ -2,12 +2,14 @@ package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.net.HttpURLConnection;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
-import org.apache.commons.lang3.StringUtils;
+
+import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static java.util.Arrays.asList;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
+
 
 /**
  * Handler for requests to Lambda function.
@@ -119,7 +120,8 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
         try {
             HttpResponse<String> response = bareConnection.updateIdentifier(scn, qualifier, identifier,
                     updatedIdentifier);
-            if (response.statusCode() == SC_OK || response.statusCode() == SC_NO_CONTENT) {
+            if (response.statusCode() == HttpURLConnection.HTTP_OK
+                || response.statusCode() == HttpURLConnection.HTTP_NO_CONTENT) {
                 return getAuthority(scn);
             } else {
                 logger.error(String.format("updatedIdentifier - ErrorCode=%s, reasonPhrase=%s", response.statusCode(),
@@ -152,6 +154,6 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
 
     @Override
     protected Integer getSuccessStatusCode(UpdateAuthorityIdentifierRequest input, Authority output) {
-        return SC_OK;
+        return HttpURLConnection.HTTP_OK;
     }
 }

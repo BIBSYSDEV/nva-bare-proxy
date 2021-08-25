@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import no.unit.nva.testutils.HandlerUtils;
 import no.unit.nva.testutils.TestHeaders;
 import nva.commons.core.Environment;
-import org.apache.commons.lang3.StringUtils;
+import nva.commons.core.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -118,7 +118,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
         assertThat(problem.getStatus(), is(Status.BAD_REQUEST));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     @DisplayName("handler Returns Bad Request Response When Qualifier Path Parameter Is Missing")
     public void handlerReturnsBadRequestWhenQualifierPathParameterIsMissing() throws IOException {
 
@@ -364,7 +364,8 @@ public class UpdateAuthorityIdentifierHandlerTest {
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(
             objectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
-                                                                               TestHeaders.getRequestHeaders(), pathParams, null);
+                                                                               TestHeaders.getRequestHeaders(),
+                                                                     pathParams, null);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
@@ -378,10 +379,10 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
     private Map<String, String> getPathParameters(String scn, String qualifier) {
         Map<String, String> pathParams = new ConcurrentHashMap<>();
-        if (!org.apache.commons.lang3.StringUtils.isEmpty(scn)) {
+        if (StringUtils.isNotEmpty(scn)) {
             pathParams.put(SCN_KEY, scn);
         }
-        if (!StringUtils.isEmpty(qualifier)) {
+        if (StringUtils.isNotEmpty(qualifier)) {
             pathParams.put(QUALIFIER_KEY, qualifier);
         }
         return pathParams;
