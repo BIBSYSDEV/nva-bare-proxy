@@ -8,7 +8,6 @@ import static no.unit.nva.bare.Logger.LogLevel.INFO;
 public class Logger {
 
 
-
     protected enum LogLevel {
         ERROR, INFO;
     }

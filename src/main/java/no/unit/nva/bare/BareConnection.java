@@ -1,7 +1,5 @@
 package no.unit.nva.bare;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import nva.commons.utils.JsonUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.URIBuilder;
 
@@ -16,6 +14,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
+import static nva.commons.core.JsonUtils.objectMapper;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 
@@ -37,7 +36,7 @@ public class BareConnection {
 
     private final transient HttpClient httpClient;
     private final transient Logger log = Logger.instance();
-    private static final ObjectMapper mapper = JsonUtils.objectMapper;
+
 
     /**
      * Constructor for testability reasons.
@@ -95,7 +94,7 @@ public class BareConnection {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() == SC_OK) {
             final String body = response.body();
-            return mapper.readValue(body, BareAuthority.class);
+            return objectMapper.readValue(body, BareAuthority.class);
         } else {
             log.error("Error..? " + response.body());
             throw new IOException(response.body());
@@ -123,7 +122,7 @@ public class BareConnection {
                 .build();
         log.info("uri=" + uri);
 
-        final String body = mapper.writeValueAsString(authorityIdentifier);
+        final String body = objectMapper.writeValueAsString(authorityIdentifier);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(body);
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.POST(bodyPublisher).build();
@@ -149,7 +148,7 @@ public class BareConnection {
                 .build();
         log.info(URI_LOG_STRING + uri);
 
-        final String payload = mapper.writeValueAsString(bareAuthority);
+        final String payload = objectMapper.writeValueAsString(bareAuthority);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(payload);
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);

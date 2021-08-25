@@ -1,6 +1,6 @@
 package no.unit.nva.bare;
 
-import nva.commons.exceptions.ApiGatewayException;
+import nva.commons.apigateway.exceptions.ApiGatewayException;
 import org.apache.http.HttpStatus;
 
 public class BareCommunicationException extends ApiGatewayException {

@@ -1,20 +1,5 @@
 package no.unit.nva.bare;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import nva.commons.utils.Environment;
-import nva.commons.utils.IoUtils;
-import nva.commons.utils.JsonUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.http.HttpResponse;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-
 import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
@@ -27,6 +12,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
+import java.util.HashMap;
+import java.util.Map;
+import nva.commons.core.Environment;
+import nva.commons.core.JsonUtils;
+import nva.commons.core.ioutils.IoUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CreateAuthorityHandlerTest {
 
@@ -44,7 +41,7 @@ public class CreateAuthorityHandlerTest {
     private BareConnection mockBareConnection;
     private HttpResponse mockHttpResponse;
     private Environment mockEnvironment;
-    private static final ObjectMapper mapper = JsonUtils.objectMapper;
+    private static final ObjectMapper objectMapper = JsonUtils.objectMapper;
     /**
      * Initialize test environment.
      */
@@ -62,7 +59,7 @@ public class CreateAuthorityHandlerTest {
     public void testCreateAuthority() throws IOException, URISyntaxException, InterruptedException {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
-        InputStream is = IoUtils.inputStreamFromResources(Paths.get(BARE_SINGLE_AUTHORITY_CREATE_RESPONSE));
+        InputStream is = IoUtils.inputStreamFromResources(BARE_SINGLE_AUTHORITY_CREATE_RESPONSE);
         final String mockBody = IoUtils.streamToString(is);
 
         when(mockHttpResponse.statusCode()).thenReturn(SC_CREATED);
@@ -74,8 +71,8 @@ public class CreateAuthorityHandlerTest {
         assertNotNull(response);
         assertEquals(SC_OK, response.getStatusCode());
         String resp = FetchAuthorityHandlerTest.readJsonStringFromFile(CREATE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
-        Authority expected = mapper.readValue(resp, Authority.class);
-        Authority actual = mapper.readValue(response.getBody(), Authority.class);
+        Authority expected = objectMapper.readValue(resp, Authority.class);
+        Authority actual = objectMapper.readValue(response.getBody(), Authority.class);
         assertEquals(expected,actual);
     }
 

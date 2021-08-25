@@ -2,12 +2,13 @@ package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import nva.commons.exceptions.ApiGatewayException;
-import nva.commons.handlers.ApiGatewayHandler;
-import nva.commons.handlers.RequestInfo;
-import nva.commons.utils.Environment;
-import nva.commons.utils.JacocoGenerated;
+import nva.commons.apigateway.ApiGatewayHandler;
+import nva.commons.apigateway.RequestInfo;
+import nva.commons.apigateway.exceptions.ApiGatewayException;
+import nva.commons.core.Environment;
+import nva.commons.core.JacocoGenerated;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -45,7 +46,7 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
             ValidIdentifierKey.ORGUNITID.asString());
 
     private final transient BareConnection bareConnection;
-
+    private static final Logger logger = LoggerFactory.getLogger(UpdateAuthorityIdentifierHandler.class);
 
     /**
      * Default constructor for UpdateAuthorityIdentifierHandler.
@@ -63,8 +64,7 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
      * @param bareConnection bareConnection
      */
     public UpdateAuthorityIdentifierHandler(Environment environment, BareConnection bareConnection) {
-        super(UpdateAuthorityIdentifierRequest.class, environment,
-                LoggerFactory.getLogger(UpdateAuthorityIdentifierHandler.class));
+        super(UpdateAuthorityIdentifierRequest.class, environment);
         this.bareConnection = bareConnection;
     }
 

@@ -1,28 +1,7 @@
 package no.unit.nva.bare;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import nva.commons.utils.Environment;
-import nva.commons.utils.JsonUtils;
-import org.apache.commons.io.IOUtils;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.Type;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.http.HttpClient;
-import java.net.http.HttpResponse;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-
 import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON;
+import static nva.commons.core.JsonUtils.objectMapper;
 import static org.apache.http.HttpStatus.SC_NOT_ACCEPTABLE;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,6 +10,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpResponse;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import nva.commons.core.Environment;
+import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class BareConnectionTest {
 
@@ -46,7 +40,6 @@ public class BareConnectionTest {
     private HttpClient mockHttpClient;
     private HttpResponse mockHttpResponse;
     private Environment mockEnvironment;
-    private static final ObjectMapper mapper = JsonUtils.objectMapper;
 
     /**
      * Initialize mocks.
@@ -95,12 +88,12 @@ public class BareConnectionTest {
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());
 
-        Authority updatedAuthority = mapper.readValue(httpResponse.body(), Authority.class);
+        Authority updatedAuthority = objectMapper.readValue(httpResponse.body(), Authority.class);
 
         InputStream stream =
                 AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
         String st = IOUtils.toString(stream, Charset.defaultCharset());
-        List<Authority> mockAuthorityList = mapper.readValue(st, new TypeReference<List<Authority>>(){});
+        List<Authority> mockAuthorityList = objectMapper.readValue(st, new TypeReference<List<Authority>>(){});
         assertEquals(mockAuthorityList.get(0).getSystemControlNumber(), updatedAuthority.getSystemControlNumber());
         assertNotNull(updatedAuthority.getFeideids());
         assertNotNull(updatedAuthority.getOrcids());
@@ -122,12 +115,12 @@ public class BareConnectionTest {
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());
 
-        Authority updatedAuthority = mapper.readValue(httpResponse.body(), Authority.class);
+        Authority updatedAuthority = objectMapper.readValue(httpResponse.body(), Authority.class);
 
         InputStream stream =
                 AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(COMPLETE_SINGLE_AUTHORITY_JSON);
         String st = IOUtils.toString(stream, Charset.defaultCharset());
-        List<Authority> mockAuthorityList = mapper.readValue(st, new TypeReference<List<Authority>>(){});
+        List<Authority> mockAuthorityList = objectMapper.readValue(st, new TypeReference<List<Authority>>(){});
         assertEquals(mockAuthorityList.get(0).getSystemControlNumber(), updatedAuthority.getSystemControlNumber());
         assertNotNull(updatedAuthority.getFeideids());
         assertNotNull(updatedAuthority.getOrcids());
@@ -151,7 +144,7 @@ public class BareConnectionTest {
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());
 
-        Authority updatedAuthority = mapper.readValue(httpResponse.body(), Authority.class);
+        Authority updatedAuthority = objectMapper.readValue(httpResponse.body(), Authority.class);
 
     }
 
@@ -193,7 +186,7 @@ public class BareConnectionTest {
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());
 
-        BareAuthority createdAuthority = mapper.readValue(httpResponse.body(), BareAuthority.class);
+        BareAuthority createdAuthority = objectMapper.readValue(httpResponse.body(), BareAuthority.class);
         assertEquals(MOCK_NAME, authorityConverter.asAuthority(createdAuthority).getName());
     }
 

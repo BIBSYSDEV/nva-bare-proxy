@@ -1,12 +1,13 @@
 package no.unit.nva.bare;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import nva.commons.exceptions.ApiGatewayException;
-import nva.commons.handlers.ApiGatewayHandler;
-import nva.commons.handlers.RequestInfo;
-import nva.commons.utils.Environment;
-import nva.commons.utils.JacocoGenerated;
+import nva.commons.apigateway.ApiGatewayHandler;
+import nva.commons.apigateway.RequestInfo;
+import nva.commons.apigateway.exceptions.ApiGatewayException;
+import nva.commons.core.Environment;
+import nva.commons.core.JacocoGenerated;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -34,6 +35,8 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
     public static final String SCN_KEY = "scn";
     public static final String QUALIFIER_KEY = "qualifier";
     public static final String REMOTE_SERVER_ERRORMESSAGE = "remote server errormessage: ";
+    public static final Logger logger = LoggerFactory.getLogger(AddNewAuthorityIdentifierHandler.class);
+
 
     public static final List<String> VALID_QUALIFIERS = asList(
             ValidIdentifierKey.FEIDEID.asString(),
@@ -57,13 +60,13 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
      * @param bareConnection bareConnection
      */
     public AddNewAuthorityIdentifierHandler(Environment environment, BareConnection bareConnection) {
-        super(AddNewAuthorityIdentifierRequest.class, environment,
-                LoggerFactory.getLogger(AddNewAuthorityIdentifierHandler.class));
+        super(AddNewAuthorityIdentifierRequest.class, environment);
         this.bareConnection = bareConnection;
     }
 
     @Override
-    protected Authority processInput(AddNewAuthorityIdentifierRequest input, RequestInfo requestInfo,
+    protected Authority processInput(AddNewAuthorityIdentifierRequest input,
+                                     RequestInfo requestInfo,
                                      Context context) throws ApiGatewayException {
 
         try {

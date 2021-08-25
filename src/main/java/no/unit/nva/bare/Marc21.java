@@ -1,9 +1,9 @@
 package no.unit.nva.bare;
 
-import nva.commons.utils.JacocoGenerated;
 
 import java.util.Arrays;
 import java.util.Objects;
+import nva.commons.core.JacocoGenerated;
 
 /**
     This class resembles the pseudo-marc structure used in Bare.

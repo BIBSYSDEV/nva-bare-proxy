@@ -1,17 +1,14 @@
 package no.unit.nva.bare;
 
+import static nva.commons.core.JsonUtils.objectMapper;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import nva.commons.utils.JsonUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpHeaders;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.entity.ContentType.APPLICATION_JSON;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHeaders;
 
 /**
  * POJO containing response object for API Gateway.
@@ -21,7 +18,6 @@ public class GatewayResponse {
     public static final String CORS_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
     public static final String EMPTY_JSON = "{}";
     public static final transient String ERROR_KEY = "error";
-    private static final ObjectMapper mapper = JsonUtils.objectMapper;
     private final transient Logger logger = Logger.instance();
     private String body;
     private transient Map<String, String> headers;
@@ -74,7 +70,7 @@ public class GatewayResponse {
         Map<String, String> bodyContent = new ConcurrentHashMap<>();
         bodyContent.put(ERROR_KEY, message);
         try {
-            this.body = mapper.writeValueAsString(bodyContent);
+            this.body = objectMapper.writeValueAsString(bodyContent);
         } catch (JsonProcessingException e) {
             logger.error(e);
         }

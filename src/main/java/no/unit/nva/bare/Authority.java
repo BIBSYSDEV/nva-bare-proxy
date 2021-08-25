@@ -2,17 +2,17 @@ package no.unit.nva.bare;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import nva.commons.utils.JacocoGenerated;
-
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import nva.commons.core.JacocoGenerated;
+import nva.commons.core.JsonSerializable;
 
-public class Authority {
+public class Authority implements JsonSerializable {
 
-    public static final String EMPTY_STRING = "";
+    public static final String EMPTY_STRING = null;
     private static final URI UNDEFINED_ID = null;
 
     @JsonProperty("id")
@@ -151,4 +151,5 @@ public class Authority {
                 getBirthDate(),
                 getHandles());
     }
+
 }
