@@ -15,11 +15,13 @@ import java.util.List;
 import java.util.Map;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler for requests to Lambda function.
  */
-public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
+public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>, CustomGatewayResponse> {
 
     protected static final String MISSING_PARAMETERS = "Missing parameters! Query parameter not set.";
     protected final transient AuthorityConverter authorityConverter;
@@ -34,7 +36,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
     public static final String ARPID_KEY = "arpId";
     public static final String SCN_KEY = "scn";
 
-    private final transient Logger log = Logger.instance();
+    private final transient Logger log = LoggerFactory.getLogger(FetchAuthorityHandler.class);
 
 
 
@@ -55,10 +57,9 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
      */
     @Override
     @SuppressWarnings("unchecked")
-    public GatewayResponse handleRequest(final Map<String, Object> input, Context context) {
-        log.info(input);
+    public CustomGatewayResponse handleRequest(final Map<String, Object> input, Context context) {
         Config.getInstance().checkProperties();
-        GatewayResponse gatewayResponse  = new GatewayResponse();
+        CustomGatewayResponse gatewayResponse  = new CustomGatewayResponse();
 
 
         if (nonNull(input) && input.containsKey(PATH_PARAMETERS_KEY)
@@ -114,8 +115,8 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
         return gatewayResponse;
     }
 
-    private GatewayResponse getAuthorityAndMakeGatewayResponse(GatewayResponse gatewayResponse,
-                                                               String arpId) {
+    private CustomGatewayResponse getAuthorityAndMakeGatewayResponse(CustomGatewayResponse gatewayResponse,
+                                                                     String arpId) {
         try {
             BareAuthority fetchedAuthority = bareConnection.get(arpId);
             Authority authority = authorityConverter.asAuthority(fetchedAuthority);

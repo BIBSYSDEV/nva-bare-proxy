@@ -22,13 +22,13 @@ public class GatewayResponseTest {
         final Config config = Config.getInstance();
         config.setCorsHeader(EMPTY_STRING);
         final String corsHeader = config.getCorsHeader();
-        GatewayResponse gatewayResponse = new GatewayResponse(MOCK_BODY, SC_CREATED);
-        assertFalse(gatewayResponse.getHeaders().containsKey(GatewayResponse.CORS_ALLOW_ORIGIN_HEADER));
+        CustomGatewayResponse gatewayResponse = new CustomGatewayResponse(MOCK_BODY, SC_CREATED);
+        assertFalse(gatewayResponse.getHeaders().containsKey(CustomGatewayResponse.CORS_ALLOW_ORIGIN_HEADER));
         assertFalse(gatewayResponse.getHeaders().containsValue(corsHeader));
 
         config.setCorsHeader(CORS_HEADER);
-        GatewayResponse gatewayResponse1 = new GatewayResponse(MOCK_BODY, SC_CREATED);
-        assertTrue(gatewayResponse1.getHeaders().containsKey(GatewayResponse.CORS_ALLOW_ORIGIN_HEADER));
+        CustomGatewayResponse gatewayResponse1 = new CustomGatewayResponse(MOCK_BODY, SC_CREATED);
+        assertTrue(gatewayResponse1.getHeaders().containsKey(CustomGatewayResponse.CORS_ALLOW_ORIGIN_HEADER));
     }
 
 }

@@ -35,7 +35,7 @@ import no.unit.nva.testutils.IoUtils;
 import no.unit.nva.testutils.TestHeaders;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
-import org.apache.commons.lang3.StringUtils;
+import nva.commons.core.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -293,10 +293,10 @@ public class AddNewAuthorityIdentifierHandlerTest {
 
     private Map<String, String> getPathParameters(String scn, String qualifier) {
         Map<String, String> pathParams = new ConcurrentHashMap<>();
-        if (!org.apache.commons.lang3.StringUtils.isEmpty(scn)) {
+        if (StringUtils.isNotEmpty(scn)) {
             pathParams.put(SCN_KEY, scn);
         }
-        if (!StringUtils.isEmpty(qualifier)) {
+        if (StringUtils.isNotEmpty(qualifier)) {
             pathParams.put(QUALIFIER_KEY, qualifier);
         }
         return pathParams;
