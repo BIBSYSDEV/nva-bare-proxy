@@ -1,7 +1,7 @@
 package no.unit.nva.bare;
 
 import static java.util.Objects.nonNull;
-import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -97,8 +97,8 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
                     try (InputStreamReader streamReader = bareConnection.connect(bareUrl)) {
                         final List<Authority> fetchedAuthority =
                                 authorityConverter.extractAuthoritiesFrom(streamReader);
-                        log.info(objectMapper.writeValueAsString(fetchedAuthority));
-                        gatewayResponse.setBody(objectMapper.writeValueAsString(fetchedAuthority));
+                        log.info(objectMapperWithEmpty.writeValueAsString(fetchedAuthority));
+                        gatewayResponse.setBody(objectMapperWithEmpty.writeValueAsString(fetchedAuthority));
                         gatewayResponse.setStatusCode(SC_OK);
                     }
                 } catch (IOException | URISyntaxException e) {
@@ -120,7 +120,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
         try {
             BareAuthority fetchedAuthority = bareConnection.get(arpId);
             Authority authority = authorityConverter.asAuthority(fetchedAuthority);
-            gatewayResponse.setBody(objectMapper.writeValueAsString(authority));
+            gatewayResponse.setBody(objectMapperWithEmpty.writeValueAsString(authority));
             gatewayResponse.setStatusCode(SC_OK);
             return gatewayResponse;
         } catch (URISyntaxException | IOException | InterruptedException e) {

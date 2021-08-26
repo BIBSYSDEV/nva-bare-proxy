@@ -1,6 +1,6 @@
 package no.unit.nva.bare;
 
-import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -72,7 +72,7 @@ public class CustomGatewayResponse {
         Map<String, String> bodyContent = new ConcurrentHashMap<>();
         bodyContent.put(ERROR_KEY, message);
         try {
-            this.body = objectMapper.writeValueAsString(bodyContent);
+            this.body = objectMapperWithEmpty.writeValueAsString(bodyContent);
         } catch (JsonProcessingException e) {
             logger.error(e.getMessage(),e);
         }

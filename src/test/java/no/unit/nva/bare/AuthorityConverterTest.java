@@ -1,6 +1,6 @@
 package no.unit.nva.bare;
 
-import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -47,7 +47,7 @@ public class AuthorityConverterTest {
 
         InputStream streamResp =
                 IoUtils.inputStreamFromResources(Paths.get(BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON));
-        final BareAuthority bareAuthority = objectMapper.readValue(new InputStreamReader(streamResp), BareAuthority.class);
+        final BareAuthority bareAuthority = objectMapperWithEmpty.readValue(new InputStreamReader(streamResp), BareAuthority.class);
         bareAuthority.setSystemControlNumber(SYSTEM_CONTROL_NUMBER);
         AuthorityConverter authorityConverter = new AuthorityConverter(mockEnvironmentWithoutTrailingSlash);
         Authority authority  = authorityConverter.asAuthority(bareAuthority);
@@ -61,7 +61,7 @@ public class AuthorityConverterTest {
         InputStream streamResp =
                 IoUtils.inputStreamFromResources(BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON);
         AuthorityConverter authorityConverter = new AuthorityConverter(mockEnvironment);
-        final BareAuthority bareAuthority = objectMapper.readValue(new InputStreamReader(streamResp), BareAuthority.class);
+        final BareAuthority bareAuthority = objectMapperWithEmpty.readValue(new InputStreamReader(streamResp), BareAuthority.class);
         final String value = authorityConverter.findValueIn(bareAuthority, "whatEver");
         assertEquals("", value);
     }
@@ -69,7 +69,7 @@ public class AuthorityConverterTest {
     @Test
     public void testBuildAuthority() throws IOException {
         InputStream streamResp = IoUtils.inputStreamFromResources(CREATE_AUTHORITY_REQUEST_TO_BARE_JSON);
-        final BareAuthority expectedAuth = objectMapper.readValue(new InputStreamReader(streamResp), BareAuthority.class);
+        final BareAuthority expectedAuth = objectMapperWithEmpty.readValue(new InputStreamReader(streamResp), BareAuthority.class);
         AuthorityConverter authorityConverter = new AuthorityConverter(mockEnvironment);
         final BareAuthority bareAuthority = authorityConverter.buildAuthority(INVERTED_NAME);
         assertEquals(expectedAuth.getStatus(), bareAuthority.getStatus());

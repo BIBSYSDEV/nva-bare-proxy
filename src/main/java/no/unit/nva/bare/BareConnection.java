@@ -1,6 +1,6 @@
 package no.unit.nva.bare;
 
-import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import java.io.IOException;
@@ -94,7 +94,7 @@ public class BareConnection {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() == SC_OK) {
             final String body = response.body();
-            return objectMapper.readValue(body, BareAuthority.class);
+            return objectMapperWithEmpty.readValue(body, BareAuthority.class);
         } else {
             logger.error("Error..? " + response.body());
             throw new IOException(response.body());
@@ -122,7 +122,7 @@ public class BareConnection {
                 .build();
         logger.info("uri=" + uri);
 
-        final String body = objectMapper.writeValueAsString(authorityIdentifier);
+        final String body = objectMapperWithEmpty.writeValueAsString(authorityIdentifier);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(body);
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.POST(bodyPublisher).build();
@@ -148,7 +148,7 @@ public class BareConnection {
                 .build();
         logger.info(URI_LOG_STRING + uri);
 
-        final String payload = objectMapper.writeValueAsString(bareAuthority);
+        final String payload = objectMapperWithEmpty.writeValueAsString(bareAuthority);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(payload);
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);

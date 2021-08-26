@@ -1,8 +1,6 @@
 package no.unit.nva.bare;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import nva.commons.core.Environment;
-
+import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -11,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import nva.commons.core.JsonUtils;
+import nva.commons.core.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +35,7 @@ public class AuthorityConverter {
     public static final String SUBCODE_A = "a";
     public static final String SLASH = "/";
     private final transient Logger logger = LoggerFactory.getLogger(AuthorityConverter.class);
-    private static final ObjectMapper mapper = JsonUtils.objectMapper;
+
 
     private final transient String personAuthorityBaseAddress;
 
@@ -55,7 +53,7 @@ public class AuthorityConverter {
     }
 
     protected List<Authority> extractAuthoritiesFrom(InputStreamReader reader) throws IOException {
-        final BareQueryResponse bareQueryResponse = mapper.readValue(reader, BareQueryResponse.class);
+        final BareQueryResponse bareQueryResponse = objectMapperWithEmpty.readValue(reader, BareQueryResponse.class);
         logger.info(bareQueryResponse.toString());
         return Arrays.stream(bareQueryResponse.results).map(this::asAuthority).collect(Collectors.toList());
     }

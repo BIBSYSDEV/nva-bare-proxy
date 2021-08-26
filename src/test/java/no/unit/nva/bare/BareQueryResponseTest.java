@@ -1,13 +1,11 @@
 package no.unit.nva.bare;
 
-import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import nva.commons.core.JsonUtils;
 import org.junit.jupiter.api.Test;
 
 public class BareQueryResponseTest {
@@ -26,7 +24,7 @@ public class BareQueryResponseTest {
     @Test
     public void testReadingFromfile() throws IOException {
         InputStream stream = AddNewAuthorityIdentifierHandlerTest.class.getResourceAsStream(EMPTY_BARE_RESPONSE);
-        final BareQueryResponse bareQueryResponse = objectMapper.readValue(new InputStreamReader(stream),
+        final BareQueryResponse bareQueryResponse = objectMapperWithEmpty.readValue(new InputStreamReader(stream),
                                                                            BareQueryResponse.class);
         assertNotNull(bareQueryResponse);
 
