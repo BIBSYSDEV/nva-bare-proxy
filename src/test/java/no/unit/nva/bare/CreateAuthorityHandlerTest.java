@@ -1,13 +1,13 @@
 package no.unit.nva.bare;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
+import static java.net.HttpURLConnection.HTTP_NOT_ACCEPTABLE;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON;
 import static no.unit.nva.bare.CreateAuthorityRequest.MALFORMED_NAME_VALUE;
 import static nva.commons.core.attempt.Try.attempt;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_NOT_ACCEPTABLE;
-import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -75,14 +75,14 @@ public class CreateAuthorityHandlerTest {
         InputStream is = IoUtils.inputStreamFromResources(BARE_SINGLE_AUTHORITY_CREATE_RESPONSE);
         final String mockBody = IoUtils.streamToString(is);
 
-        when(mockHttpResponse.statusCode()).thenReturn(SC_CREATED);
+        when(mockHttpResponse.statusCode()).thenReturn(HTTP_CREATED);
         when(mockHttpResponse.body()).thenReturn(mockBody);
         when(mockBareConnection.createAuthority(any())).thenReturn(mockHttpResponse);
 
         CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection, mockEnvironment);
         createAuthorityHandler.handleRequest(sampleRequest(), outputStream, CONTEXT);
         GatewayResponse<Authority> response = GatewayResponse.fromOutputStream(outputStream);
-        assertEquals(SC_OK, response.getStatusCode());
+        assertEquals(HTTP_OK, response.getStatusCode());
         String resp = FetchAuthorityHandlerTest.readJsonStringFromFile(CREATE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
         Authority expected = objectMapper.readValue(resp, Authority.class);
         Authority actual = objectMapper.readValue(response.getBody(), Authority.class);
@@ -94,7 +94,7 @@ public class CreateAuthorityHandlerTest {
                                                                                       InterruptedException {
         final String emptyResponse = EMPTY_BODY;
 
-        when(mockHttpResponse.statusCode()).thenReturn(SC_CREATED);
+        when(mockHttpResponse.statusCode()).thenReturn(HTTP_CREATED);
         when(mockHttpResponse.body()).thenReturn(emptyResponse);
         when(mockBareConnection.createAuthority(any())).thenReturn(mockHttpResponse);
 
@@ -109,7 +109,7 @@ public class CreateAuthorityHandlerTest {
     public void testCreateAuthority_FailingToCreateAuthorityOnBare() throws IOException, URISyntaxException,
                                                                             InterruptedException {
         final TestAppender logger = LogUtils.getTestingAppenderForRootLogger();
-        when(mockHttpResponse.statusCode()).thenReturn(SC_NOT_ACCEPTABLE);
+        when(mockHttpResponse.statusCode()).thenReturn(HTTP_NOT_ACCEPTABLE);
         when(mockHttpResponse.body()).thenReturn(MOCK_ERROR_MESSAGE);
         when(mockBareConnection.createAuthority(any())).thenReturn(mockHttpResponse);
         CreateAuthorityHandler createAuthorityHandler = new CreateAuthorityHandler(mockBareConnection, mockEnvironment);
@@ -129,7 +129,7 @@ public class CreateAuthorityHandlerTest {
         createAuthorityHandler.handleRequest(sampleRequest(), outputStream, CONTEXT);
         GatewayResponse<Authority> response = GatewayResponse.fromOutputStream(outputStream);
 
-        assertEquals(SC_INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals(HTTP_INTERNAL_ERROR, response.getStatusCode());
         assertThat(logger.getMessages(), containsString(MOCK_ERROR_MESSAGE));
     }
 
@@ -140,7 +140,7 @@ public class CreateAuthorityHandlerTest {
         createAuthorityHandler.handleRequest(emptyRequest(), outputStream, CONTEXT);
         GatewayResponse<Authority> response = GatewayResponse.fromOutputStream(outputStream);
 
-        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, response.getStatusCode());
+        assertEquals(HTTP_BAD_REQUEST, response.getStatusCode());
         assertThat(logger.getMessages(), containsString(CreateAuthorityHandler.INVALID_INPUT_ERROR_MESSAGE));
     }
 
@@ -151,7 +151,7 @@ public class CreateAuthorityHandlerTest {
         createAuthorityHandler.handleRequest(notInvertedName(), outputStream, CONTEXT);
         GatewayResponse<Authority> response = GatewayResponse.fromOutputStream(outputStream);
 
-        assertEquals(SC_BAD_REQUEST, response.getStatusCode());
+        assertEquals(HTTP_BAD_REQUEST, response.getStatusCode());
         assertThat(logger.getMessages(), containsString(MALFORMED_NAME_VALUE));
     }
 
@@ -162,7 +162,7 @@ public class CreateAuthorityHandlerTest {
         createAuthorityHandler.handleRequest(emptyRequest(), outputStream, CONTEXT);
         GatewayResponse<Authority> response = GatewayResponse.fromOutputStream(outputStream);
 
-        assertEquals(SC_BAD_REQUEST, response.getStatusCode());
+        assertEquals(HTTP_BAD_REQUEST, response.getStatusCode());
         assertTrue(response.getBody().contains(CreateAuthorityHandler.INVALID_INPUT_ERROR_MESSAGE));
     }
 

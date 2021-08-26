@@ -1,5 +1,8 @@
 package no.unit.nva.bare;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON;
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY;
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.INVALID_VALUE_PATH_PARAMETER_QUALIFIER;
@@ -13,9 +16,6 @@ import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.REMOTE_SERVER_ER
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.SCN_KEY;
 import static nva.commons.apigateway.ApiGatewayHandler.ALLOWED_ORIGIN_ENV;
 import static nva.commons.core.JsonUtils.objectMapper;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
-import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
@@ -57,7 +57,6 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
     public static final URI MOCK_IDENTIFIER_URI = URI.create("https://example.org/originalidentifier");
     public static final URI MOCK_UPDATED_IDENTIFIER_URI = URI.create("https://example.org/originalidentifier");
-    public static final String MOCK_BAREHOST = "localhost";
 
     private Environment mockEnvironment;
     private Context context;
@@ -76,10 +75,9 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
     private void initMockBareConnection() throws IOException, InterruptedException {
 
-        Config.getInstance().setBareHost(MOCK_BAREHOST);
         HttpClient httpClient = mock(HttpClient.class);
         HttpResponse mockHttpResponse = mock(HttpResponse.class);
-        when(mockHttpResponse.statusCode()).thenReturn(SC_OK);
+        when(mockHttpResponse.statusCode()).thenReturn(HTTP_OK);
         when(httpClient.send(any(), any())).thenReturn(mockHttpResponse);
         bareConnection = new BareConnection(httpClient);
     }
@@ -110,7 +108,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
         nva.commons.apigateway.GatewayResponse gatewayResponse = 
             objectMapper.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
-        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+        assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_PATH_PARAMETER_SCN));
@@ -130,7 +128,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
         nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapper.readValue(output.toString(),
                                                                                                 nva.commons.apigateway.GatewayResponse.class);
-        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+        assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_PATH_PARAMETER_QUALIFIER));
@@ -151,7 +149,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
         nva.commons.apigateway.GatewayResponse gatewayResponse =
             objectMapper.readValue(output.toString(),nva.commons.apigateway.GatewayResponse.class);
-        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+        assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(INVALID_VALUE_PATH_PARAMETER_QUALIFIER));
@@ -171,7 +169,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
         nva.commons.apigateway.GatewayResponse gatewayResponse =
             objectMapper.readValue(output.toString(),nva.commons.apigateway.GatewayResponse.class);
-        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+        assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_REQUEST_JSON_BODY));
@@ -194,7 +192,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
         nva.commons.apigateway.GatewayResponse gatewayResponse =
             objectMapper.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
-        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+        assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_ATTRIBUTE_IDENTIFIER));
@@ -217,7 +215,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
         nva.commons.apigateway.GatewayResponse gatewayResponse =
             objectMapper.readValue(output.toString(),nva.commons.apigateway.GatewayResponse.class);
-        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+        assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_ATTRIBUTE_UPDATED_IDENTIFIER));
@@ -233,7 +231,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
                 UpdateAuthorityIdentifierHandler.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
         final BareAuthority bareAuthority = objectMapper.readValue(new InputStreamReader(is), BareAuthority.class);
         when(bareConnection.get(anyString())).thenReturn(bareAuthority);
-        when(httpResponse.statusCode()).thenReturn(SC_OK);
+        when(httpResponse.statusCode()).thenReturn(HTTP_OK);
         when(bareConnection.updateIdentifier(any(), any(), any(), any())).thenReturn(httpResponse);
 
         updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(mockEnvironment, bareConnection);
@@ -248,7 +246,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
             objectMapper.readValue(output.toString(),
                                                                                                 nva.commons.apigateway.GatewayResponse.class);
 
-        assertEquals(SC_OK, gatewayResponse.getStatusCode());
+        assertEquals(HTTP_OK, gatewayResponse.getStatusCode());
     }
 
     @Test
@@ -268,7 +266,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
         nva.commons.apigateway.GatewayResponse gatewayResponse =
             objectMapper.readValue(output.toString(),nva.commons.apigateway.GatewayResponse.class);
 
-        assertEquals(SC_OK, gatewayResponse.getStatusCode());
+        assertEquals(HTTP_OK, gatewayResponse.getStatusCode());
     }
 
 
@@ -303,7 +301,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
     @DisplayName("handler Returns Internal Server Error Response When Failing To Read Authority From Stream")
     public void handleReturnsInternalServerErrorWhenFailingToReadAuthorityFromStream() throws Exception {
 
-        when(httpResponse.statusCode()).thenReturn(SC_OK);
+        when(httpResponse.statusCode()).thenReturn(HTTP_OK);
         when(bareConnection.get(any())).thenReturn(null);
         when(bareConnection.updateIdentifier(any(), any(), any(), any())).thenReturn(httpResponse);
 
@@ -329,7 +327,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
     @DisplayName("handler Returns Internal Server Error Response When Exception Getting Authority From Bare")
     public void handlerReturnsInternalServerErrorWhenExceptionGettingAuthorityFromBare() throws Exception {
 
-        when(httpResponse.statusCode()).thenReturn(SC_OK);
+        when(httpResponse.statusCode()).thenReturn(HTTP_OK);
         when(bareConnection.get(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
         when(bareConnection.updateIdentifier(any(), any(), any(), any())).thenReturn(httpResponse);
 
@@ -355,7 +353,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
     @DisplayName("handler Returns Internal Server Error Response When Unexpected Response From Bare")
     public void handlerReturnsInternalServerErrorWhenUnexpectedResponseFromBare() throws Exception {
 
-        when(httpResponse.statusCode()).thenReturn(SC_FORBIDDEN);
+        when(httpResponse.statusCode()).thenReturn(HTTP_FORBIDDEN);
         when(bareConnection.updateIdentifier(any(), any(), any(), any())).thenReturn(httpResponse);
 
         updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(mockEnvironment, bareConnection);
