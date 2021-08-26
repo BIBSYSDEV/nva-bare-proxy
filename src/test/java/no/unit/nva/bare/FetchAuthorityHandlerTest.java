@@ -4,24 +4,38 @@ import static no.unit.nva.bare.AddNewAuthorityIdentifierHandlerTest.BARE_SINGLE_
 import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON_WITHOUT_TRAILING_SLASH;
 import static no.unit.nva.bare.FetchAuthorityHandler.ARPID_KEY;
 import static no.unit.nva.bare.FetchAuthorityHandler.QUERY_STRING_PARAMETERS_KEY;
-import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import no.unit.nva.testutils.TestHeaders;
 import nva.commons.core.Environment;
+import nva.commons.core.JsonUtils;
 import nva.commons.core.ioutils.IoUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
@@ -50,7 +64,7 @@ public class FetchAuthorityHandlerTest {
         mockBareConnection = mock(BareConnection.class);
         mockEnvironment = mock(Environment.class);
         when(mockEnvironment.readEnv(AuthorityConverter.PERSON_AUTHORITY_BASE_ADDRESS_KEY))
-                .thenReturn(HTTPS_LOCALHOST_PERSON_WITHOUT_TRAILING_SLASH);
+            .thenReturn(HTTPS_LOCALHOST_PERSON_WITHOUT_TRAILING_SLASH);
         final Config config = Config.getInstance();
         config.setBareHost(Config.BARE_HOST_KEY);
         config.setBareApikey(Config.BARE_APIKEY_KEY);
@@ -76,18 +90,18 @@ public class FetchAuthorityHandlerTest {
         assertNotNull(content);
         String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
 
-        Authority expected = objectMapper.readValue(postResponseBody, new TypeReference<List<Authority>>(){}).get(0);
-        Authority actual = objectMapper.readValue(content, new TypeReference<List<Authority>>(){}).get(0);
+        Authority expected = objectMapperWithEmpty.readValue(postResponseBody, new TypeReference<List<Authority>>() {
+        }).get(0);
+        Authority actual = objectMapperWithEmpty.readValue(content, new TypeReference<List<Authority>>() {
+        }).get(0);
         assertEquals(expected, actual);
-
     }
 
     @Test
     public void handlerReturnsOkResponseWhenValidQueryParamArpIdProvided() throws Exception {
         InputStream st = IoUtils.inputStreamFromResources(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
         InputStreamReader reader = new InputStreamReader(st);
-        BareAuthority authority = objectMapper.readValue(reader, BareAuthority.class);
-
+        BareAuthority authority = objectMapperWithEmpty.readValue(reader, BareAuthority.class);
 
         when(mockBareConnection.get(any())).thenReturn(authority);
         Map<String, Object> event = new HashMap<>();
@@ -136,8 +150,10 @@ public class FetchAuthorityHandlerTest {
         String content = result.getBody();
         assertNotNull(content);
         String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
-        Authority expected = objectMapper.readValue(postResponseBody, new TypeReference<List<Authority>>(){}).get(0);
-        Authority actual = objectMapper.readValue(content, new TypeReference<List<Authority>>(){}).get(0);
+        Authority expected = objectMapperWithEmpty.readValue(postResponseBody, new TypeReference<List<Authority>>() {
+        }).get(0);
+        Authority actual = objectMapperWithEmpty.readValue(content, new TypeReference<List<Authority>>() {
+        }).get(0);
         assertEquals(expected, actual);
     }
 
@@ -171,18 +187,18 @@ public class FetchAuthorityHandlerTest {
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        List<Authority> responseAuthority = objectMapper.readValue(content, new TypeReference<List<Authority>>(){});
+        List<Authority> responseAuthority = objectMapperWithEmpty.readValue(content,new TypeReference<>() {});
         String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
-        List<Authority> expectedResponseAuthority = objectMapper.readValue(postResponseBody,
-                                                                           new TypeReference<List<Authority>>(){});
+        List<Authority> expectedResponseAuthority =
+            objectMapperWithEmpty.readValue(postResponseBody,new TypeReference<>() {});
         assertEquals(expectedResponseAuthority.get(0).getSystemControlNumber(),
-                responseAuthority.get(0).getSystemControlNumber());
+                     responseAuthority.get(0).getSystemControlNumber());
         assertEquals(expectedResponseAuthority.get(0).getBirthDate(), responseAuthority.get(0).getBirthDate());
         assertEquals(expectedResponseAuthority.get(0).getHandles(), responseAuthority.get(0).getHandles());
     }
 
     @Test
-    public void testResponseWithoutQueryParams()  {
+    public void testResponseWithoutQueryParams() {
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(mockBareConnection, mockEnvironment);
         CustomGatewayResponse result = mockAuthorityProxy.handleRequest(null, null);
         assertEquals(HttpStatus.SC_BAD_REQUEST, result.getStatusCode());
@@ -216,7 +232,8 @@ public class FetchAuthorityHandlerTest {
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        List<Authority> responseAuthority = objectMapper.readValue(content, new TypeReference<List<Authority>>(){});
+        List<Authority> responseAuthority =
+            objectMapperWithEmpty.readValue(content,new TypeReference<>() {});
         assertTrue(responseAuthority.isEmpty());
     }
 
@@ -248,9 +265,21 @@ public class FetchAuthorityHandlerTest {
     }
 
 
+
     protected static String readJsonStringFromFile(String fileName) {
         InputStream stream = IoUtils.inputStreamFromResources(Paths.get(fileName));
         return IoUtils.streamToString(stream);
     }
 
+    private URL someUrl() throws MalformedURLException {
+        return URI.create("https://www.example.com").toURL();
+    }
+
+    private Map<String, Object> sampleQuery() {
+        Map<String, Object> event = new HashMap<>();
+        Map<String, String> queryParameters = new HashMap<>();
+        queryParameters.put(FEIDEID_KEY, "sarah.serussi@unit.no");
+        event.put(QUERY_STRING_PARAMETERS_KEY, queryParameters);
+        return event;
+    }
 }

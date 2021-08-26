@@ -20,7 +20,7 @@ public class BareAuthority implements JsonSerializable {
     private Map<String, List<String>> identifiersMap;
 
     public static BareAuthority fromJson(String json) {
-        return attempt(() -> JsonUtils.objectMapperNoEmpty.readValue(json, BareAuthority.class)).orElseThrow();
+        return attempt(() -> JsonUtils.objectMapperWithEmpty.readValue(json, BareAuthority.class)).orElseThrow();
     }
 
     public String getAuthorityType() {
