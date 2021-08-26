@@ -13,8 +13,7 @@ import static no.unit.nva.bare.AddNewAuthorityIdentifierHandler.REMOTE_SERVER_ER
 import static no.unit.nva.bare.AddNewAuthorityIdentifierHandler.SCN_KEY;
 import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON;
 import static nva.commons.apigateway.ApiGatewayHandler.ALLOWED_ORIGIN_ENV;
-import static nva.commons.core.JsonUtils.objectMapper;
-
+import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
@@ -77,7 +76,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
     @DisplayName("handler Returns Bad Request Response When SCN Path Parameter Is Missing")
     public void handlerReturnsBadRequestWhenScnPathParameterIsMissing() throws IOException {
 
-        InputStream input = new HandlerRequestBuilder<AddNewAuthorityIdentifierRequest>(objectMapper)
+        InputStream input = new HandlerRequestBuilder<AddNewAuthorityIdentifierRequest>(objectMapperWithEmpty)
             .build();
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
@@ -153,7 +152,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
 
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(null);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.ORGUNITID.asString());
-        InputStream input = new HandlerRequestBuilder<AddNewAuthorityIdentifierRequest>(objectMapper)
+        InputStream input = new HandlerRequestBuilder<AddNewAuthorityIdentifierRequest>(objectMapperWithEmpty)
             .withBody(requestObject)
             .withPathParameters(pathParams)
             .withHeaders(TestHeaders.getRequestHeaders())
@@ -176,7 +175,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
     public void handlerReturnsOkWhenInputIsValidAndAuthorityIdentifierIsAddedSuccessfully() throws Exception {
 
         InputStream is = IoUtils.inputStreamFromResources(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
-        final BareAuthority bareAuthority = objectMapper.readValue(new InputStreamReader(is), BareAuthority.class);
+        final BareAuthority bareAuthority = objectMapperWithEmpty.readValue(new InputStreamReader(is), BareAuthority.class);
         when(bareConnection.get(anyString())).thenReturn(bareAuthority);
         when(httpResponse.statusCode()).thenReturn(HTTP_OK);
         when(bareConnection.addNewIdentifierForExistingQualifier(any(), any(), any())).thenReturn(httpResponse);
@@ -285,7 +284,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
 
     private <T> InputStream createRequest(Map<String, String> pathParams, T requestBody)
         throws com.fasterxml.jackson.core.JsonProcessingException {
-        return new HandlerRequestBuilder<T>(objectMapper)
+        return new HandlerRequestBuilder<T>(objectMapperWithEmpty)
             .withBody(requestBody)
             .withHeaders(TestHeaders.getRequestHeaders())
             .withPathParameters(pathParams)

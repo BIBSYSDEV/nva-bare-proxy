@@ -7,6 +7,7 @@ import static java.net.HttpURLConnection.HTTP_NOT_ACCEPTABLE;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON;
 import static no.unit.nva.bare.CreateAuthorityRequest.MALFORMED_NAME_VALUE;
+import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import static nva.commons.core.attempt.Try.attempt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
@@ -17,7 +18,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +29,6 @@ import java.util.Map;
 import no.unit.nva.testutils.HandlerRequestBuilder;
 import nva.commons.apigateway.GatewayResponse;
 import nva.commons.core.Environment;
-import nva.commons.core.JsonUtils;
 import nva.commons.core.ioutils.IoUtils;
 import nva.commons.logutils.LogUtils;
 import nva.commons.logutils.TestAppender;
@@ -47,7 +46,6 @@ public class CreateAuthorityHandlerTest {
     public static final String CREATE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON = "createAuthorityGatewayResponseBody.json";
     public static final String BARE_SINGLE_AUTHORITY_CREATE_RESPONSE = "bareSingleAuthorityCreateResponse.json";
     public static final String MOCK_ERROR_MESSAGE = "I want to fail";
-    private static final ObjectMapper objectMapper = JsonUtils.objectMapper;
     private static final Context CONTEXT = mock(Context.class);
     private BareConnection mockBareConnection;
     private HttpResponse mockHttpResponse;
@@ -84,8 +82,8 @@ public class CreateAuthorityHandlerTest {
         GatewayResponse<Authority> response = GatewayResponse.fromOutputStream(outputStream);
         assertEquals(HTTP_OK, response.getStatusCode());
         String resp = FetchAuthorityHandlerTest.readJsonStringFromFile(CREATE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
-        Authority expected = objectMapper.readValue(resp, Authority.class);
-        Authority actual = objectMapper.readValue(response.getBody(), Authority.class);
+        Authority expected = objectMapperWithEmpty.readValue(resp, Authority.class);
+        Authority actual = objectMapperWithEmpty.readValue(response.getBody(), Authority.class);
         assertEquals(expected, actual);
     }
 
@@ -167,7 +165,7 @@ public class CreateAuthorityHandlerTest {
     }
 
     private InputStream notInvertedName() throws JsonProcessingException {
-        return new HandlerRequestBuilder<CreateAuthorityRequest>(JsonUtils.objectMapper)
+        return new HandlerRequestBuilder<CreateAuthorityRequest>(objectMapperWithEmpty)
             .withBody(new CreateAuthorityRequest("name without comma"))
             .build();
     }
@@ -175,11 +173,11 @@ public class CreateAuthorityHandlerTest {
     private InputStream sampleRequest() {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
-        String jsonString = attempt(() -> JsonUtils.objectMapper.writeValueAsString(requestEvent)).orElseThrow();
+        String jsonString = attempt(() -> objectMapperWithEmpty.writeValueAsString(requestEvent)).orElseThrow();
         return IoUtils.stringToStream(jsonString);
     }
 
     private InputStream emptyRequest() throws JsonProcessingException {
-        return new HandlerRequestBuilder<CreateAuthorityRequest>(objectMapper).build();
+        return new HandlerRequestBuilder<CreateAuthorityRequest>(objectMapperWithEmpty).build();
     }
 }

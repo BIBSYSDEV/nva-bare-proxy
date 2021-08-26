@@ -1,7 +1,7 @@
 package no.unit.nva.bare;
 
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
-import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Collections;
 import java.util.Map;
@@ -63,7 +63,7 @@ public class CustomGatewayResponse {
         Map<String, String> bodyContent = new ConcurrentHashMap<>();
         bodyContent.put(ERROR_KEY, message);
         try {
-            this.body = objectMapper.writeValueAsString(bodyContent);
+            this.body = objectMapperWithEmpty.writeValueAsString(bodyContent);
         } catch (JsonProcessingException e) {
             logger.error(e.getMessage(), e);
         }

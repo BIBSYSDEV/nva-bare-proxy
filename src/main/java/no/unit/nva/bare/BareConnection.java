@@ -1,11 +1,12 @@
 package no.unit.nva.bare;
 
+
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.unit.nva.bare.Config.BARE_APIKEY;
 import static no.unit.nva.bare.Config.BARE_CREATE_PATH;
 import static no.unit.nva.bare.Config.BARE_HOST;
 import static no.unit.nva.bare.Config.BARE_QUERY_PATH;
-import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -67,7 +68,7 @@ public class BareConnection {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() == HTTP_OK) {
             final String body = response.body();
-            return objectMapper.readValue(body, BareAuthority.class);
+            return objectMapperWithEmpty.readValue(body, BareAuthority.class);
         } else {
             logger.error("Error..? " + response.body());
             throw new IOException(response.body());
@@ -92,7 +93,7 @@ public class BareConnection {
             String.format(ADD_NEW_AUTHORITY_IDENTIFIER_WITH_NEW_QUALIFIER_PATH, authoritySystemControlNumber);
         URI uri = new URI(HTTPS, BARE_HOST, addIdentifierPath, EMPTY_FRAGMENT);
 
-        final String body = objectMapper.writeValueAsString(authorityIdentifier);
+        final String body = objectMapperWithEmpty.writeValueAsString(authorityIdentifier);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(body);
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.POST(bodyPublisher).build();
@@ -113,8 +114,8 @@ public class BareConnection {
         throws IOException, URISyntaxException, InterruptedException {
 
         URI uri = new URI(HTTPS, BARE_HOST, BARE_CREATE_PATH,EMPTY_FRAGMENT);
-
         final String payload = bareAuthority.toJsonString();
+
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(payload);
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);

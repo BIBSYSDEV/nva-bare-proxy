@@ -7,7 +7,7 @@ import static no.unit.nva.bare.AddNewAuthorityIdentifierHandlerTest.BARE_SINGLE_
 import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON_WITHOUT_TRAILING_SLASH;
 import static no.unit.nva.bare.FetchAuthorityHandler.ARPID_KEY;
 import static no.unit.nva.bare.FetchAuthorityHandler.QUERY_STRING_PARAMETERS_KEY;
-import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -77,15 +77,16 @@ public class FetchAuthorityHandlerTest {
         assertNotNull(content);
         String postResponseBody = IoUtils.stringFromResources(Path.of(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON));
 
-        Authority expected = objectMapper.readValue(postResponseBody, new TypeReference<List<Authority>>() {
+        Authority expected = objectMapperWithEmpty.readValue(postResponseBody, new TypeReference<List<Authority>>() {
         }).get(0);
-        Authority actual = objectMapper.readValue(content, new TypeReference<List<Authority>>() {
+        Authority actual = objectMapperWithEmpty.readValue(content, new TypeReference<List<Authority>>() {
         }).get(0);
         assertEquals(expected, actual);
     }
 
     @Test
     public void handlerReturnsOkResponseWhenValidQueryParamArpIdProvided() throws Exception {
+
         String httpResponse = IoUtils.stringFromResources(Path.of(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON));
         whenSendingRequest().then(invocation -> mockHttpResponse(httpResponse, HTTP_OK));
 
@@ -125,9 +126,10 @@ public class FetchAuthorityHandlerTest {
         String content = result.getBody();
         assertNotNull(content);
         String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
-        Authority expected = objectMapper.readValue(postResponseBody, new TypeReference<List<Authority>>() {
+
+        Authority expected = objectMapperWithEmpty.readValue(postResponseBody, new TypeReference<List<Authority>>() {
         }).get(0);
-        Authority actual = objectMapper.readValue(content, new TypeReference<List<Authority>>() {
+        Authority actual = objectMapperWithEmpty.readValue(content, new TypeReference<List<Authority>>() {
         }).get(0);
         assertEquals(expected, actual);
     }
@@ -157,11 +159,13 @@ public class FetchAuthorityHandlerTest {
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        List<Authority> responseAuthority = objectMapper.readValue(content, new TypeReference<>() {
+
+        List<Authority> responseAuthority = objectMapperWithEmpty.readValue(content, new TypeReference<>() {
         });
         String postResponseBody = readJsonStringFromFile(SINGLE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
-        List<Authority> expectedResponseAuthority = objectMapper.readValue(postResponseBody, new TypeReference<>() {
-        });
+        List<Authority> expectedResponseAuthority =
+            objectMapperWithEmpty.readValue(postResponseBody,new TypeReference<>() {});
+
         assertEquals(expectedResponseAuthority.get(0).getSystemControlNumber(),
                      responseAuthority.get(0).getSystemControlNumber());
         assertEquals(expectedResponseAuthority.get(0).getBirthDate(), responseAuthority.get(0).getBirthDate());
@@ -171,6 +175,7 @@ public class FetchAuthorityHandlerTest {
     @Test
     public void testResponseWithoutQueryParams() {
         FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection, mockEnvironment);
+
         CustomGatewayResponse result = mockAuthorityProxy.handleRequest(null, null);
         assertEquals(HTTP_BAD_REQUEST, result.getStatusCode());
 
@@ -198,7 +203,8 @@ public class FetchAuthorityHandlerTest {
                      TestHeaders.APPLICATION_JSON);
         String content = result.getBody();
         assertNotNull(content);
-        List<Authority> responseAuthority = objectMapper.readValue(content, new TypeReference<>() {
+
+        List<Authority> responseAuthority = objectMapperWithEmpty.readValue(content, new TypeReference<>() {
         });
         assertTrue(responseAuthority.isEmpty());
     }

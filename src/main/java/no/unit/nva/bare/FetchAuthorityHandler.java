@@ -4,7 +4,7 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.util.Objects.nonNull;
-import static nva.commons.core.JsonUtils.objectMapper;
+import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import java.io.IOException;
@@ -81,14 +81,16 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
                     return gatewayResponse;
                 }
                 try {
+
                     BareQueryResponse searchResult = bareConnection.searchByAuthorityName(query);
 
                     final List<Authority> fetchedAuthority = authorityConverter.extractAuthorities(searchResult);
-                    log.info(objectMapper.writeValueAsString(fetchedAuthority));
+                    log.info(objectMapperWithEmpty.writeValueAsString(fetchedAuthority));
 
-                    gatewayResponse.setBody(objectMapper.writeValueAsString(fetchedAuthority));
+                    gatewayResponse.setBody(objectMapperWithEmpty.writeValueAsString(fetchedAuthority));
                     gatewayResponse.setStatusCode(HTTP_OK);
                 } catch (IOException | URISyntaxException | InterruptedException e) {
+
                     gatewayResponse.setErrorBody(e.getMessage());
                     gatewayResponse.setStatusCode(HTTP_INTERNAL_ERROR);
                 }
@@ -120,7 +122,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
         try {
             BareAuthority fetchedAuthority = bareConnection.get(arpId);
             Authority authority = authorityConverter.asAuthority(fetchedAuthority);
-            gatewayResponse.setBody(objectMapper.writeValueAsString(authority));
+            gatewayResponse.setBody(objectMapperWithEmpty.writeValueAsString(authority));
             gatewayResponse.setStatusCode(HTTP_OK);
             return gatewayResponse;
         } catch (URISyntaxException | IOException | InterruptedException e) {
