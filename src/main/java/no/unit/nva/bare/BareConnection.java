@@ -32,6 +32,7 @@ public class BareConnection {
 
     public static final String ADD_NEW_AUTHORITY_IDENTIFIER_PATH = "/authority/rest/authorities/v2/%s/identifiers";
     private static final String GET_AUTHORITY_QUERY_PARAMETERS = "format=json";
+    private static final String EMPTY_QUERY = null;
     private final transient HttpClient httpClient;
     private final transient Logger logger = LoggerFactory.getLogger(BareConnection.class);
 
@@ -86,7 +87,7 @@ public class BareConnection {
                URISyntaxException, InterruptedException {
         String addIdentifierPath =
             String.format(ADD_NEW_AUTHORITY_IDENTIFIER_PATH, authoritySystemControlNumber);
-        URI uri = new URI(HTTPS, BARE_HOST, addIdentifierPath, EMPTY_FRAGMENT);
+        URI uri = new URI(HTTPS, BARE_HOST, addIdentifierPath,EMPTY_QUERY, EMPTY_FRAGMENT);
 
         final String body = objectMapperWithEmpty.writeValueAsString(authorityIdentifier);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(body);
@@ -95,7 +96,6 @@ public class BareConnection {
 
         return sendRequest(request);
     }
-
 
     /**
      * Creates a new authority in Bare.
@@ -109,7 +109,7 @@ public class BareConnection {
     public HttpResponse<String> createAuthority(BareAuthority bareAuthority)
         throws IOException, URISyntaxException, InterruptedException {
 
-        URI uri = new URI(HTTPS, BARE_HOST, BARE_CREATE_PATH, EMPTY_FRAGMENT);
+        URI uri = new URI(HTTPS, BARE_HOST, BARE_CREATE_PATH, EMPTY_QUERY, EMPTY_FRAGMENT);
         final String payload = bareAuthority.toJsonString();
 
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(payload);
@@ -118,8 +118,6 @@ public class BareConnection {
         HttpRequest request = requestBuilder.POST(bodyPublisher).build();
         return sendRequest(request);
     }
-
-
 
     /**
      * Delete an identifier for a specific qualifier in a given authority in ARP.
@@ -134,9 +132,8 @@ public class BareConnection {
      */
     public HttpResponse<String> deleteIdentifier(String systemControlNumber, String qualifier, String identifier)
         throws IOException, URISyntaxException, InterruptedException {
-
         String identifierPath = createIdentifierPath(systemControlNumber, qualifier, identifier);
-        URI uri = new URI(HTTPS, BARE_HOST, identifierPath, EMPTY_FRAGMENT);
+        URI uri = new URI(HTTPS, BARE_HOST, identifierPath, EMPTY_QUERY, EMPTY_FRAGMENT);
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.DELETE().build();
