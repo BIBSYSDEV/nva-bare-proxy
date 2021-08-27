@@ -178,7 +178,6 @@ public class AddNewAuthorityIdentifierHandlerTest {
         final BareAuthority bareAuthority = objectMapperWithEmpty.readValue(new InputStreamReader(is), BareAuthority.class);
         when(bareConnection.get(anyString())).thenReturn(bareAuthority);
         when(httpResponse.statusCode()).thenReturn(HTTP_OK);
-        when(bareConnection.addNewIdentifierForExistingQualifier(any(), any(), any())).thenReturn(httpResponse);
         when(bareConnection.addNewIdentifierWithNewQualifier(any(), any())).thenReturn(httpResponse);
 
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
@@ -195,8 +194,6 @@ public class AddNewAuthorityIdentifierHandlerTest {
     @DisplayName("handler Returns Internal Server Error Response When Bare Connection Error")
     public void handlerReturnsInternalServerErrorWhenBareConnectionError() throws Exception {
 
-        when(bareConnection.addNewIdentifierForExistingQualifier(any(), any(), any())).thenThrow(
-            new IOException(EXCEPTION_IS_EXPECTED));
         when(bareConnection.addNewIdentifierWithNewQualifier(any(), any())).thenThrow(
             new IOException(EXCEPTION_IS_EXPECTED));
 
@@ -220,7 +217,6 @@ public class AddNewAuthorityIdentifierHandlerTest {
 
         when(httpResponse.statusCode()).thenReturn(HTTP_OK);
         when(bareConnection.get(any())).thenReturn(null);
-        when(bareConnection.addNewIdentifierForExistingQualifier(any(), any(), any())).thenReturn(httpResponse);
         when(bareConnection.addNewIdentifierWithNewQualifier(any(), any())).thenReturn(httpResponse);
 
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
@@ -243,7 +239,6 @@ public class AddNewAuthorityIdentifierHandlerTest {
 
         when(httpResponse.statusCode()).thenReturn(HTTP_OK);
         when(bareConnection.get(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
-        when(bareConnection.addNewIdentifierForExistingQualifier(any(), any(), any())).thenReturn(httpResponse);
         when(bareConnection.addNewIdentifierWithNewQualifier(any(), any())).thenReturn(httpResponse);
 
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
@@ -265,7 +260,6 @@ public class AddNewAuthorityIdentifierHandlerTest {
     public void handlerReturnsInternalServerErrorWhenUnexpectedResponseFromBare() throws Exception {
 
         when(httpResponse.statusCode()).thenReturn(HTTP_FORBIDDEN);
-        when(bareConnection.addNewIdentifierForExistingQualifier(any(), any(), any())).thenReturn(httpResponse);
         when(bareConnection.addNewIdentifierWithNewQualifier(any(), any())).thenReturn(httpResponse);
         addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);

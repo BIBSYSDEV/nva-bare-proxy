@@ -1,6 +1,5 @@
 package no.unit.nva.bare;
 
-
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.unit.nva.bare.Config.BARE_APIKEY;
 import static no.unit.nva.bare.Config.BARE_CREATE_PATH;
@@ -31,8 +30,7 @@ public class BareConnection {
     public static final String AUTHORITY_IDENTIFIER_PATH = "/authority/rest/authorities/v2/%s/identifiers/%s/%s";
     public static final Duration TIMEOUT_DURATION = Duration.ofSeconds(15);
 
-    public static final String ADD_NEW_AUTHORITY_IDENTIFIER_WITH_NEW_QUALIFIER_PATH =
-        "/authority/rest/authorities/v2/%s/identifiers";
+    public static final String ADD_NEW_AUTHORITY_IDENTIFIER_PATH = "/authority/rest/authorities/v2/%s/identifiers";
     private static final String GET_AUTHORITY_QUERY_PARAMETERS = "format=json";
     private final transient HttpClient httpClient;
     private final transient Logger logger = LoggerFactory.getLogger(BareConnection.class);
@@ -60,11 +58,9 @@ public class BareConnection {
      * @throws InterruptedException error in communication
      */
     public BareAuthority get(String systemControlNumber) throws URISyntaxException, IOException, InterruptedException {
-        String path = String.format(PATH_TO_AUTHORITY_TEMPLATE, systemControlNumber);
-        final URI getUrl = new URI(HTTPS, BARE_HOST, path,GET_AUTHORITY_QUERY_PARAMETERS, EMPTY_FRAGMENT);
-        final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(getUrl);
-        HttpRequest request = requestBuilder.GET().build();
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        final URI getUri = formatGetByScnQuery(systemControlNumber);
+
+        HttpResponse<String> response = sendGetRequest(getUri);
         if (response.statusCode() == HTTP_OK) {
             final String body = response.body();
             return objectMapperWithEmpty.readValue(body, BareAuthority.class);
@@ -89,7 +85,7 @@ public class BareConnection {
         throws IOException,
                URISyntaxException, InterruptedException {
         String addIdentifierPath =
-            String.format(ADD_NEW_AUTHORITY_IDENTIFIER_WITH_NEW_QUALIFIER_PATH, authoritySystemControlNumber);
+            String.format(ADD_NEW_AUTHORITY_IDENTIFIER_PATH, authoritySystemControlNumber);
         URI uri = new URI(HTTPS, BARE_HOST, addIdentifierPath, EMPTY_FRAGMENT);
 
         final String body = objectMapperWithEmpty.writeValueAsString(authorityIdentifier);
@@ -97,8 +93,9 @@ public class BareConnection {
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.POST(bodyPublisher).build();
 
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return sendRequest(request);
     }
+
 
     /**
      * Creates a new authority in Bare.
@@ -112,38 +109,17 @@ public class BareConnection {
     public HttpResponse<String> createAuthority(BareAuthority bareAuthority)
         throws IOException, URISyntaxException, InterruptedException {
 
-        URI uri = new URI(HTTPS, BARE_HOST, BARE_CREATE_PATH,EMPTY_FRAGMENT);
+        URI uri = new URI(HTTPS, BARE_HOST, BARE_CREATE_PATH, EMPTY_FRAGMENT);
         final String payload = bareAuthority.toJsonString();
 
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(payload);
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.POST(bodyPublisher).build();
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return sendRequest(request);
     }
 
-    /**
-     * Add an identifier for a specific qualifier to a given authority in ARP.
-     *
-     * @param systemControlNumber System control number (identifier) of authority
-     * @param qualifier           Qualifier for identifier to add to authority
-     * @param identifier          Identifier to add to authority
-     * @return CloseableHttpResponse
-     * @throws IOException          communication error
-     * @throws URISyntaxException   error while creating URI
-     * @throws InterruptedException error in communication
-     */
-    public HttpResponse<String> addNewIdentifierForExistingQualifier(String systemControlNumber, String qualifier,
-                                                                     String identifier)
-        throws URISyntaxException, IOException, InterruptedException {
 
-        String addIdentifierPath = createIdentifierPath(systemControlNumber, qualifier, identifier);
-        URI uri = new URI(HTTPS, BARE_HOST, addIdentifierPath, EMPTY_FRAGMENT);
-
-        final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
-        HttpRequest request = requestBuilder.POST(HttpRequest.BodyPublishers.noBody()).build();
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-    }
 
     /**
      * Delete an identifier for a specific qualifier in a given authority in ARP.
@@ -164,7 +140,7 @@ public class BareConnection {
 
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.DELETE().build();
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return sendRequest(request);
     }
 
     /**
@@ -192,13 +168,26 @@ public class BareConnection {
 
     protected BareQueryResponse searchByAuthorityName(String authorityName)
         throws IOException, URISyntaxException, InterruptedException {
-        String query = String.format(QUERY_PERSON_AUTHORITIES,authorityName);
-        URI queryUri = new URI(HTTPS, BARE_HOST, BARE_QUERY_PATH,query, EMPTY_FRAGMENT);
-        HttpRequest.Builder requestBuilder = getHttpRequestBuilder(queryUri);
-        HttpRequest request = requestBuilder.GET().build();
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        String query = String.format(QUERY_PERSON_AUTHORITIES, authorityName);
+        URI queryUri = new URI(HTTPS, BARE_HOST, BARE_QUERY_PATH, query, EMPTY_FRAGMENT);
+        HttpResponse<String> response = sendGetRequest(queryUri);
         String json = response.body();
         return JsonUtils.objectMapperWithEmpty.readValue(json, BareQueryResponse.class);
+    }
+
+    private URI formatGetByScnQuery(String systemControlNumber) throws URISyntaxException {
+        String path = String.format(PATH_TO_AUTHORITY_TEMPLATE, systemControlNumber);
+        return new URI(HTTPS, BARE_HOST, path, GET_AUTHORITY_QUERY_PARAMETERS, EMPTY_FRAGMENT);
+    }
+
+    private HttpResponse<String> sendGetRequest(URI getUri) throws IOException, InterruptedException {
+        final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(getUri);
+        HttpRequest request = requestBuilder.GET().build();
+        return sendRequest(request);
+    }
+
+    private HttpResponse<String> sendRequest(HttpRequest request) throws IOException, InterruptedException {
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     private String createIdentifierPath(String systemControlNumber, String qualifier, String identifier) {
