@@ -26,15 +26,14 @@ public class BareConnection {
     public static final String APIKEY_KEY = "apikey";
     public static final String SPACE = " ";
     public static final String EMPTY_FRAGMENT = null;
-    public static final String QUERY_PERSON_AUTHORITIES = "?q=%s authoritytype:person&start=1&max=10&format=json";
+    public static final String QUERY_PERSON_AUTHORITIES = "q=%s+authoritytype:person&start=1&max=10&format=json";
     public static final String PATH_TO_AUTHORITY_TEMPLATE = "/authority/rest/authorities/v2/%s";
-    public static final String AUTHORITY_IDENTIFIER_PATH =
-        "/authority/rest/authorities/v2/%s/identifiers/%s/%s";
+    public static final String AUTHORITY_IDENTIFIER_PATH = "/authority/rest/authorities/v2/%s/identifiers/%s/%s";
     public static final Duration TIMEOUT_DURATION = Duration.ofSeconds(15);
-    public static final String PATH_TO_AUTHORITY_TEMPLATE_WITH_JSON_RESULT =
-        PATH_TO_AUTHORITY_TEMPLATE + "?format=json";
+
     public static final String ADD_NEW_AUTHORITY_IDENTIFIER_WITH_NEW_QUALIFIER_PATH =
         "/authority/rest/authorities/v2/%s/identifiers";
+    private static final String GET_AUTHORITY_QUERY_PARAMETERS = "format=json";
     private final transient HttpClient httpClient;
     private final transient Logger logger = LoggerFactory.getLogger(BareConnection.class);
 
@@ -61,8 +60,8 @@ public class BareConnection {
      * @throws InterruptedException error in communication
      */
     public BareAuthority get(String systemControlNumber) throws URISyntaxException, IOException, InterruptedException {
-        String path = String.format(PATH_TO_AUTHORITY_TEMPLATE_WITH_JSON_RESULT, systemControlNumber);
-        final URI getUrl = new URI(HTTPS, BARE_HOST, path, EMPTY_FRAGMENT);
+        String path = String.format(PATH_TO_AUTHORITY_TEMPLATE, systemControlNumber);
+        final URI getUrl = new URI(HTTPS, BARE_HOST, path,GET_AUTHORITY_QUERY_PARAMETERS, EMPTY_FRAGMENT);
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(getUrl);
         HttpRequest request = requestBuilder.GET().build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -193,8 +192,8 @@ public class BareConnection {
 
     protected BareQueryResponse searchByAuthorityName(String authorityName)
         throws IOException, URISyntaxException, InterruptedException {
-        String queryPath = String.format(BARE_QUERY_PATH + QUERY_PERSON_AUTHORITIES, authorityName);
-        URI queryUri = new URI(HTTPS, BARE_HOST, queryPath, EMPTY_FRAGMENT);
+        String query = String.format(QUERY_PERSON_AUTHORITIES,authorityName);
+        URI queryUri = new URI(HTTPS, BARE_HOST, BARE_QUERY_PATH,query, EMPTY_FRAGMENT);
         HttpRequest.Builder requestBuilder = getHttpRequestBuilder(queryUri);
         HttpRequest request = requestBuilder.GET().build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
