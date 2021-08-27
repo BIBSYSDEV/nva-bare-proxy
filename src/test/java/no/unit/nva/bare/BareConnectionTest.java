@@ -61,8 +61,8 @@ public class BareConnectionTest {
 
         AuthorityIdentifier authorityIdentifier =
             new AuthorityIdentifier(ValidIdentifierSource.feide.asString(), "feide");
-        HttpResponse<String> httpResponse = mockBareConnection.addNewIdentifierWithNewQualifier(SCN,
-                                                                                                authorityIdentifier);
+        HttpResponse<String> httpResponse = mockBareConnection.addNewIdentifier(SCN,
+                                                                                authorityIdentifier);
 
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());
@@ -92,8 +92,8 @@ public class BareConnectionTest {
         BareConnection mockBareConnection = new BareConnection(mockHttpClient);
         AuthorityIdentifier authorityIdentifier =
             new AuthorityIdentifier(ValidIdentifierSource.feide.asString(), "feide");
-        HttpResponse<String> httpResponse = mockBareConnection.addNewIdentifierWithNewQualifier(SCN,
-                                                                                                authorityIdentifier);
+        HttpResponse<String> httpResponse = mockBareConnection.addNewIdentifier(SCN,
+                                                                                authorityIdentifier);
 
         assertNotNull(httpResponse);
         assertNotNull(httpResponse.body());

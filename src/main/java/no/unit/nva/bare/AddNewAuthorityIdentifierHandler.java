@@ -102,7 +102,7 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
     protected Authority addNewIdentifier(String scn, AuthorityIdentifier authorityIdentifier)
             throws ApiGatewayException {
         try {
-            HttpResponse<String> response = bareConnection.addNewIdentifierWithNewQualifier(scn, authorityIdentifier);
+            HttpResponse<String> response = bareConnection.addNewIdentifier(scn, authorityIdentifier);
             if (responseIsSuccessful(response)) {
                 return getAuthority(scn);
             } else {

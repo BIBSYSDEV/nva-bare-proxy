@@ -80,8 +80,8 @@ public class BareConnection {
      * @throws URISyntaxException   error while creating URI
      * @throws InterruptedException error in communication
      */
-    public HttpResponse<String> addNewIdentifierWithNewQualifier(String authoritySystemControlNumber,
-                                                                 AuthorityIdentifier authorityIdentifier)
+    public HttpResponse<String> addNewIdentifier(String authoritySystemControlNumber,
+                                                 AuthorityIdentifier authorityIdentifier)
         throws IOException,
                URISyntaxException, InterruptedException {
         String addIdentifierPath =
@@ -163,7 +163,7 @@ public class BareConnection {
 
         deleteIdentifier(systemControlNumber, qualifier, identifier);
         AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(qualifier, updatedIdentifier);
-        return addNewIdentifierWithNewQualifier(systemControlNumber, authorityIdentifier);
+        return addNewIdentifier(systemControlNumber, authorityIdentifier);
     }
 
     protected BareQueryResponse searchByAuthorityName(String authorityName)
