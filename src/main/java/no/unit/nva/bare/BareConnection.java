@@ -31,9 +31,9 @@ public class BareConnection {
     public static final String AUTHORITY_IDENTIFIER_PATH =
         "/authority/rest/authorities/v2/%s/identifiers/%s/%s";
     public static final Duration TIMEOUT_DURATION = Duration.ofSeconds(15);
-    public static String PATH_TO_AUTHORITY_TEMPLATE_WITH_JSON_RESULT =
+    public static final String PATH_TO_AUTHORITY_TEMPLATE_WITH_JSON_RESULT =
         PATH_TO_AUTHORITY_TEMPLATE + "?format=json";
-    public static String ADD_NEW_AUTHORITY_IDENTIFIER_WITH_NEW_QUALIFIER_PATH =
+    public static final String ADD_NEW_AUTHORITY_IDENTIFIER_WITH_NEW_QUALIFIER_PATH =
         "/authority/rest/authorities/v2/%s/identifiers";
     private final transient HttpClient httpClient;
     private final transient Logger logger = LoggerFactory.getLogger(BareConnection.class);

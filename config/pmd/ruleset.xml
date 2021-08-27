@@ -79,7 +79,7 @@
    -->
     <exclude name="AvoidThrowingRawExceptionTypes"/>
     <!-- TODO remove the rule to use the default value after refactoring the code -->
-<!--    <exclude name="CognitiveComplexity"/>-->
+    <exclude name="CognitiveComplexity"/>
   </rule>
 
 </ruleset>
