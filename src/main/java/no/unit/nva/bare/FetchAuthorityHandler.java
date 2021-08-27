@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
+import nva.commons.core.exceptions.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,7 +92,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
                     gatewayResponse.setStatusCode(HTTP_OK);
                 } catch (IOException | URISyntaxException | InterruptedException e) {
 
-                    gatewayResponse.setErrorBody(e.getMessage());
+                    gatewayResponse.setErrorBody(ExceptionUtils.stackTraceInSingleLine(e));
                     gatewayResponse.setStatusCode(HTTP_INTERNAL_ERROR);
                 }
             } else {
@@ -126,7 +127,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
             gatewayResponse.setStatusCode(HTTP_OK);
             return gatewayResponse;
         } catch (URISyntaxException | IOException | InterruptedException e) {
-            gatewayResponse.setErrorBody(e.getMessage());
+            gatewayResponse.setErrorBody(ExceptionUtils.stackTraceInSingleLine(e));
             gatewayResponse.setStatusCode(HTTP_INTERNAL_ERROR);
             return gatewayResponse;
         }
