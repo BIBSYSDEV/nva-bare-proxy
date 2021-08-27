@@ -24,8 +24,9 @@ Globals:
 
 Parameters:
   CognitoAuthorizerArn:
-    Type: String
+    Type: 'AWS::SSM::Parameter::Value<String>'
     Description: Reference to Cognito UserPool for the stage
+    Default: CognitoAuthorizerArn
   CustomDomain:
     Type: String
     Description: Custom API to connect this lambda to
@@ -481,7 +482,7 @@ Resources:
           PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
       Runtime: java11
-      MemorySize: 512
+      MemorySize: 1769 # One CPU
       Events:
         NvaBareFetchEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -501,7 +502,7 @@ Resources:
           PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
       Runtime: java11
-      MemorySize: 512
+      MemorySize: 1769 # One CPU
       Events:
         NvaBareFetchEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -521,7 +522,7 @@ Resources:
           PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.AddNewAuthorityIdentifierHandler::handleRequest
       Runtime: java11
-      MemorySize: 512
+      MemorySize: 1769 # One CPU
       Events:
         NvaBareAddNewIdentifierEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -541,7 +542,7 @@ Resources:
           PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.DeleteAuthorityIdentifierHandler::handleRequest
       Runtime: java11
-      MemorySize: 512
+      MemorySize: 1769 # One CPU
       Events:
         NvaBareDeleteIdentifierEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -561,7 +562,7 @@ Resources:
           PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.UpdateAuthorityIdentifierHandler::handleRequest
       Runtime: java11
-      MemorySize: 512
+      MemorySize: 1769 # One CPU
       Events:
         NvaBareUpdateIdentifierEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -581,7 +582,7 @@ Resources:
           PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.CreateAuthorityHandler::handleRequest
       Runtime: java11
-      MemorySize: 512
+      MemorySize: 1769 # One CPU
       Events:
         NvaBareCreateAuthorityEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
