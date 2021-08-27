@@ -10,12 +10,16 @@ Metadata:
     Author: Unit
     SpdxLicenseId: MIT
     LicenseUrl: LICENSE
-    Labels: ['${CODEBUILD_RESOLVED_SOURCE_VERSION}', '${GIT_REPO}', '@${BUILD_TIMESTAMP}']
+    Labels: [ '${CODEBUILD_RESOLVED_SOURCE_VERSION}', '${GIT_REPO}', '@${BUILD_TIMESTAMP}' ]
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
+    MemorySize: 1769
     Timeout: 20
+    Runtime: java11
+    Tracing: Active
+
   Api:
     Cors:
       AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
@@ -66,7 +70,7 @@ Resources:
         paths:
           /:
             get:
-              summary:  Fetches authority by name, feideid
+              summary: Fetches authority by name, feideid
               parameters:
                 - in: query
                   name: name
@@ -79,7 +83,7 @@ Resources:
               x-amazon-apigateway-integration:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareFetchAuthorityFunction.Arn}/invocations
-                responses: {}
+                responses: { }
                 httpMethod: POST
                 type: AWS_PROXY
               responses:
@@ -114,7 +118,7 @@ Resources:
             post:
               summary: Create authority
               security:
-                - CognitoUserPool: []
+                - CognitoUserPool: [ ]
               requestBody:
                 required: true
                 content:
@@ -124,7 +128,7 @@ Resources:
               x-amazon-apigateway-integration:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareCreateAuthorityFunction.Arn}/invocations
-                responses: {}
+                responses: { }
                 httpMethod: POST
                 type: AWS_PROXY
               responses:
@@ -169,7 +173,7 @@ Resources:
                             description: error message
           /{scn}:
             get:
-              summary:  Fetches authority by uri (systemcontrolnumber)
+              summary: Fetches authority by uri (systemcontrolnumber)
               parameters:
                 - in: path
                   name: scn
@@ -178,7 +182,7 @@ Resources:
               x-amazon-apigateway-integration:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareGetAuthorityByURIFunction.Arn}/invocations
-                responses: {}
+                responses: { }
                 httpMethod: POST
                 type: AWS_PROXY
               responses:
@@ -223,11 +227,11 @@ Resources:
                   type: string
                   description: qualifier of identifier to add.
               security:
-                - CognitoUserPool: []
+                - CognitoUserPool: [ ]
               x-amazon-apigateway-integration:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareAddNewIdentifierFunction.Arn}/invocations
-                responses: {}
+                responses: { }
                 httpMethod: POST
                 type: AWS_PROXY
               requestBody:
@@ -264,11 +268,11 @@ Resources:
                   type: string
                   description: qualifier of identifier to add.
               security:
-                - CognitoUserPool: []
+                - CognitoUserPool: [ ]
               x-amazon-apigateway-integration:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareDeleteIdentifierFunction.Arn}/invocations
-                responses: {}
+                responses: { }
                 httpMethod: POST
                 type: AWS_PROXY
               requestBody:
@@ -305,11 +309,11 @@ Resources:
                   type: string
                   description: qualifier of identifier to add.
               security:
-                - CognitoUserPool: []
+                - CognitoUserPool: [ ]
               x-amazon-apigateway-integration:
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NvaBareUpdateIdentifierFunction.Arn}/invocations
-                responses: {}
+                responses: { }
                 httpMethod: POST
                 type: AWS_PROXY
               requestBody:
@@ -478,11 +482,9 @@ Resources:
         Variables:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
-          ALLOWED_ORIGIN:  '*'
+          ALLOWED_ORIGIN: '*'
           PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
-      Runtime: java11
-      MemorySize: 1769 # One CPU
       Events:
         NvaBareFetchEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -498,11 +500,9 @@ Resources:
         Variables:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
-          ALLOWED_ORIGIN:  '*'
+          ALLOWED_ORIGIN: '*'
           PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
-      Runtime: java11
-      MemorySize: 1769 # One CPU
       Events:
         NvaBareFetchEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -518,11 +518,9 @@ Resources:
         Variables:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
-          ALLOWED_ORIGIN:  '*'
+          ALLOWED_ORIGIN: '*'
           PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.AddNewAuthorityIdentifierHandler::handleRequest
-      Runtime: java11
-      MemorySize: 1769 # One CPU
       Events:
         NvaBareAddNewIdentifierEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -538,11 +536,9 @@ Resources:
         Variables:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
-          ALLOWED_ORIGIN:  '*'
+          ALLOWED_ORIGIN: '*'
           PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.DeleteAuthorityIdentifierHandler::handleRequest
-      Runtime: java11
-      MemorySize: 1769 # One CPU
       Events:
         NvaBareDeleteIdentifierEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -558,11 +554,9 @@ Resources:
         Variables:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
-          ALLOWED_ORIGIN:  '*'
+          ALLOWED_ORIGIN: '*'
           PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.UpdateAuthorityIdentifierHandler::handleRequest
-      Runtime: java11
-      MemorySize: 1769 # One CPU
       Events:
         NvaBareUpdateIdentifierEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -578,11 +572,9 @@ Resources:
         Variables:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
-          ALLOWED_ORIGIN:  '*'
+          ALLOWED_ORIGIN: '*'
           PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.CreateAuthorityHandler::handleRequest
-      Runtime: java11
-      MemorySize: 1769 # One CPU
       Events:
         NvaBareCreateAuthorityEvent:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
