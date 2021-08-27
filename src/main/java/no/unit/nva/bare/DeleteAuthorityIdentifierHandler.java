@@ -1,7 +1,7 @@
 package no.unit.nva.bare;
 
+import static java.net.HttpURLConnection.HTTP_OK;
 import static java.util.Arrays.asList;
-import static org.apache.http.HttpStatus.SC_OK;
 import com.amazonaws.services.lambda.runtime.Context;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -12,11 +12,10 @@ import java.util.Objects;
 import nva.commons.apigateway.ApiGatewayHandler;
 import nva.commons.apigateway.RequestInfo;
 import nva.commons.apigateway.exceptions.ApiGatewayException;
-
+import nva.commons.apigateway.exceptions.BadRequestException;
 import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.StringUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,21 +84,21 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
     }
 
     private void validateInput(DeleteAuthorityIdentifierRequest input, Map<String, String> pathParameters)
-            throws InvalidInputException {
+        throws BadRequestException {
         if (StringUtils.isEmpty(pathParameters.get(SCN_KEY))) {
-            throw new InvalidInputException(MISSING_PATH_PARAMETER_SCN);
+            throw new BadRequestException(MISSING_PATH_PARAMETER_SCN);
         }
         if (StringUtils.isEmpty(pathParameters.get(QUALIFIER_KEY))) {
-            throw new InvalidInputException(MISSING_PATH_PARAMETER_QUALIFIER);
+            throw new BadRequestException(MISSING_PATH_PARAMETER_QUALIFIER);
         }
         if (!VALID_QUALIFIERS.contains(pathParameters.get(QUALIFIER_KEY))) {
-            throw new InvalidInputException(INVALID_VALUE_PATH_PARAMETER_QUALIFIER);
+            throw new BadRequestException(INVALID_VALUE_PATH_PARAMETER_QUALIFIER);
         }
         if (Objects.isNull(input)) {
-            throw new InvalidInputException(MISSING_REQUEST_JSON_BODY);
+            throw new BadRequestException(MISSING_REQUEST_JSON_BODY);
         }
         if (StringUtils.isEmpty(input.getIdentifier())) {
-            throw new InvalidInputException(MISSING_ATTRIBUTE_IDENTIFIER);
+            throw new BadRequestException(MISSING_ATTRIBUTE_IDENTIFIER);
         }
     }
 
@@ -108,7 +107,7 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
         try {
             HttpResponse<String> response = bareConnection.deleteIdentifier(scn, qualifier, identifier);
             int responseCode = response.statusCode();
-            if (responseCode == SC_OK) {
+            if (responseCode == HTTP_OK) {
                 return getAuthority(scn);
             } else {
                 logger.error(String.format("deleteIdentifier - ErrorCode=%s, reasonPhrase=%s", response.statusCode(),
@@ -140,6 +139,6 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
 
     @Override
     protected Integer getSuccessStatusCode(DeleteAuthorityIdentifierRequest input, Authority output) {
-        return SC_OK;
+        return HTTP_OK;
     }
 }

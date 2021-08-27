@@ -1,26 +1,24 @@
 package no.unit.nva.bare;
 
+import static java.util.Arrays.asList;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import java.net.HttpURLConnection;
-import nva.commons.apigateway.ApiGatewayHandler;
-import nva.commons.apigateway.RequestInfo;
-import nva.commons.apigateway.exceptions.ApiGatewayException;
-import nva.commons.core.Environment;
-import nva.commons.core.JacocoGenerated;
-
-import nva.commons.core.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import static java.util.Arrays.asList;
+import nva.commons.apigateway.ApiGatewayHandler;
+import nva.commons.apigateway.RequestInfo;
+import nva.commons.apigateway.exceptions.ApiGatewayException;
+import nva.commons.apigateway.exceptions.BadRequestException;
+import nva.commons.core.Environment;
+import nva.commons.core.JacocoGenerated;
+import nva.commons.core.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -92,24 +90,24 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
     }
 
     private void validateInput(UpdateAuthorityIdentifierRequest input, Map<String, String> pathParameters)
-            throws InvalidInputException {
+        throws BadRequestException {
         if (StringUtils.isEmpty(pathParameters.get(SCN_KEY))) {
-            throw new InvalidInputException(MISSING_PATH_PARAMETER_SCN);
+            throw new BadRequestException(MISSING_PATH_PARAMETER_SCN);
         }
         if (StringUtils.isEmpty(pathParameters.get(QUALIFIER_KEY))) {
-            throw new InvalidInputException(MISSING_PATH_PARAMETER_QUALIFIER);
+            throw new BadRequestException(MISSING_PATH_PARAMETER_QUALIFIER);
         }
         if (!VALID_QUALIFIERS.contains(pathParameters.get(QUALIFIER_KEY))) {
-            throw new InvalidInputException(INVALID_VALUE_PATH_PARAMETER_QUALIFIER);
+            throw new BadRequestException(INVALID_VALUE_PATH_PARAMETER_QUALIFIER);
         }
         if (Objects.isNull(input)) {
-            throw new InvalidInputException(MISSING_REQUEST_JSON_BODY);
+            throw new BadRequestException(MISSING_REQUEST_JSON_BODY);
         }
         if (StringUtils.isEmpty(input.getIdentifier())) {
-            throw new InvalidInputException(MISSING_ATTRIBUTE_IDENTIFIER);
+            throw new BadRequestException(MISSING_ATTRIBUTE_IDENTIFIER);
         }
         if (StringUtils.isEmpty(input.getUpdatedIdentifier())) {
-            throw new InvalidInputException(MISSING_ATTRIBUTE_UPDATED_IDENTIFIER);
+            throw new BadRequestException(MISSING_ATTRIBUTE_UPDATED_IDENTIFIER);
         }
     }
 

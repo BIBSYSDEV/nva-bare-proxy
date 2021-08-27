@@ -1,14 +1,14 @@
 package no.unit.nva.bare;
 
+import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import nva.commons.apigateway.ContentTypes;
+import nva.commons.apigateway.HttpHeaders;
 import nva.commons.core.StringUtils;
-import org.apache.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,17 +29,8 @@ public class CustomGatewayResponse {
      * GatewayResponse contains response status, response headers and body with payload resp. error messages.
      */
     public CustomGatewayResponse() {
-        this.statusCode = SC_INTERNAL_SERVER_ERROR;
+        this.statusCode = HTTP_INTERNAL_ERROR;
         this.body = EMPTY_JSON;
-        this.generateDefaultHeaders();
-    }
-
-    /**
-     * GatewayResponse convenience constructor to set response status and body with payload direct.
-     */
-    public CustomGatewayResponse(final String body, final int status) {
-        this.statusCode = status;
-        this.body = body;
         this.generateDefaultHeaders();
     }
 
@@ -74,18 +65,17 @@ public class CustomGatewayResponse {
         try {
             this.body = objectMapperWithEmpty.writeValueAsString(bodyContent);
         } catch (JsonProcessingException e) {
-            logger.error(e.getMessage(),e);
+            logger.error(e.getMessage(), e);
         }
     }
 
     private void generateDefaultHeaders() {
         Map<String, String> headers = new ConcurrentHashMap<>();
-        headers.put(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON.getMimeType());
-        final String corsAllowDomain = Config.getInstance().getCorsHeader();
+        headers.put(HttpHeaders.CONTENT_TYPE, ContentTypes.APPLICATION_JSON);
+        final String corsAllowDomain = Config.CORS_ALLOW_ORIGIN;
         if (StringUtils.isNotEmpty(corsAllowDomain)) {
             headers.put(CORS_ALLOW_ORIGIN_HEADER, corsAllowDomain);
         }
         this.headers = Collections.unmodifiableMap(new ConcurrentHashMap<>(headers));
     }
-
 }

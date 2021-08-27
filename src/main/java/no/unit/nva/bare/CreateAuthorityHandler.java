@@ -1,10 +1,9 @@
 package no.unit.nva.bare;
 
+import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static nva.commons.core.attempt.Try.attempt;
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_OK;
 import com.amazonaws.services.lambda.runtime.Context;
-import java.net.HttpURLConnection;
 import java.net.http.HttpResponse;
 import java.util.Optional;
 import nva.commons.apigateway.ApiGatewayHandler;
@@ -53,7 +52,7 @@ public class CreateAuthorityHandler extends ApiGatewayHandler<CreateAuthorityReq
 
     @Override
     protected Integer getSuccessStatusCode(CreateAuthorityRequest input, Authority output) {
-        return HttpURLConnection.HTTP_OK;
+        return HTTP_OK;
     }
 
     protected BareAuthority createAuthorityOnBare(String name) throws BadGatewayException {
@@ -104,6 +103,6 @@ public class CreateAuthorityHandler extends ApiGatewayHandler<CreateAuthorityReq
     }
 
     private boolean requestToBareSucceeded(HttpResponse<String> response) {
-        return response.statusCode() == SC_CREATED || response.statusCode() == SC_OK;
+        return response.statusCode() == HTTP_CREATED || response.statusCode() == HTTP_OK;
     }
 }

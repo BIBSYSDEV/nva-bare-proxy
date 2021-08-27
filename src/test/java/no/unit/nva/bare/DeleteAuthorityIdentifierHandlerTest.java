@@ -1,5 +1,8 @@
 package no.unit.nva.bare;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON;
 import static no.unit.nva.bare.DeleteAuthorityIdentifierHandler.COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY;
 import static no.unit.nva.bare.DeleteAuthorityIdentifierHandler.INVALID_VALUE_PATH_PARAMETER_QUALIFIER;
@@ -12,9 +15,6 @@ import static no.unit.nva.bare.DeleteAuthorityIdentifierHandler.REMOTE_SERVER_ER
 import static no.unit.nva.bare.DeleteAuthorityIdentifierHandler.SCN_KEY;
 import static nva.commons.apigateway.ApiGatewayHandler.ALLOWED_ORIGIN_ENV;
 import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
-import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
@@ -82,8 +82,8 @@ public class DeleteAuthorityIdentifierHandlerTest {
         deleteAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(),
-                                                                                        nva.commons.apigateway.GatewayResponse.class);
-        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+                                                                                                 nva.commons.apigateway.GatewayResponse.class);
+        assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_PATH_PARAMETER_SCN));
@@ -91,20 +91,22 @@ public class DeleteAuthorityIdentifierHandlerTest {
         assertThat(problem.getStatus(), is(Status.BAD_REQUEST));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     @DisplayName("handler Returns Bad Request Response When Qualifier Path Parameter Is Missing")
     public void handlerReturnsBadRequestWhenQualifierPathParameterIsMissing() throws IOException {
 
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, null);
         InputStream input = new HandlerUtils(objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(null,
-                                                                                                      TestHeaders.getRequestHeaders(),
-                                                                                                      pathParams, null);
+                                                                                                               TestHeaders.getRequestHeaders(),
+                                                                                                               pathParams,
+                                                                                                               null);
         deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         deleteAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(),
-                                                                                        nva.commons.apigateway.GatewayResponse.class);
-        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+                                                                                                 nva.commons.apigateway.GatewayResponse.class);
+
+        assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_PATH_PARAMETER_QUALIFIER));
@@ -119,14 +121,16 @@ public class DeleteAuthorityIdentifierHandlerTest {
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE,
                                                            ValidIdentifierKey.ORGUNITID.asString() + "invalid");
         InputStream input = new HandlerUtils(objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(null,
-                                                                                                      TestHeaders.getRequestHeaders(),
-                                                                                                      pathParams, null);
+                                                                                                               TestHeaders.getRequestHeaders(),
+                                                                                                               pathParams,
+                                                                                                               null);
         deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         deleteAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(),
-                                                                                        nva.commons.apigateway.GatewayResponse.class);
-        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+                                                                                                 nva.commons.apigateway.GatewayResponse.class);
+
+        assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(INVALID_VALUE_PATH_PARAMETER_QUALIFIER));
@@ -141,13 +145,14 @@ public class DeleteAuthorityIdentifierHandlerTest {
         deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.ORGUNITID.asString());
         InputStream input = new HandlerUtils(objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(null,
-                                                                                                      TestHeaders.getRequestHeaders(),
-                                                                                                      pathParams, null);
+                                                                                                               TestHeaders.getRequestHeaders(),
+                                                                                                               pathParams,
+                                                                                                               null);
         deleteAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(),
-                                                                                        nva.commons.apigateway.GatewayResponse.class);
-        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+                                                                                                 nva.commons.apigateway.GatewayResponse.class);
+        assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_REQUEST_JSON_BODY));
@@ -164,12 +169,13 @@ public class DeleteAuthorityIdentifierHandlerTest {
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.ORGUNITID.asString());
         InputStream input = new HandlerUtils(
             objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
-                                                                     TestHeaders.getRequestHeaders(), pathParams, null);
+                                                                              TestHeaders.getRequestHeaders(),
+                                                                              pathParams, null);
         deleteAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(),
-                                                                                        nva.commons.apigateway.GatewayResponse.class);
-        assertEquals(SC_BAD_REQUEST, gatewayResponse.getStatusCode());
+                                                                                                 nva.commons.apigateway.GatewayResponse.class);
+        assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
         Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_ATTRIBUTE_IDENTIFIER));
@@ -183,10 +189,11 @@ public class DeleteAuthorityIdentifierHandlerTest {
 
         InputStream is =
             DeleteAuthorityIdentifierHandler.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
-        final BareAuthority bareAuthority = objectMapperWithEmpty.readValue(new InputStreamReader(is), BareAuthority.class);
+        final BareAuthority bareAuthority = objectMapperWithEmpty.readValue(new InputStreamReader(is),
+                                                                            BareAuthority.class);
 
         when(bareConnection.get(anyString())).thenReturn(bareAuthority);
-        when(httpResponse.statusCode()).thenReturn(SC_OK);
+        when(httpResponse.statusCode()).thenReturn(HTTP_OK);
         when(bareConnection.deleteIdentifier(any(), any(), any())).thenReturn(httpResponse);
 
         deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
@@ -194,12 +201,13 @@ public class DeleteAuthorityIdentifierHandlerTest {
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(
             objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
-                                                                     TestHeaders.getRequestHeaders(), pathParams, null);
+                                                                              TestHeaders.getRequestHeaders(),
+                                                                              pathParams, null);
         deleteAuthorityIdentifierHandler.handleRequest(input, output, context);
         nva.commons.apigateway.GatewayResponse gatewayResponse =
             objectMapperWithEmpty.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
 
-        assertEquals(SC_OK, gatewayResponse.getStatusCode());
+        assertEquals(HTTP_OK, gatewayResponse.getStatusCode());
     }
 
     @Test
@@ -215,11 +223,12 @@ public class DeleteAuthorityIdentifierHandlerTest {
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(
             objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
-                                                                     TestHeaders.getRequestHeaders(), pathParams, null);
+                                                                              TestHeaders.getRequestHeaders(),
+                                                                              pathParams, null);
         deleteAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(),
-                                                                                        nva.commons.apigateway.GatewayResponse.class);
+                                                                                                 nva.commons.apigateway.GatewayResponse.class);
         Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(EXCEPTION_IS_EXPECTED));
@@ -231,7 +240,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
     @DisplayName("handler Returns Internal Server Error Response When Failing To Read Authority From Stream")
     public void handleReturnsInternalServerErrorWhenFailingToReadAuthorityFromStream() throws Exception {
 
-        when(httpResponse.statusCode()).thenReturn(SC_OK);
+        when(httpResponse.statusCode()).thenReturn(HTTP_OK);
         when(bareConnection.get(any())).thenReturn(null);
         when(bareConnection.deleteIdentifier(any(), any(), any())).thenReturn(httpResponse);
 
@@ -240,11 +249,12 @@ public class DeleteAuthorityIdentifierHandlerTest {
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(
             objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
-                                                                     TestHeaders.getRequestHeaders(), pathParams, null);
+                                                                              TestHeaders.getRequestHeaders(),
+                                                                              pathParams, null);
         deleteAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(),
-                                                                                        nva.commons.apigateway.GatewayResponse.class);
+                                                                                                 nva.commons.apigateway.GatewayResponse.class);
         Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY));
@@ -256,7 +266,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
     @DisplayName("handler Returns Internal Server Error Response When Exception Getting Authority From Bare")
     public void handlerReturnsInternalServerErrorWhenExceptionGettingAuthorityFromBare() throws Exception {
 
-        when(httpResponse.statusCode()).thenReturn(SC_OK);
+        when(httpResponse.statusCode()).thenReturn(HTTP_OK);
         when(bareConnection.get(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
         when(bareConnection.deleteIdentifier(any(), any(), any())).thenReturn(httpResponse);
 
@@ -265,11 +275,12 @@ public class DeleteAuthorityIdentifierHandlerTest {
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(
             objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
-                                                                     TestHeaders.getRequestHeaders(), pathParams, null);
+                                                                              TestHeaders.getRequestHeaders(),
+                                                                              pathParams, null);
         deleteAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(),
-                                                                                        nva.commons.apigateway.GatewayResponse.class);
+                                                                                                 nva.commons.apigateway.GatewayResponse.class);
         Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(EXCEPTION_IS_EXPECTED));
@@ -281,7 +292,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
     @DisplayName("handler Returns Internal Server Error Response When Unexpected Response From Bare")
     public void handlerReturnsInternalServerErrorWhenUnexpectedResponseFromBare() throws Exception {
 
-        when(httpResponse.statusCode()).thenReturn(SC_FORBIDDEN);
+        when(httpResponse.statusCode()).thenReturn(HTTP_FORBIDDEN);
         when(bareConnection.deleteIdentifier(any(), any(), any())).thenReturn(httpResponse);
 
         deleteAuthorityIdentifierHandler = new DeleteAuthorityIdentifierHandler(mockEnvironment, bareConnection);
@@ -289,7 +300,8 @@ public class DeleteAuthorityIdentifierHandlerTest {
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(
             objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
-                                                                     TestHeaders.getRequestHeaders(), pathParams, null);
+                                                                              TestHeaders.getRequestHeaders(),
+                                                                              pathParams, null);
         deleteAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(), GatewayResponse.class);

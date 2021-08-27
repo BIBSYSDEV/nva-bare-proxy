@@ -1,8 +1,6 @@
 package no.unit.nva.bare;
 
-import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,12 +33,11 @@ public class AuthorityConverter {
     public static final String SUBCODE_A = "a";
     public static final String SLASH = "/";
     private final transient Logger logger = LoggerFactory.getLogger(AuthorityConverter.class);
-
-
     private final transient String personAuthorityBaseAddress;
 
     /**
      * Converts marc based Bare AuthorityRecord to something useful.
+     *
      * @param environment settings for endpoint
      */
     public AuthorityConverter(Environment environment) {
@@ -52,9 +49,7 @@ public class AuthorityConverter {
         }
     }
 
-    protected List<Authority> extractAuthoritiesFrom(InputStreamReader reader) throws IOException {
-        final BareQueryResponse bareQueryResponse = objectMapperWithEmpty.readValue(reader, BareQueryResponse.class);
-        logger.info(bareQueryResponse.toString());
+    protected List<Authority> extractAuthorities(BareQueryResponse bareQueryResponse) throws IOException {
         return Arrays.stream(bareQueryResponse.results).map(this::asAuthority).collect(Collectors.toList());
     }
 
@@ -99,11 +94,11 @@ public class AuthorityConverter {
 
     protected String findValueIn(BareAuthority bareAuthority, String marcSubfieldTag) {
         List<String> values = Arrays.stream(bareAuthority.getMarcdata())
-                .filter(marc -> Arrays.asList(new String[]{MARC_TAG_PERSONAL_NAME_FIELD_CODE}).contains(marc.getTag()))
-                .flatMap(marc -> Arrays.stream(marc.getSubfields()))
-                .filter(subfield -> marcSubfieldTag.equals(subfield.getSubcode()))
-                .map(subfield -> subfield.getValue())
-                .collect(Collectors.toList());
+            .filter(marc -> Arrays.asList(new String[]{MARC_TAG_PERSONAL_NAME_FIELD_CODE}).contains(marc.getTag()))
+            .flatMap(marc -> Arrays.stream(marc.getSubfields()))
+            .filter(subfield -> marcSubfieldTag.equals(subfield.getSubcode()))
+            .map(subfield -> subfield.getValue())
+            .collect(Collectors.toList());
         return !values.isEmpty() ? values.get(0) : EMPTY_STRING;
     }
 
@@ -111,5 +106,4 @@ public class AuthorityConverter {
 
         return URI.create(personAuthorityBaseAddress.concat(scn));
     }
-
 }
