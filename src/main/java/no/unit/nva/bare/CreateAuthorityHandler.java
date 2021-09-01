@@ -34,11 +34,11 @@ public class CreateAuthorityHandler extends ApiGatewayHandler<CreateAuthorityReq
     protected final transient BareConnection bareConnection;
 
     public CreateAuthorityHandler() {
-        this(new BareConnection(), new Environment());
+        this(new BareConnection());
     }
 
-    public CreateAuthorityHandler(BareConnection bareConnection, Environment environment) {
-        super(CreateAuthorityRequest.class, environment);
+    public CreateAuthorityHandler(BareConnection bareConnection) {
+        super(CreateAuthorityRequest.class, new Environment());
         this.bareConnection = bareConnection;
     }
 
@@ -47,7 +47,7 @@ public class CreateAuthorityHandler extends ApiGatewayHandler<CreateAuthorityReq
         throws ApiGatewayException {
         validateInput(input);
         BareAuthority bareAuthority = createAuthorityOnBare(input.getInvertedName());
-        return new AuthorityConverter(environment).asAuthority(bareAuthority);
+        return new AuthorityConverter().asAuthority(bareAuthority);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class CreateAuthorityHandler extends ApiGatewayHandler<CreateAuthorityReq
     }
 
     protected BareAuthority createAuthorityOnBare(String name) throws BadGatewayException {
-        AuthorityConverter authorityConverter = new AuthorityConverter(environment);
+        AuthorityConverter authorityConverter = new AuthorityConverter();
         BareAuthority bareAuthority = authorityConverter.buildAuthority(name);
 
         HttpResponse<String> response = attempt(() -> bareConnection.createAuthority(bareAuthority))

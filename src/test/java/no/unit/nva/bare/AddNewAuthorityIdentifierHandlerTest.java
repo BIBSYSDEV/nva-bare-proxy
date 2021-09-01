@@ -11,8 +11,6 @@ import static no.unit.nva.bare.AddNewAuthorityIdentifierHandler.MISSING_REQUEST_
 import static no.unit.nva.bare.AddNewAuthorityIdentifierHandler.QUALIFIER_KEY;
 import static no.unit.nva.bare.AddNewAuthorityIdentifierHandler.REMOTE_SERVER_ERRORMESSAGE;
 import static no.unit.nva.bare.AddNewAuthorityIdentifierHandler.SCN_KEY;
-import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON;
-import static nva.commons.apigateway.ApiGatewayHandler.ALLOWED_ORIGIN_ENV;
 import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -34,7 +32,6 @@ import no.unit.nva.testutils.HandlerRequestBuilder;
 import no.unit.nva.testutils.IoUtils;
 import no.unit.nva.testutils.TestHeaders;
 import nva.commons.apigateway.GatewayResponse;
-import nva.commons.core.Environment;
 import nva.commons.core.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +47,6 @@ public class AddNewAuthorityIdentifierHandlerTest {
     public static final String BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON = "bareSingleAuthorityGetResponse.json";
     public static final String EXCEPTION_IS_EXPECTED = "Exception is expected.";
 
-    private Environment mockEnvironment;
     private Context context;
     private BareConnection bareConnection;
     private ByteArrayOutputStream output;
@@ -62,10 +58,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
      */
     @BeforeEach
     public void setUp() {
-        mockEnvironment = mock(Environment.class);
-        when(mockEnvironment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
-        when(mockEnvironment.readEnv(AuthorityConverter.PERSON_AUTHORITY_BASE_ADDRESS_KEY))
-            .thenReturn(HTTPS_LOCALHOST_PERSON);
+
         context = mock(Context.class);
         output = new ByteArrayOutputStream();
         bareConnection = mock(BareConnection.class);
@@ -78,7 +71,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
 
         InputStream input = new HandlerRequestBuilder<AddNewAuthorityIdentifierRequest>(objectMapperWithEmpty)
             .build();
-        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(bareConnection);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
@@ -97,7 +90,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, null);
         InputStream input = createRequest(pathParams, null);
 
-        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(bareConnection);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
@@ -116,7 +109,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE,
                                                            ValidIdentifierKey.ORGUNITID.asString() + "invalid");
         InputStream input = createRequest(pathParams, null);
-        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(bareConnection);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
@@ -134,7 +127,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.ORGUNITID.asString());
         InputStream input = createRequest(pathParams, null);
 
-        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(bareConnection);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
@@ -158,7 +151,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
             .withHeaders(TestHeaders.getRequestHeaders())
             .build();
 
-        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(bareConnection);
         addNewAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         GatewayResponse<Problem> gatewayResponse = GatewayResponse.fromOutputStream(output);
@@ -175,12 +168,13 @@ public class AddNewAuthorityIdentifierHandlerTest {
     public void handlerReturnsOkWhenInputIsValidAndAuthorityIdentifierIsAddedSuccessfully() throws Exception {
 
         InputStream is = IoUtils.inputStreamFromResources(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
-        final BareAuthority bareAuthority = objectMapperWithEmpty.readValue(new InputStreamReader(is), BareAuthority.class);
+        final BareAuthority bareAuthority = objectMapperWithEmpty.readValue(new InputStreamReader(is),
+                                                                            BareAuthority.class);
         when(bareConnection.get(anyString())).thenReturn(bareAuthority);
         when(httpResponse.statusCode()).thenReturn(HTTP_OK);
         when(bareConnection.addNewIdentifier(any(), any())).thenReturn(httpResponse);
 
-        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = createRequest(pathParams, requestObject);
@@ -197,7 +191,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
         when(bareConnection.addNewIdentifier(any(), any())).thenThrow(
             new IOException(EXCEPTION_IS_EXPECTED));
 
-        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = createRequest(pathParams, requestObject);
@@ -219,7 +213,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
         when(bareConnection.get(any())).thenReturn(null);
         when(bareConnection.addNewIdentifier(any(), any())).thenReturn(httpResponse);
 
-        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = createRequest(pathParams, requestObject);
@@ -241,7 +235,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
         when(bareConnection.get(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
         when(bareConnection.addNewIdentifier(any(), any())).thenReturn(httpResponse);
 
-        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = createRequest(pathParams, requestObject);
@@ -261,7 +255,7 @@ public class AddNewAuthorityIdentifierHandlerTest {
 
         when(httpResponse.statusCode()).thenReturn(HTTP_FORBIDDEN);
         when(bareConnection.addNewIdentifier(any(), any())).thenReturn(httpResponse);
-        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        addNewAuthorityIdentifierHandler = new AddNewAuthorityIdentifierHandler(bareConnection);
         AddNewAuthorityIdentifierRequest requestObject = new AddNewAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = createRequest(pathParams, requestObject);

@@ -4,7 +4,6 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static no.unit.nva.bare.AddNewAuthorityIdentifierHandlerTest.BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON;
-import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON_WITHOUT_TRAILING_SLASH;
 import static no.unit.nva.bare.FetchAuthorityHandler.ARPID_KEY;
 import static no.unit.nva.bare.FetchAuthorityHandler.QUERY_STRING_PARAMETERS_KEY;
 import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
@@ -58,8 +57,6 @@ public class FetchAuthorityHandlerTest {
         httpClient = mock(HttpClient.class);
         bareConnection = new BareConnection(httpClient);
         mockEnvironment = mock(Environment.class);
-        when(mockEnvironment.readEnv(AuthorityConverter.PERSON_AUTHORITY_BASE_ADDRESS_KEY))
-            .thenReturn(HTTPS_LOCALHOST_PERSON_WITHOUT_TRAILING_SLASH);
     }
 
     @Test
@@ -69,7 +66,7 @@ public class FetchAuthorityHandlerTest {
 
         Map<String, Object> event = createEvent(NAME_KEY, "destroyer");
 
-        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection, mockEnvironment);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection);
         CustomGatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(HTTP_OK, result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), ContentTypes.APPLICATION_JSON);
@@ -92,7 +89,7 @@ public class FetchAuthorityHandlerTest {
 
         Map<String, Object> event = createEvent(ARPID_KEY, SAMPLE_IDENTIFIER);
 
-        FetchAuthorityHandler handler = new FetchAuthorityHandler(bareConnection, mockEnvironment);
+        FetchAuthorityHandler handler = new FetchAuthorityHandler(bareConnection);
         CustomGatewayResponse result = handler.handleRequest(event, null);
         assertEquals(HTTP_OK, result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
@@ -105,7 +102,7 @@ public class FetchAuthorityHandlerTest {
         whenSendingRequest().thenThrow(new IOException(MY_MOCK_THROWS_AN_EXCEPTION));
 
         Map<String, Object> event = createEvent(ARPID_KEY, SAMPLE_IDENTIFIER);
-        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection, mockEnvironment);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection);
         CustomGatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(HTTP_INTERNAL_ERROR, result.getStatusCode());
         String content = result.getBody();
@@ -119,7 +116,7 @@ public class FetchAuthorityHandlerTest {
         whenSendingRequest().thenAnswer(invocation -> mockHttpResponse(responseBody, HTTP_OK));
 
         Map<String, Object> event = createEvent(FEIDEID_KEY, "sarah.serussi@unit.no");
-        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection, mockEnvironment);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection);
         CustomGatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(HTTP_OK, result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
@@ -138,7 +135,7 @@ public class FetchAuthorityHandlerTest {
     public void testHandlerWithNull_QueryParams() throws Exception {
         Map<String, Object> event = new HashMap<>();
         event.put(QUERY_STRING_PARAMETERS_KEY, null);
-        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection, mockEnvironment);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection);
         CustomGatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(HTTP_BAD_REQUEST, result.getStatusCode());
         String content = result.getBody();
@@ -153,7 +150,7 @@ public class FetchAuthorityHandlerTest {
         whenSendingRequest().thenAnswer(invocation -> mockHttpResponse(responseBody, HTTP_OK));
         Map<String, Object> event = createEvent(ORCID_KEY, SAMPLE_IDENTIFIER);
 
-        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection, mockEnvironment);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection);
         CustomGatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(HTTP_OK, result.getStatusCode());
         assertEquals(result.getHeaders().get(HttpHeaders.CONTENT_TYPE), TestHeaders.APPLICATION_JSON);
@@ -174,7 +171,7 @@ public class FetchAuthorityHandlerTest {
 
     @Test
     public void testResponseWithoutQueryParams() {
-        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection, mockEnvironment);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection);
 
         CustomGatewayResponse result = mockAuthorityProxy.handleRequest(null, null);
         assertEquals(HTTP_BAD_REQUEST, result.getStatusCode());
@@ -196,7 +193,7 @@ public class FetchAuthorityHandlerTest {
 
         Map<String, Object> event = createEvent(FEIDEID_KEY, "sarha.suressi@unit.no");
 
-        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection, mockEnvironment);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection);
         CustomGatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(HTTP_OK, result.getStatusCode());
         assertEquals(result.getHeaders().get(nva.commons.apigateway.HttpHeaders.CONTENT_TYPE),
@@ -214,7 +211,7 @@ public class FetchAuthorityHandlerTest {
         whenSendingRequest().thenThrow(new IOException(MY_MOCK_THROWS_AN_EXCEPTION));
 
         Map<String, Object> event = createEvent(FEIDEID_KEY, "sarha.suressi@unit.no");
-        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection, mockEnvironment);
+        FetchAuthorityHandler mockAuthorityProxy = new FetchAuthorityHandler(bareConnection);
         CustomGatewayResponse result = mockAuthorityProxy.handleRequest(event, null);
         assertEquals(HTTP_INTERNAL_ERROR, result.getStatusCode());
         String content = result.getBody();
@@ -225,7 +222,7 @@ public class FetchAuthorityHandlerTest {
     @Test
     public void testNoBodyRequest() {
         Map<String, Object> event = new HashMap<>();
-        FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler(bareConnection, mockEnvironment);
+        FetchAuthorityHandler fetchAuthorityHandler = new FetchAuthorityHandler(bareConnection);
         CustomGatewayResponse result = fetchAuthorityHandler.handleRequest(event, null);
         assertEquals(HTTP_BAD_REQUEST, result.getStatusCode());
         String content = result.getBody();
