@@ -44,9 +44,6 @@ public class BareConnectionTest {
     public void setUp() {
         mockHttpClient = mock(HttpClient.class);
         mockHttpResponse = mock(HttpResponse.class);
-        mockEnvironment = mock(Environment.class);
-        when(mockEnvironment.readEnv(AuthorityConverter.PERSON_AUTHORITY_BASE_ADDRESS_KEY))
-            .thenReturn(HTTPS_LOCALHOST_PERSON);
     }
 
     @Test
@@ -163,7 +160,7 @@ public class BareConnectionTest {
 
         BareConnection mockBareConnection = new BareConnection(mockHttpClient);
 
-        AuthorityConverter authorityConverter = new AuthorityConverter(mockEnvironment);
+        AuthorityConverter authorityConverter = new AuthorityConverter();
         BareAuthority bareAuthority = authorityConverter.buildAuthority(MOCK_NAME);
         HttpResponse<String> httpResponse = mockBareConnection.createAuthority(bareAuthority);
 
@@ -190,7 +187,7 @@ public class BareConnectionTest {
     }
 
     @Test
-    public void testGetMethodOnBareConnection_ResponseFail() throws IOException, URISyntaxException,
+    public void testGetMethodOnBareConnection_ResponseFail() throws IOException,
                                                                     InterruptedException {
         BareConnection bareConnection = new BareConnection(mockHttpClient);
 

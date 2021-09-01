@@ -3,7 +3,6 @@ package no.unit.nva.bare;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_OK;
-import static no.unit.nva.bare.AuthorityConverterTest.HTTPS_LOCALHOST_PERSON;
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY;
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.INVALID_VALUE_PATH_PARAMETER_QUALIFIER;
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.MISSING_ATTRIBUTE_IDENTIFIER;
@@ -14,7 +13,6 @@ import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.MISSING_REQUEST_
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.QUALIFIER_KEY;
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.REMOTE_SERVER_ERRORMESSAGE;
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.SCN_KEY;
-import static nva.commons.apigateway.ApiGatewayHandler.ALLOWED_ORIGIN_ENV;
 import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -39,7 +37,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import no.unit.nva.testutils.HandlerUtils;
 import no.unit.nva.testutils.TestHeaders;
-import nva.commons.core.Environment;
 import nva.commons.core.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -57,7 +54,6 @@ public class UpdateAuthorityIdentifierHandlerTest {
     public static final URI MOCK_IDENTIFIER_URI = URI.create("https://example.org/originalidentifier");
     public static final URI MOCK_UPDATED_IDENTIFIER_URI = URI.create("https://example.org/originalidentifier");
 
-    private Environment mockEnvironment;
     private Context context;
     private BareConnection bareConnection;
     private OutputStream output;
@@ -69,10 +65,6 @@ public class UpdateAuthorityIdentifierHandlerTest {
      */
     @BeforeEach
     public void setUp() {
-        mockEnvironment = mock(Environment.class);
-        when(mockEnvironment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
-        when(mockEnvironment.readEnv(AuthorityConverter.PERSON_AUTHORITY_BASE_ADDRESS_KEY))
-            .thenReturn(HTTPS_LOCALHOST_PERSON);
         context = mock(Context.class);
         output = new ByteArrayOutputStream();
         bareConnection = mock(BareConnection.class);
@@ -84,7 +76,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
     public void handlerReturnsBadRequestWhenScnPathParameterIsMissing() throws IOException {
 
         InputStream input = new HandlerUtils(objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(null);
-        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(bareConnection);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse =
@@ -106,7 +98,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
                                                                                                                TestHeaders.getRequestHeaders(),
                                                                                                                pathParams,
                                                                                                                null);
-        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(bareConnection);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(),
@@ -129,7 +121,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
                                                                                                                TestHeaders.getRequestHeaders(),
                                                                                                                pathParams,
                                                                                                                null);
-        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(bareConnection);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse =
@@ -151,7 +143,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
                                                                                                                TestHeaders.getRequestHeaders(),
                                                                                                                pathParams,
                                                                                                                null);
-        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(bareConnection);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse =
@@ -175,7 +167,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
             objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
                                                                               TestHeaders.getRequestHeaders(),
                                                                               pathParams, null);
-        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(bareConnection);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse =
@@ -199,7 +191,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
             objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
                                                                               TestHeaders.getRequestHeaders(),
                                                                               pathParams, null);
-        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(bareConnection);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse =
@@ -224,7 +216,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
         when(httpResponse.statusCode()).thenReturn(HTTP_OK);
         when(bareConnection.updateIdentifier(any(), any(), any(), any())).thenReturn(httpResponse);
 
-        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(bareConnection);
         UpdateAuthorityIdentifierRequest requestObject = new UpdateAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE,
                                                                                               MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
@@ -270,7 +262,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
             new IOException(EXCEPTION_IS_EXPECTED));
 
         UpdateAuthorityIdentifierHandler updateAuthorityIdentifierHandler =
-            new UpdateAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+            new UpdateAuthorityIdentifierHandler(bareConnection);
         UpdateAuthorityIdentifierRequest requestObject = new UpdateAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE,
                                                                                               MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
@@ -297,7 +289,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
         when(bareConnection.get(any())).thenReturn(null);
         when(bareConnection.updateIdentifier(any(), any(), any(), any())).thenReturn(httpResponse);
 
-        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(bareConnection);
         UpdateAuthorityIdentifierRequest requestObject = new UpdateAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE,
                                                                                               MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
@@ -324,7 +316,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
         when(bareConnection.get(any())).thenThrow(new IOException(EXCEPTION_IS_EXPECTED));
         when(bareConnection.updateIdentifier(any(), any(), any(), any())).thenReturn(httpResponse);
 
-        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(bareConnection);
         UpdateAuthorityIdentifierRequest requestObject = new UpdateAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE,
                                                                                               MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
@@ -350,7 +342,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
         when(httpResponse.statusCode()).thenReturn(HTTP_FORBIDDEN);
         when(bareConnection.updateIdentifier(any(), any(), any(), any())).thenReturn(httpResponse);
 
-        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(mockEnvironment, bareConnection);
+        updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(bareConnection);
         UpdateAuthorityIdentifierRequest requestObject = new UpdateAuthorityIdentifierRequest(MOCK_FEIDEID_VALUE,
                                                                                               MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
@@ -372,7 +364,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
     private void initMockUpdateAuthorityIdentifierHandler() throws
                                                             InterruptedException, BareCommunicationException,
                                                             BareException {
-        updateAuthorityIdentifierHandler = spy(new UpdateAuthorityIdentifierHandler(mockEnvironment, bareConnection));
+        updateAuthorityIdentifierHandler = spy(new UpdateAuthorityIdentifierHandler(bareConnection));
         Authority mockAuthority = mock(Authority.class);
         doReturn(mockAuthority).when(updateAuthorityIdentifierHandler).getAuthority(any());
     }

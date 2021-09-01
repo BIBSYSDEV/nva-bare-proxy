@@ -2,14 +2,11 @@ package no.unit.nva.bare;
 
 import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.file.Paths;
-import nva.commons.core.Environment;
 import nva.commons.core.ioutils.IoUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,9 +20,7 @@ public class AuthorityConverterTest {
             "createAuthorityRequestToBare.json";
     public static final String INVERTED_NAME = "Unit, DotNo";
     public static final String HTTPS_LOCALHOST_PERSON = "https://localhost/person/";
-    public static final String HTTPS_LOCALHOST_PERSON_WITHOUT_TRAILING_SLASH = "https://localhost/person";
-    public static final String SYSTEM_CONTROL_NUMBER = "1";
-    private Environment mockEnvironment;
+
 
 
     /**
@@ -33,34 +28,14 @@ public class AuthorityConverterTest {
      */
     @BeforeEach
     public void setUp() {
-        mockEnvironment = mock(Environment.class);
-        when(mockEnvironment.readEnv(AuthorityConverter.PERSON_AUTHORITY_BASE_ADDRESS_KEY))
-                .thenReturn(HTTPS_LOCALHOST_PERSON);
+
     }
-
-
-    @Test
-    public void testTrailingSlashInPersonAuthorityBaseAddress() throws IOException {
-        Environment mockEnvironmentWithoutTrailingSlash = mock(Environment.class);
-        when(mockEnvironmentWithoutTrailingSlash.readEnv(AuthorityConverter.PERSON_AUTHORITY_BASE_ADDRESS_KEY))
-                .thenReturn(HTTPS_LOCALHOST_PERSON_WITHOUT_TRAILING_SLASH);
-
-        InputStream streamResp =
-                IoUtils.inputStreamFromResources(Paths.get(BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON));
-        final BareAuthority bareAuthority = objectMapperWithEmpty.readValue(new InputStreamReader(streamResp), BareAuthority.class);
-        bareAuthority.setSystemControlNumber(SYSTEM_CONTROL_NUMBER);
-        AuthorityConverter authorityConverter = new AuthorityConverter(mockEnvironmentWithoutTrailingSlash);
-        Authority authority  = authorityConverter.asAuthority(bareAuthority);
-        URI expectedId = URI.create(HTTPS_LOCALHOST_PERSON + SYSTEM_CONTROL_NUMBER);
-        assertEquals(expectedId, authority.getId());
-    }
-
 
     @Test
     public void testEmptyBareAuthority() throws IOException {
         InputStream streamResp =
                 IoUtils.inputStreamFromResources(BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON);
-        AuthorityConverter authorityConverter = new AuthorityConverter(mockEnvironment);
+        AuthorityConverter authorityConverter = new AuthorityConverter();
         final BareAuthority bareAuthority = objectMapperWithEmpty.readValue(new InputStreamReader(streamResp), BareAuthority.class);
         final String value = authorityConverter.findValueIn(bareAuthority, "whatEver");
         assertEquals("", value);
@@ -70,7 +45,7 @@ public class AuthorityConverterTest {
     public void testBuildAuthority() throws IOException {
         InputStream streamResp = IoUtils.inputStreamFromResources(CREATE_AUTHORITY_REQUEST_TO_BARE_JSON);
         final BareAuthority expectedAuth = objectMapperWithEmpty.readValue(new InputStreamReader(streamResp), BareAuthority.class);
-        AuthorityConverter authorityConverter = new AuthorityConverter(mockEnvironment);
+        AuthorityConverter authorityConverter = new AuthorityConverter();
         final BareAuthority bareAuthority = authorityConverter.buildAuthority(INVERTED_NAME);
         assertEquals(expectedAuth.getStatus(), bareAuthority.getStatus());
         assertEquals(expectedAuth.getAuthorityType(), bareAuthority.getAuthorityType());

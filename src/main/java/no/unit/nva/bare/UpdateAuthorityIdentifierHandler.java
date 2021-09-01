@@ -53,17 +53,16 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
     @JacocoGenerated
     @JsonCreator
     public UpdateAuthorityIdentifierHandler() {
-        this(new Environment(), new BareConnection());
+        this(new BareConnection());
     }
 
     /**
      * Constructor for UpdateAuthorityIdentifierHandler.
      *
-     * @param environment    environment
      * @param bareConnection bareConnection
      */
-    public UpdateAuthorityIdentifierHandler(Environment environment, BareConnection bareConnection) {
-        super(UpdateAuthorityIdentifierRequest.class, environment);
+    public UpdateAuthorityIdentifierHandler(BareConnection bareConnection) {
+        super(UpdateAuthorityIdentifierRequest.class, new Environment());
         this.bareConnection = bareConnection;
     }
 
@@ -137,7 +136,7 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
         try {
             final BareAuthority updatedAuthority = bareConnection.get(scn);
             if (Objects.nonNull(updatedAuthority)) {
-                AuthorityConverter authorityConverter = new AuthorityConverter(environment);
+                AuthorityConverter authorityConverter = new AuthorityConverter();
                 return authorityConverter.asAuthority(updatedAuthority);
             } else {
                 logger.error(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);

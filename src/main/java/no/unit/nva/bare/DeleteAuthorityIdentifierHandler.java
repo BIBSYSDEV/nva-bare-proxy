@@ -124,7 +124,7 @@ public class DeleteAuthorityIdentifierHandler extends ApiGatewayHandler<DeleteAu
         try {
             final BareAuthority updatedAuthority = bareConnection.get(scn);
             if (Objects.nonNull(updatedAuthority)) {
-                AuthorityConverter authorityConverter = new AuthorityConverter(environment);
+                AuthorityConverter authorityConverter = new AuthorityConverter();
                 return authorityConverter.asAuthority(updatedAuthority);
             } else {
                 logger.error(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);

@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
-import nva.commons.core.Environment;
 import nva.commons.core.JacocoGenerated;
 import nva.commons.core.exceptions.ExceptionUtils;
 import org.slf4j.Logger;
@@ -36,12 +35,12 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
 
     @JacocoGenerated
     public FetchAuthorityHandler() {
-        this(new BareConnection(), new Environment());
+        this(new BareConnection());
     }
 
-    public FetchAuthorityHandler(BareConnection bareConnection, Environment environment) {
+    public FetchAuthorityHandler(BareConnection bareConnection) {
         this.bareConnection = bareConnection;
-        this.authorityConverter = new AuthorityConverter(environment);
+        this.authorityConverter = new AuthorityConverter();
     }
 
     /**

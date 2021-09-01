@@ -1,5 +1,6 @@
 package no.unit.nva.bare;
 
+import static nva.commons.core.attempt.Try.attempt;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
@@ -7,9 +8,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import nva.commons.core.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+/**
+ * Converts marc based Bare AuthorityRecord to NVA Authority entry.
+ */
 
 public class AuthorityConverter {
 
@@ -17,7 +20,6 @@ public class AuthorityConverter {
         "AuthorityConverter.asAuthority incoming bareAuthorty=";
     public static final String CONVERTER_AS_AUTHORITY_AUTHORITY_SCN_MESSAGE =
         "AuthorityConverter.asAuthority:authority.scn={}";
-    public static final String PERSON_AUTHORITY_BASE_ADDRESS_KEY = "PERSON_AUTHORITY_BASE_ADDRESS";
     public static final String MARC_TAG_PERSONAL_NAME_FIELD_CODE = "100";
     public static final String MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE = "a";
     public static final String MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE = "d";
@@ -31,23 +33,12 @@ public class AuthorityConverter {
     public static final String IND_1 = "1";
     public static final String MARCTAG_100 = "100";
     public static final String SUBCODE_A = "a";
-    public static final String SLASH = "/";
-    private final transient Logger logger = LoggerFactory.getLogger(AuthorityConverter.class);
-    private final transient String personAuthorityBaseAddress;
 
-    /**
-     * Converts marc based Bare AuthorityRecord to something useful.
-     *
-     * @param environment settings for endpoint
-     */
-    public AuthorityConverter(Environment environment) {
-        String authorityBaseAddress = environment.readEnv(PERSON_AUTHORITY_BASE_ADDRESS_KEY);
-        if (!authorityBaseAddress.endsWith(SLASH)) {
-            personAuthorityBaseAddress = authorityBaseAddress.concat("/");
-        } else {
-            personAuthorityBaseAddress = authorityBaseAddress;
-        }
-    }
+    public static final String PATH_SEPARATOR = "/";
+    private static final String EMPTY_QUERY = null;
+    private static final String EMPTY_FRAGMENT = null;
+    private final transient Logger logger = LoggerFactory.getLogger(AuthorityConverter.class);
+
 
     protected List<Authority> extractAuthorities(BareQueryResponse bareQueryResponse) throws IOException {
         return Arrays.stream(bareQueryResponse.results).map(this::asAuthority).collect(Collectors.toList());
@@ -103,7 +94,13 @@ public class AuthorityConverter {
     }
 
     private URI generateId(String scn) {
+        URI hostUri = URI.create(Config.PERSON_AUTHORITY_BASE_ADDRESS);
+        return appendPathToUri(hostUri, scn);
+    }
 
-        return URI.create(personAuthorityBaseAddress.concat(scn));
+    private URI appendPathToUri(URI hostUri, String path) {
+        String newPath = hostUri.getPath() + PATH_SEPARATOR + path;
+        return attempt(() -> new URI(hostUri.getScheme(), hostUri.getHost(), newPath, EMPTY_QUERY, EMPTY_FRAGMENT))
+            .orElseThrow();
     }
 }

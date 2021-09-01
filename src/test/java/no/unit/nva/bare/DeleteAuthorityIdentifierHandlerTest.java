@@ -18,20 +18,26 @@ import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import no.unit.nva.testutils.HandlerRequestBuilder;
 import no.unit.nva.testutils.HandlerUtils;
 import no.unit.nva.testutils.TestHeaders;
 import nva.commons.apigateway.GatewayResponse;
@@ -49,11 +55,12 @@ public class DeleteAuthorityIdentifierHandlerTest {
     public static final String MOCK_FEIDEID_VALUE = "feideid";
     public static final String BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON = "/bareSingleAuthorityGetResponse.json";
     public static final String EXCEPTION_IS_EXPECTED = "Exception is expected.";
+    private static final Context CONTEXT = mock(Context.class);
 
     private Environment mockEnvironment;
     private Context context;
     private BareConnection bareConnection;
-    private OutputStream output;
+    private ByteArrayOutputStream output;
     private DeleteAuthorityIdentifierHandler deleteAuthorityIdentifierHandler;
     private HttpResponse httpResponse;
 
@@ -64,8 +71,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
     public void setUp() {
         mockEnvironment = mock(Environment.class);
         when(mockEnvironment.readEnv(ALLOWED_ORIGIN_ENV)).thenReturn("*");
-        when(mockEnvironment.readEnv(AuthorityConverter.PERSON_AUTHORITY_BASE_ADDRESS_KEY))
-            .thenReturn(HTTPS_LOCALHOST_PERSON);
+
 
         context = mock(Context.class);
         output = new ByteArrayOutputStream();
@@ -311,6 +317,7 @@ public class DeleteAuthorityIdentifierHandlerTest {
         assertThat(problem.getTitle(), containsString(Status.INTERNAL_SERVER_ERROR.getReasonPhrase()));
         assertThat(problem.getStatus(), is(Status.INTERNAL_SERVER_ERROR));
     }
+
 
     private Map<String, String> getPathParameters(String scn, String qualifier) {
         Map<String, String> pathParams = new ConcurrentHashMap<>();

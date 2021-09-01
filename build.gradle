@@ -53,8 +53,9 @@ test {
     }
     finalizedBy jacocoTestReport
     environment "ALLOWED_ORIGIN", "*"
-    environment "BARE_API_KEY","bareApikey"
-    environment "BARE_HOST", "www.example.com";
+    environment "PERSON_AUTHORITY_BASE_ADDRESS", "https://localhost/person"
+    environment "BARE_HOST","www.example.com"
+    environment "BARE_API_KEY","someKey"
 }
 
 pmd {

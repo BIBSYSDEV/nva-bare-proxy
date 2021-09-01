@@ -26,8 +26,9 @@ public class BareConnection {
     public static final String SPACE = " ";
     public static final String EMPTY_FRAGMENT = null;
     public static final String QUERY_PERSON_AUTHORITIES = "q=%s+authoritytype:person&start=1&max=10&format=json";
+    public static final String QUERY_SPECIFY_AUTHORITY_IDENTIFIER = "identifier=%s";
     public static final String PATH_TO_AUTHORITY_TEMPLATE = "/authority/rest/authorities/v2/%s";
-    public static final String AUTHORITY_IDENTIFIER_PATH = "/authority/rest/authorities/v2/%s/identifiers/%s/%s";
+    public static final String DELETE_AUTHORITY_IDENTIFIER_PATH = "/authority/rest/authorities/v2/%s/identifiers/%s";
     public static final Duration TIMEOUT_DURATION = Duration.ofSeconds(15);
 
     public static final String ADD_NEW_AUTHORITY_IDENTIFIER_PATH = "/authority/rest/authorities/v2/%s/identifiers";
@@ -87,7 +88,7 @@ public class BareConnection {
                URISyntaxException, InterruptedException {
         String addIdentifierPath =
             String.format(ADD_NEW_AUTHORITY_IDENTIFIER_PATH, authoritySystemControlNumber);
-        URI uri = new URI(HTTPS, BARE_HOST, addIdentifierPath,EMPTY_QUERY, EMPTY_FRAGMENT);
+        URI uri = new URI(HTTPS, BARE_HOST, addIdentifierPath, EMPTY_QUERY, EMPTY_FRAGMENT);
 
         final String body = objectMapperWithEmpty.writeValueAsString(authorityIdentifier);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(body);
@@ -132,9 +133,9 @@ public class BareConnection {
      */
     public HttpResponse<String> deleteIdentifier(String systemControlNumber, String qualifier, String identifier)
         throws IOException, URISyntaxException, InterruptedException {
-        String identifierPath = createIdentifierPath(systemControlNumber, qualifier, identifier);
-        URI uri = new URI(HTTPS, BARE_HOST, identifierPath, EMPTY_QUERY, EMPTY_FRAGMENT);
-
+        String qualifierPath = String.format(DELETE_AUTHORITY_IDENTIFIER_PATH, systemControlNumber, qualifier);
+        String deleteIdentifierQuery = String.format(QUERY_SPECIFY_AUTHORITY_IDENTIFIER, identifier);
+        URI uri = new URI(HTTPS, BARE_HOST, qualifierPath, deleteIdentifierQuery, EMPTY_FRAGMENT);
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.DELETE().build();
         return sendRequest(request);
@@ -185,10 +186,6 @@ public class BareConnection {
 
     private HttpResponse<String> sendRequest(HttpRequest request) throws IOException, InterruptedException {
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-    }
-
-    private String createIdentifierPath(String systemControlNumber, String qualifier, String identifier) {
-        return String.format(AUTHORITY_IDENTIFIER_PATH, systemControlNumber, qualifier, identifier);
     }
 
     private HttpRequest.Builder getHttpRequestBuilder(URI uri) {
