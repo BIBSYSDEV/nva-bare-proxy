@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 /**
  * Converts marc based Bare AuthorityRecord to NVA Authority entry.
  */
@@ -35,10 +36,10 @@ public class AuthorityConverter {
     public static final String SUBCODE_A = "a";
 
     public static final String PATH_SEPARATOR = "/";
+    public static final String SEPARATOR = "/";
     private static final String EMPTY_QUERY = null;
     private static final String EMPTY_FRAGMENT = null;
     private final transient Logger logger = LoggerFactory.getLogger(AuthorityConverter.class);
-
 
     protected List<Authority> extractAuthorities(BareQueryResponse bareQueryResponse) throws IOException {
         return Arrays.stream(bareQueryResponse.results).map(this::asAuthority).collect(Collectors.toList());
@@ -99,8 +100,14 @@ public class AuthorityConverter {
     }
 
     private URI appendPathToUri(URI hostUri, String path) {
-        String newPath = hostUri.getPath() + PATH_SEPARATOR + path;
+        String newPath = addToPath(hostUri, path);
         return attempt(() -> new URI(hostUri.getScheme(), hostUri.getHost(), newPath, EMPTY_QUERY, EMPTY_FRAGMENT))
             .orElseThrow();
+    }
+
+    private String addToPath(URI hostUri, String path) {
+        return hostUri.getPath().endsWith(PATH_SEPARATOR)
+                   ? hostUri.getPath() + path
+                   : hostUri.getPath() + PATH_SEPARATOR + path;
     }
 }
