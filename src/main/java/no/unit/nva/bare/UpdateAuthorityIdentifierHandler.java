@@ -1,25 +1,25 @@
 package no.unit.nva.bare;
 
+import static java.util.Arrays.asList;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import nva.commons.exceptions.ApiGatewayException;
-import nva.commons.handlers.ApiGatewayHandler;
-import nva.commons.handlers.RequestInfo;
-import nva.commons.utils.Environment;
-import nva.commons.utils.JacocoGenerated;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import nva.commons.apigateway.ApiGatewayHandler;
+import nva.commons.apigateway.RequestInfo;
+import nva.commons.apigateway.exceptions.ApiGatewayException;
+import nva.commons.apigateway.exceptions.BadRequestException;
+import nva.commons.core.Environment;
+import nva.commons.core.JacocoGenerated;
+import nva.commons.core.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static java.util.Arrays.asList;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
 
 /**
  * Handler for requests to Lambda function.
@@ -45,7 +45,7 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
             ValidIdentifierKey.ORGUNITID.asString());
 
     private final transient BareConnection bareConnection;
-
+    private static final Logger logger = LoggerFactory.getLogger(UpdateAuthorityIdentifierHandler.class);
 
     /**
      * Default constructor for UpdateAuthorityIdentifierHandler.
@@ -53,18 +53,16 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
     @JacocoGenerated
     @JsonCreator
     public UpdateAuthorityIdentifierHandler() {
-        this(new Environment(), new BareConnection());
+        this(new BareConnection());
     }
 
     /**
      * Constructor for UpdateAuthorityIdentifierHandler.
      *
-     * @param environment    environment
      * @param bareConnection bareConnection
      */
-    public UpdateAuthorityIdentifierHandler(Environment environment, BareConnection bareConnection) {
-        super(UpdateAuthorityIdentifierRequest.class, environment,
-                LoggerFactory.getLogger(UpdateAuthorityIdentifierHandler.class));
+    public UpdateAuthorityIdentifierHandler(BareConnection bareConnection) {
+        super(UpdateAuthorityIdentifierRequest.class, new Environment());
         this.bareConnection = bareConnection;
     }
 
@@ -91,24 +89,24 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
     }
 
     private void validateInput(UpdateAuthorityIdentifierRequest input, Map<String, String> pathParameters)
-            throws InvalidInputException {
+        throws BadRequestException {
         if (StringUtils.isEmpty(pathParameters.get(SCN_KEY))) {
-            throw new InvalidInputException(MISSING_PATH_PARAMETER_SCN);
+            throw new BadRequestException(MISSING_PATH_PARAMETER_SCN);
         }
         if (StringUtils.isEmpty(pathParameters.get(QUALIFIER_KEY))) {
-            throw new InvalidInputException(MISSING_PATH_PARAMETER_QUALIFIER);
+            throw new BadRequestException(MISSING_PATH_PARAMETER_QUALIFIER);
         }
         if (!VALID_QUALIFIERS.contains(pathParameters.get(QUALIFIER_KEY))) {
-            throw new InvalidInputException(INVALID_VALUE_PATH_PARAMETER_QUALIFIER);
+            throw new BadRequestException(INVALID_VALUE_PATH_PARAMETER_QUALIFIER);
         }
         if (Objects.isNull(input)) {
-            throw new InvalidInputException(MISSING_REQUEST_JSON_BODY);
+            throw new BadRequestException(MISSING_REQUEST_JSON_BODY);
         }
         if (StringUtils.isEmpty(input.getIdentifier())) {
-            throw new InvalidInputException(MISSING_ATTRIBUTE_IDENTIFIER);
+            throw new BadRequestException(MISSING_ATTRIBUTE_IDENTIFIER);
         }
         if (StringUtils.isEmpty(input.getUpdatedIdentifier())) {
-            throw new InvalidInputException(MISSING_ATTRIBUTE_UPDATED_IDENTIFIER);
+            throw new BadRequestException(MISSING_ATTRIBUTE_UPDATED_IDENTIFIER);
         }
     }
 
@@ -119,7 +117,8 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
         try {
             HttpResponse<String> response = bareConnection.updateIdentifier(scn, qualifier, identifier,
                     updatedIdentifier);
-            if (response.statusCode() == SC_OK || response.statusCode() == SC_NO_CONTENT) {
+            if (response.statusCode() == HttpURLConnection.HTTP_OK
+                || response.statusCode() == HttpURLConnection.HTTP_NO_CONTENT) {
                 return getAuthority(scn);
             } else {
                 logger.error(String.format("updatedIdentifier - ErrorCode=%s, reasonPhrase=%s", response.statusCode(),
@@ -137,7 +136,7 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
         try {
             final BareAuthority updatedAuthority = bareConnection.get(scn);
             if (Objects.nonNull(updatedAuthority)) {
-                AuthorityConverter authorityConverter = new AuthorityConverter(environment);
+                AuthorityConverter authorityConverter = new AuthorityConverter();
                 return authorityConverter.asAuthority(updatedAuthority);
             } else {
                 logger.error(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);
@@ -152,6 +151,6 @@ public class UpdateAuthorityIdentifierHandler extends ApiGatewayHandler<UpdateAu
 
     @Override
     protected Integer getSuccessStatusCode(UpdateAuthorityIdentifierRequest input, Authority output) {
-        return SC_OK;
+        return HttpURLConnection.HTTP_OK;
     }
 }

@@ -1,23 +1,23 @@
 package no.unit.nva.bare;
 
+import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static java.util.Arrays.asList;
 import com.amazonaws.services.lambda.runtime.Context;
-import nva.commons.exceptions.ApiGatewayException;
-import nva.commons.handlers.ApiGatewayHandler;
-import nva.commons.handlers.RequestInfo;
-import nva.commons.utils.Environment;
-import nva.commons.utils.JacocoGenerated;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Objects;
-
-import static java.util.Arrays.asList;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
+import nva.commons.apigateway.ApiGatewayHandler;
+import nva.commons.apigateway.RequestInfo;
+import nva.commons.apigateway.exceptions.ApiGatewayException;
+import nva.commons.apigateway.exceptions.BadRequestException;
+import nva.commons.core.Environment;
+import nva.commons.core.JacocoGenerated;
+import nva.commons.core.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler for requests to Lambda function.
@@ -26,7 +26,6 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
 
     public static final String MISSING_PATH_PARAMETER_SCN = "Missing from pathParameters: scn";
     public static final String MISSING_PATH_PARAMETER_QUALIFIER = "Missing from pathParameters: qualifier";
-    public static final String INVALID_VALUE_PATH_PARAMETER_QUALIFIER = "Invalid path parameter 'qualifier'.";
     public static final String MISSING_REQUEST_JSON_BODY = "Missing json in body.";
     public static final String MISSING_ATTRIBUTE_IDENTIFIER = "Missing json attribute 'identifier'.";
     public static final String COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY =
@@ -34,6 +33,8 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
     public static final String SCN_KEY = "scn";
     public static final String QUALIFIER_KEY = "qualifier";
     public static final String REMOTE_SERVER_ERRORMESSAGE = "remote server errormessage: ";
+    public static final Logger logger = LoggerFactory.getLogger(AddNewAuthorityIdentifierHandler.class);
+
 
     public static final List<String> VALID_QUALIFIERS = asList(
             ValidIdentifierKey.FEIDEID.asString(),
@@ -47,23 +48,22 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
      */
     @JacocoGenerated
     public AddNewAuthorityIdentifierHandler() {
-        this(new Environment(), new BareConnection());
+        this(new BareConnection());
     }
 
     /**
      * Constructor for AddNewAuthorityIdentifierHandler.
      *
-     * @param environment    environment
      * @param bareConnection bareConnection
      */
-    public AddNewAuthorityIdentifierHandler(Environment environment, BareConnection bareConnection) {
-        super(AddNewAuthorityIdentifierRequest.class, environment,
-                LoggerFactory.getLogger(AddNewAuthorityIdentifierHandler.class));
+    public AddNewAuthorityIdentifierHandler( BareConnection bareConnection) {
+        super(AddNewAuthorityIdentifierRequest.class, new Environment());
         this.bareConnection = bareConnection;
     }
 
     @Override
-    protected Authority processInput(AddNewAuthorityIdentifierRequest input, RequestInfo requestInfo,
+    protected Authority processInput(AddNewAuthorityIdentifierRequest input,
+                                     RequestInfo requestInfo,
                                      Context context) throws ApiGatewayException {
 
         try {
@@ -76,7 +76,7 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
             AuthorityIdentifier authorityIdentifier = new AuthorityIdentifier(qualifier, identifier);
             return addNewIdentifier(scn, authorityIdentifier);
         } catch (IllegalArgumentException e) {
-            throw new InvalidInputException(e.getMessage());
+            throw new BadRequestException(e.getMessage());
         }
 
     }
@@ -89,20 +89,20 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
     }
 
     private void validateInput(AddNewAuthorityIdentifierRequest input)
-            throws InvalidInputException {
+        throws  BadRequestException {
         if (Objects.isNull(input)) {
-            throw new InvalidInputException(MISSING_REQUEST_JSON_BODY);
+            throw new BadRequestException(MISSING_REQUEST_JSON_BODY);
         }
         if (StringUtils.isEmpty(input.getIdentifier())) {
-            throw new InvalidInputException(MISSING_ATTRIBUTE_IDENTIFIER);
+            throw new BadRequestException(MISSING_ATTRIBUTE_IDENTIFIER);
         }
     }
 
     protected Authority addNewIdentifier(String scn, AuthorityIdentifier authorityIdentifier)
             throws ApiGatewayException {
         try {
-            HttpResponse<String> response = bareConnection.addIdentifier(scn, authorityIdentifier);
-            if (response.statusCode() == SC_OK || response.statusCode() == SC_NO_CONTENT) {
+            HttpResponse<String> response = bareConnection.addNewIdentifier(scn, authorityIdentifier);
+            if (responseIsSuccessful(response)) {
                 return getAuthority(scn);
             } else {
                 logger.error(String.format("addNewIdentifier - ErrorCode=%s, reasonPhrase=%s", response.statusCode(),
@@ -115,11 +115,15 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
         }
     }
 
+    private boolean responseIsSuccessful(HttpResponse<String> response) {
+        return response.statusCode() == HTTP_OK || response.statusCode() == HTTP_NO_CONTENT;
+    }
+
     private Authority getAuthority(String scn) throws InterruptedException, BareCommunicationException, BareException {
         try {
             final BareAuthority updatedAuthority = bareConnection.get(scn);
             if (Objects.nonNull(updatedAuthority)) {
-                AuthorityConverter authorityConverter = new AuthorityConverter(environment);
+                AuthorityConverter authorityConverter = new AuthorityConverter();
                 return authorityConverter.asAuthority(updatedAuthority);
             } else {
                 logger.info(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY);
@@ -134,7 +138,7 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
 
     @Override
     protected Integer getSuccessStatusCode(AddNewAuthorityIdentifierRequest input, Authority output) {
-        return SC_OK;
+        return HTTP_OK;
     }
 
 }

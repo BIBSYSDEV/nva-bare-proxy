@@ -1,28 +1,26 @@
 package no.unit.nva.bare;
 
+import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
+import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import nva.commons.utils.JsonUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpHeaders;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.entity.ContentType.APPLICATION_JSON;
+import nva.commons.apigateway.ContentTypes;
+import nva.commons.apigateway.HttpHeaders;
+import nva.commons.core.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * POJO containing response object for API Gateway.
  */
-public class GatewayResponse {
+public class CustomGatewayResponse {
 
     public static final String CORS_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
     public static final String EMPTY_JSON = "{}";
     public static final transient String ERROR_KEY = "error";
-    private static final ObjectMapper mapper = JsonUtils.objectMapper;
-    private final transient Logger logger = Logger.instance();
+    private final transient Logger logger = LoggerFactory.getLogger(CustomGatewayResponse.class);
     private String body;
     private transient Map<String, String> headers;
     private int statusCode;
@@ -30,18 +28,9 @@ public class GatewayResponse {
     /**
      * GatewayResponse contains response status, response headers and body with payload resp. error messages.
      */
-    public GatewayResponse() {
-        this.statusCode = SC_INTERNAL_SERVER_ERROR;
+    public CustomGatewayResponse() {
+        this.statusCode = HTTP_INTERNAL_ERROR;
         this.body = EMPTY_JSON;
-        this.generateDefaultHeaders();
-    }
-
-    /**
-     * GatewayResponse convenience constructor to set response status and body with payload direct.
-     */
-    public GatewayResponse(final String body, final int status) {
-        this.statusCode = status;
-        this.body = body;
         this.generateDefaultHeaders();
     }
 
@@ -74,20 +63,19 @@ public class GatewayResponse {
         Map<String, String> bodyContent = new ConcurrentHashMap<>();
         bodyContent.put(ERROR_KEY, message);
         try {
-            this.body = mapper.writeValueAsString(bodyContent);
+            this.body = objectMapperWithEmpty.writeValueAsString(bodyContent);
         } catch (JsonProcessingException e) {
-            logger.error(e);
+            logger.error(e.getMessage(), e);
         }
     }
 
     private void generateDefaultHeaders() {
         Map<String, String> headers = new ConcurrentHashMap<>();
-        headers.put(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON.getMimeType());
-        final String corsAllowDomain = Config.getInstance().getCorsHeader();
+        headers.put(HttpHeaders.CONTENT_TYPE, ContentTypes.APPLICATION_JSON);
+        final String corsAllowDomain = Config.CORS_ALLOW_ORIGIN;
         if (StringUtils.isNotEmpty(corsAllowDomain)) {
             headers.put(CORS_ALLOW_ORIGIN_HEADER, corsAllowDomain);
         }
         this.headers = Collections.unmodifiableMap(new ConcurrentHashMap<>(headers));
     }
-
 }

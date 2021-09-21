@@ -1,15 +1,17 @@
 package no.unit.nva.bare;
 
-import nva.commons.utils.JacocoGenerated;
-
+import static nva.commons.core.attempt.Try.attempt;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import nva.commons.core.JacocoGenerated;
+import nva.commons.core.JsonSerializable;
+import nva.commons.core.JsonUtils;
 
 @SuppressWarnings("PMD")
-public class BareAuthority {
+public class BareAuthority implements JsonSerializable {
 
     private String authorityType = "PERSON";
     private String status;
@@ -17,13 +19,16 @@ public class BareAuthority {
     private Marc21[] marcdata;
     private Map<String, List<String>> identifiersMap;
 
-
-    public void setAuthorityType(String authorityType) {
-        this.authorityType = authorityType;
+    public static BareAuthority fromJson(String json) {
+        return attempt(() -> JsonUtils.objectMapperWithEmpty.readValue(json, BareAuthority.class)).orElseThrow();
     }
 
     public String getAuthorityType() {
         return authorityType;
+    }
+
+    public void setAuthorityType(String authorityType) {
+        this.authorityType = authorityType;
     }
 
     public String getStatus() {
@@ -86,6 +91,14 @@ public class BareAuthority {
 
     @JacocoGenerated
     @Override
+    public int hashCode() {
+        int result = Objects.hash(authorityType, status, getSystemControlNumber(), getIdentifiersMap());
+        result = 31 * result + Arrays.hashCode(marcdata);
+        return result;
+    }
+
+    @JacocoGenerated
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -95,29 +108,15 @@ public class BareAuthority {
         }
         BareAuthority that = (BareAuthority) o;
         return Objects.equals(authorityType, that.authorityType)
-            && Objects.equals(status, that.status)
-            && Objects.equals(getSystemControlNumber(), that.getSystemControlNumber())
-            && Arrays.equals(marcdata, that.marcdata)
-            && Objects.equals(getIdentifiersMap(), that.getIdentifiersMap());
-    }
-
-    @JacocoGenerated
-    @Override
-    public int hashCode() {
-        int result = Objects.hash(authorityType, status, getSystemControlNumber(), getIdentifiersMap());
-        result = 31 * result + Arrays.hashCode(marcdata);
-        return result;
+               && Objects.equals(status, that.status)
+               && Objects.equals(getSystemControlNumber(), that.getSystemControlNumber())
+               && Arrays.equals(marcdata, that.marcdata)
+               && Objects.equals(getIdentifiersMap(), that.getIdentifiersMap());
     }
 
     @JacocoGenerated
     @Override
     public String toString() {
-        return "BareAuthority{"
-             + "authorityType='" + authorityType + '\''
-             + ", status='" + status + '\''
-             + ", systemControlNumber='" + systemControlNumber + '\''
-             + ", marcdata=" + Arrays.toString(marcdata)
-             + ", identifiersMap=" + identifiersMap
-             + '}';
+        return toJsonString();
     }
 }

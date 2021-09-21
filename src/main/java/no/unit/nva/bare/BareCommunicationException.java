@@ -1,11 +1,11 @@
 package no.unit.nva.bare;
 
-import nva.commons.exceptions.ApiGatewayException;
-import org.apache.http.HttpStatus;
+import java.net.HttpURLConnection;
+import nva.commons.apigateway.exceptions.ApiGatewayException;
 
 public class BareCommunicationException extends ApiGatewayException {
 
-    public static final int ERROR_CODE = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+
 
     public BareCommunicationException(String message) {
         super(message);
@@ -13,7 +13,7 @@ public class BareCommunicationException extends ApiGatewayException {
 
     @Override
     protected Integer statusCode() {
-        return ERROR_CODE;
+        return HttpURLConnection.HTTP_INTERNAL_ERROR;
     }
 
 }

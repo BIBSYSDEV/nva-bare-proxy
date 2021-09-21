@@ -1,126 +1,108 @@
 package no.unit.nva.bare;
 
+import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static nva.commons.core.attempt.Try.attempt;
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import nva.commons.utils.Environment;
-import nva.commons.utils.JsonUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
-import java.util.Map;
-import java.util.Objects;
-
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_OK;
+import java.util.Optional;
+import nva.commons.apigateway.ApiGatewayHandler;
+import nva.commons.apigateway.RequestInfo;
+import nva.commons.apigateway.exceptions.ApiGatewayException;
+import nva.commons.apigateway.exceptions.BadGatewayException;
+import nva.commons.apigateway.exceptions.BadRequestException;
+import nva.commons.core.Environment;
+import nva.commons.core.StringUtils;
+import nva.commons.core.attempt.Failure;
+import nva.commons.core.attempt.Try;
+import nva.commons.core.exceptions.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler for requests to Lambda function creating an authority in ARP.
  */
-public class CreateAuthorityHandler implements RequestHandler<Map<String, Object>, GatewayResponse> {
+public class CreateAuthorityHandler extends ApiGatewayHandler<CreateAuthorityRequest, Authority> {
 
-    public static final String BODY_KEY = "body";
-    public static final String NAME_KEY = "/invertedname";
-    public static final String EMPTY_STRING = "";
-    public static final String MISSING_EVENT_ELEMENT_BODY = "Missing event element 'body'.";
-    public static final String BODY_ARGS_MISSING = "Nothing to create. 'name' is missing.";
     public static final String COMMUNICATION_ERROR_WHILE_CREATING = "Communication failure while creating new "
-            + "authority with name='%s'";
-    public static final String COMMA = ",";
-    public static final String MALFORMED_NAME_VALUE = "The name value seems not to be in inverted form.";
+                                                                    + "authority with name='%s'";
+    public static final String CLIENT_MESSAGE_WHEN_REQUEST_TO_AUTHORITY_SERVER_FAILS = "Failed to create person "
+                                                                                       + "authority";
+    public static final String FAILED_RESPONSE = "Failed response:";
+    public static final String INVALID_INPUT_ERROR_MESSAGE = "Invalid input:";
+    private static final Logger logger = LoggerFactory.getLogger(CreateAuthorityHandler.class);
     protected final transient BareConnection bareConnection;
-    private final transient Logger log = Logger.instance();
-    private final transient Environment environment;
-
-    private static final ObjectMapper mapper = JsonUtils.objectMapper;
-
-
-    public CreateAuthorityHandler(BareConnection bareConnection, Environment environment) {
-        this.bareConnection = bareConnection;
-        this.environment = environment;
-    }
 
     public CreateAuthorityHandler() {
-        this(new BareConnection(), new Environment());
+        this(new BareConnection());
+    }
+
+    public CreateAuthorityHandler(BareConnection bareConnection) {
+        super(CreateAuthorityRequest.class, new Environment());
+        this.bareConnection = bareConnection;
     }
 
     @Override
-    public GatewayResponse handleRequest(Map<String, Object> input, Context context) {
-        GatewayResponse gatewayResponse = new GatewayResponse();
-        try {
-            this.checkParameters(input);
-        } catch (RuntimeException e) {
-            log.error(e);
-            gatewayResponse.setErrorBody(e.getMessage());
-            gatewayResponse.setStatusCode(SC_BAD_REQUEST);
-            return gatewayResponse;
-        }
-        String bodyEvent = (String) input.get(BODY_KEY);
-        String nameValue = getValueFromJsonObject(bodyEvent, NAME_KEY);
-        //todo: check if name is in inverted form
-        gatewayResponse = createAuthorityOnBare(nameValue);
-        return gatewayResponse;
+    protected Authority processInput(CreateAuthorityRequest input, RequestInfo requestInfo, Context context)
+        throws ApiGatewayException {
+        validateInput(input);
+        BareAuthority bareAuthority = createAuthorityOnBare(input.getInvertedName());
+        return new AuthorityConverter().asAuthority(bareAuthority);
     }
 
-    protected GatewayResponse createAuthorityOnBare(String name) {
-        GatewayResponse gatewayResponse = new GatewayResponse();
-        AuthorityConverter authorityConverter = new AuthorityConverter(environment);
+    @Override
+    protected Integer getSuccessStatusCode(CreateAuthorityRequest input, Authority output) {
+        return HTTP_OK;
+    }
+
+    protected BareAuthority createAuthorityOnBare(String name) throws BadGatewayException {
+        AuthorityConverter authorityConverter = new AuthorityConverter();
         BareAuthority bareAuthority = authorityConverter.buildAuthority(name);
-        try {
-            HttpResponse<String> response = bareConnection.createAuthority(bareAuthority);
-            log.info("response (from bareConnection)=" + response);
-            if (response.statusCode() == SC_CREATED
-                    || response.statusCode() == SC_OK) { //201
-                BareAuthority createdAuthority =  mapper.readValue(response.body(), BareAuthority.class);
-                if (Objects.nonNull(createdAuthority)) {
-                    final Authority authority = authorityConverter.asAuthority(createdAuthority);
-                    gatewayResponse.setBody(mapper.writeValueAsString(authority));
-                    gatewayResponse.setStatusCode(SC_OK);
-                } else {
-                    log.error(String.format(COMMUNICATION_ERROR_WHILE_CREATING, name));
-                    gatewayResponse.setErrorBody(String.format(COMMUNICATION_ERROR_WHILE_CREATING, name));
-                    gatewayResponse.setStatusCode(SC_INTERNAL_SERVER_ERROR);
-                }
-            } else {
-                log.error("Error: " + response.body());
-                log.error("new authority looked like this: \n" + mapper.writeValueAsString(bareAuthority));
-                gatewayResponse.setErrorBody(response.statusCode() + ": " + response.body());
-                gatewayResponse.setStatusCode(SC_INTERNAL_SERVER_ERROR);
-            }
-        } catch (IOException | URISyntaxException | InterruptedException e) {
-            log.error(e);
-            gatewayResponse.setErrorBody(e.getMessage());
-            gatewayResponse.setStatusCode(SC_INTERNAL_SERVER_ERROR);
+
+        HttpResponse<String> response = attempt(() -> bareConnection.createAuthority(bareAuthority))
+            .orElseThrow(this::handleUnexpectedFailure);
+        if (requestToBareSucceeded(response)) {
+            return parseResponseFromBare(name, response);
         }
-        return gatewayResponse;
+        throw handlerFailureResponse(response);
     }
 
-    protected String getValueFromJsonObject(String body, String key) {
-        try {
-            JsonNode jsonNode = mapper.readTree(body).at(key);
-            return Objects.isNull(jsonNode) ? EMPTY_STRING : jsonNode.textValue();
-        } catch (JsonProcessingException e) {
-            log.error(e);
-            return EMPTY_STRING;
-        }
+    private void validateInput(CreateAuthorityRequest input) throws ApiGatewayException {
+        Try.of(input)
+            .map(CreateAuthorityRequest::validate)
+            .orElseThrow(fail -> handlerInvalidRequest(fail, input));
     }
 
-    private void checkParameters(Map<String, Object> input) {
-        String eventBody = (String) input.get(BODY_KEY);
-        if (StringUtils.isEmpty(eventBody)) {
-            throw new RuntimeException(MISSING_EVENT_ELEMENT_BODY);
-        }
-        final String nameValue = getValueFromJsonObject(eventBody, NAME_KEY);
-        if (StringUtils.isEmpty(nameValue)) {
-            throw new RuntimeException(BODY_ARGS_MISSING);
-        } else if (!nameValue.contains(COMMA)) {
-            throw new RuntimeException(MALFORMED_NAME_VALUE);
-        }
+    private BadRequestException handlerInvalidRequest(Failure<CreateAuthorityRequest> fail,
+                                                      CreateAuthorityRequest input) {
+        return new BadRequestException(INVALID_INPUT_ERROR_MESSAGE + input, fail.getException());
+    }
+
+    private RuntimeException handleUnexpectedFailure(Failure<HttpResponse<String>> fail) {
+        logger.error(ExceptionUtils.stackTraceInSingleLine(fail.getException()));
+        return new RuntimeException(fail.getException());
+    }
+
+    private BadGatewayException handlerFailureResponse(HttpResponse<String> response) {
+        logger.error(FAILED_RESPONSE + response.body());
+        return new BadGatewayException(CLIENT_MESSAGE_WHEN_REQUEST_TO_AUTHORITY_SERVER_FAILS);
+    }
+
+    private BareAuthority parseResponseFromBare(String name, HttpResponse<String> response) throws BadGatewayException {
+        return Optional.ofNullable(response)
+            .map(HttpResponse::body)
+            .filter(StringUtils::isNotBlank)
+            .map(attempt(BareAuthority::fromJson))
+            .flatMap(Try::toOptional)
+            .orElseThrow(() -> emptyResponseFromServer(name));
+    }
+
+    private BadGatewayException emptyResponseFromServer(String inputName) {
+        logger.error(String.format(COMMUNICATION_ERROR_WHILE_CREATING, inputName));
+        return new BadGatewayException(COMMUNICATION_ERROR_WHILE_CREATING);
+    }
+
+    private boolean requestToBareSucceeded(HttpResponse<String> response) {
+        return response.statusCode() == HTTP_CREATED || response.statusCode() == HTTP_OK;
     }
 }

@@ -1,23 +1,26 @@
 package no.unit.nva.bare;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import nva.commons.utils.Environment;
-import nva.commons.utils.JsonUtils;
-
+import static nva.commons.core.attempt.Try.attempt;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Converts marc based Bare AuthorityRecord to NVA Authority entry.
+ */
 
 public class AuthorityConverter {
 
-    public static final String AUTHORITY_INCOMING_BARE_AUTHORTY_MESSAGE = "AuthorityConverter.asAuthority incoming bareAuthorty=";
-    public static final String CONVERTER_AS_AUTHORITY_AUTHORITY_SCN_MESSAGE = "AuthorityConverter.asAuthority:authority.scn={}";
-    public static final String PERSON_AUTHORITY_BASE_ADDRESS_KEY = "PERSON_AUTHORITY_BASE_ADDRESS";
+    public static final String AUTHORITY_INCOMING_BARE_AUTHORTY_MESSAGE =
+        "AuthorityConverter.asAuthority incoming bareAuthorty=";
+    public static final String CONVERTER_AS_AUTHORITY_AUTHORITY_SCN_MESSAGE =
+        "AuthorityConverter.asAuthority:authority.scn={}";
     public static final String MARC_TAG_PERSONAL_NAME_FIELD_CODE = "100";
     public static final String MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE = "a";
     public static final String MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE = "d";
@@ -31,34 +34,20 @@ public class AuthorityConverter {
     public static final String IND_1 = "1";
     public static final String MARCTAG_100 = "100";
     public static final String SUBCODE_A = "a";
-    public static final String SLASH = "/";
-    private final transient Logger log = Logger.instance();
-    private static final ObjectMapper mapper = JsonUtils.objectMapper;
 
-    private final transient String personAuthorityBaseAddress;
+    public static final String PATH_SEPARATOR = "/";
+    public static final String SEPARATOR = "/";
+    private static final String EMPTY_QUERY = null;
+    private static final String EMPTY_FRAGMENT = null;
+    private final transient Logger logger = LoggerFactory.getLogger(AuthorityConverter.class);
 
-    /**
-     * Converts marc based Bare AuthorityRecord to something useful.
-     * @param environment settings for endpoint
-     */
-    public AuthorityConverter(Environment environment) {
-        String authorityBaseAddress = environment.readEnv(PERSON_AUTHORITY_BASE_ADDRESS_KEY);
-        if (!authorityBaseAddress.endsWith(SLASH)) {
-            personAuthorityBaseAddress = authorityBaseAddress.concat("/");
-        } else {
-            personAuthorityBaseAddress = authorityBaseAddress;
-        }
-    }
-
-    protected List<Authority> extractAuthoritiesFrom(InputStreamReader reader) throws IOException {
-        final BareQueryResponse bareQueryResponse = mapper.readValue(reader, BareQueryResponse.class);
-        log.info(bareQueryResponse.toString());
+    protected List<Authority> extractAuthorities(BareQueryResponse bareQueryResponse) throws IOException {
         return Arrays.stream(bareQueryResponse.results).map(this::asAuthority).collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
     protected Authority asAuthority(BareAuthority bareAuthority) {
-        log.info(AUTHORITY_INCOMING_BARE_AUTHORTY_MESSAGE + bareAuthority);
+        logger.info(AUTHORITY_INCOMING_BARE_AUTHORTY_MESSAGE + bareAuthority);
         final String name = this.findValueIn(bareAuthority, MARC_TAG_PERSONAL_NAME_VALUE_SUBFIELD_CODE);
         final String date = this.findValueIn(bareAuthority, MARC_TAG_DATES_ASSOCIATED_WITH_PERSONAL_NAME_SUBFIELD_CODE);
         final String scn = bareAuthority.getSystemControlNumber();
@@ -75,7 +64,7 @@ public class AuthorityConverter {
         authority.setOrcids(orcIdArray.orElse(Collections.EMPTY_LIST));
         authority.setOrgunitids(orgUnitIdArray.orElse(Collections.EMPTY_LIST));
         authority.setHandles(handleArray.orElse(Collections.EMPTY_LIST));
-        log.info(CONVERTER_AS_AUTHORITY_AUTHORITY_SCN_MESSAGE + authority.getSystemControlNumber());
+        logger.info(CONVERTER_AS_AUTHORITY_AUTHORITY_SCN_MESSAGE, authority.getSystemControlNumber());
         return authority;
     }
 
@@ -97,16 +86,28 @@ public class AuthorityConverter {
 
     protected String findValueIn(BareAuthority bareAuthority, String marcSubfieldTag) {
         List<String> values = Arrays.stream(bareAuthority.getMarcdata())
-                .filter(marc -> Arrays.asList(new String[]{MARC_TAG_PERSONAL_NAME_FIELD_CODE}).contains(marc.getTag()))
-                .flatMap(marc -> Arrays.stream(marc.getSubfields()))
-                .filter(subfield -> marcSubfieldTag.equals(subfield.getSubcode()))
-                .map(subfield -> subfield.getValue())
-                .collect(Collectors.toList());
+            .filter(marc -> Arrays.asList(new String[]{MARC_TAG_PERSONAL_NAME_FIELD_CODE}).contains(marc.getTag()))
+            .flatMap(marc -> Arrays.stream(marc.getSubfields()))
+            .filter(subfield -> marcSubfieldTag.equals(subfield.getSubcode()))
+            .map(subfield -> subfield.getValue())
+            .collect(Collectors.toList());
         return !values.isEmpty() ? values.get(0) : EMPTY_STRING;
     }
 
     private URI generateId(String scn) {
-        return URI.create(personAuthorityBaseAddress.concat(scn));
+        URI hostUri = URI.create(Config.PERSON_AUTHORITY_BASE_ADDRESS);
+        return appendPathToUri(hostUri, scn);
     }
 
+    private URI appendPathToUri(URI hostUri, String path) {
+        String newPath = addToPath(hostUri, path);
+        return attempt(() -> new URI(hostUri.getScheme(), hostUri.getHost(), newPath, EMPTY_QUERY, EMPTY_FRAGMENT))
+            .orElseThrow();
+    }
+
+    private String addToPath(URI hostUri, String path) {
+        return hostUri.getPath().endsWith(PATH_SEPARATOR)
+                   ? hostUri.getPath() + path
+                   : hostUri.getPath() + PATH_SEPARATOR + path;
+    }
 }
