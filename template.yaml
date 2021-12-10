@@ -3,15 +3,6 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   Lambda, api and base path mapping for manipulating person data
 
-Metadata:
-  AWS::ServerlessRepo::Application:
-    Name: PersonData
-    Description: Fetch person metadata by given parameters
-    Author: Unit
-    SpdxLicenseId: MIT
-    LicenseUrl: LICENSE
-    Labels: [ '${CODEBUILD_RESOLVED_SOURCE_VERSION}', '${GIT_REPO}', '@${BUILD_TIMESTAMP}' ]
-
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
