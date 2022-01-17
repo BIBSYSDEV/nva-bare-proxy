@@ -11,18 +11,20 @@ import static nva.commons.core.attempt.Try.attempt;
 
 public class LambdaAuthorizer extends RequestAuthorizer {
 
+    private static final Environment ENVIRONMENT = new Environment();
+
     public static final String DEFAULT_PRINCIPAL_ID = "ServiceAccessingBareProxy";
-    public static final String AWS_SECRET_NAME_ENV_VAR = "API_SECRET_NAME";
-    public static final String AWS_SECRET_KEY_ENV_VAR = "API_SECRET_KEY";
+    public static final String AWS_SECRET_NAME = ENVIRONMENT.readEnv("API_SECRET_NAME");
+    public static final String AWS_SECRET_KEY = ENVIRONMENT.readEnv("API_SECRET_KEY");
     private transient final AWSSecretsManager awsSecretsManager;
 
     @JacocoGenerated
     public LambdaAuthorizer() {
-        this(newAwsSecretsManager(), new Environment());
+        this(newAwsSecretsManager());
     }
 
-    public LambdaAuthorizer(AWSSecretsManager awsSecretsManager, Environment environment) {
-        super(environment);
+    public LambdaAuthorizer(AWSSecretsManager awsSecretsManager) {
+        super(ENVIRONMENT);
         this.awsSecretsManager = awsSecretsManager;
     }
 
@@ -33,10 +35,8 @@ public class LambdaAuthorizer extends RequestAuthorizer {
 
     @Override
     protected String fetchSecret() {
-        final String secretName = environment.readEnv(AWS_SECRET_NAME_ENV_VAR);
-        final String secretKey = environment.readEnv(AWS_SECRET_KEY_ENV_VAR);
         SecretsReader secretsReader = new SecretsReader(awsSecretsManager);
-        return attempt(() -> secretsReader.fetchSecret(secretName, secretKey))
+        return attempt(() -> secretsReader.fetchSecret(AWS_SECRET_NAME, AWS_SECRET_KEY))
                 .orElseThrow();
     }
 

@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import no.unit.commons.apigateway.authentication.AuthorizerResponse;
 import no.unit.commons.apigateway.authentication.StatementElement;
 import no.unit.nva.testutils.HandlerRequestBuilder;
-import nva.commons.core.Environment;
 import nva.commons.core.JsonUtils;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.Test;
@@ -34,33 +33,25 @@ public class LambdaAuthorizerTest implements WithEnvironment {
     public static final String CORRECT_SECRET_KEY = "someSecretKey";
     public static final String CORRECT_SECRET_VALUE = "someSecretValue";
     public static final String AWS_SERCRETS_MANAGER_ERROR_MESSAGE = "AwsSercretsManager message";
-    public static final String DEFAULT_ENV_VALUE = "*";
     public static final int SINGLE_STATEMENT_EXPECTED = 1;
     public static final int UNIQUE_STATEMENT = 0;
     public static final String ACTION_ALLOWED = "Allow";
-    public static final String ACTION_DENIED = "Deny";
 
     public static final String DEFAULT_METHOD_ARN = "arn:aws:execute-api:eu-west-1:884807050265:2lcqynkwke/Prod/GET"
             + "/service/users/orestis@unit.no";
     public static final String METHOD_ARN_REQUEST_FIELD = "methodArn";
-    public static final String WRONG_SECRET_NAME = "WrongSecretName";
-    private static final String WRONG_SECRET_KEY = "WrongSecretKey";
 
-    private final Environment envWithCorrectValues;
     private Context context;
 
     public LambdaAuthorizerTest() {
         secretsManager();
-        Map<String, String> correctEnvValues = Map.of(LambdaAuthorizer.AWS_SECRET_NAME_ENV_VAR, CORRECT_SECRET_NAME,
-                LambdaAuthorizer.AWS_SECRET_KEY_ENV_VAR, CORRECT_SECRET_KEY);
-        envWithCorrectValues = mockEnvironment(correctEnvValues, DEFAULT_ENV_VALUE);
         context = mock(Context.class);
     }
 
     @Test
     void shouldReturnAcceptPolicyWhenSecretIsCorrect() throws IOException {
 
-        AuthorizerResponse response = sendRequest(envWithCorrectValues);
+        AuthorizerResponse response = sendRequest();
 
         List<StatementElement> statements = response.getPolicyDocument().getStatement();
         assertThat(statements.size(), is(equalTo(SINGLE_STATEMENT_EXPECTED)));
@@ -70,40 +61,6 @@ public class LambdaAuthorizerTest implements WithEnvironment {
         assertThat(actualEffect, is(equalTo(ACTION_ALLOWED)));
     }
 
-    @Test
-    void shouldReturnDenyPolicyWhenSecretNameIsWrong() throws IOException {
-        Map<String, String> wrongSecretName = Map.of(
-                LambdaAuthorizer.AWS_SECRET_NAME_ENV_VAR, WRONG_SECRET_NAME,
-                LambdaAuthorizer.AWS_SECRET_KEY_ENV_VAR, CORRECT_SECRET_KEY);
-
-        Environment envWithWrongSecretName = mockEnvironment(wrongSecretName, DEFAULT_ENV_VALUE);
-        AuthorizerResponse response = sendRequest(envWithWrongSecretName);
-
-        List<StatementElement> statements = response.getPolicyDocument().getStatement();
-        assertThat(statements.size(), is(equalTo(SINGLE_STATEMENT_EXPECTED)));
-
-        StatementElement statement = statements.get(UNIQUE_STATEMENT);
-        String actualEffect = statement.getEffect();
-        assertThat(actualEffect, is(equalTo(ACTION_DENIED)));
-    }
-
-    @Test
-    void shouldReturnDenyPolicyWhenSecretKeyIsWrong() throws IOException {
-        Map<String, String> wrongSecretName = Map.of(
-                LambdaAuthorizer.AWS_SECRET_NAME_ENV_VAR, CORRECT_SECRET_NAME,
-                LambdaAuthorizer.AWS_SECRET_KEY_ENV_VAR, WRONG_SECRET_KEY);
-
-        Environment envWithWrongSecretName = mockEnvironment(wrongSecretName, DEFAULT_ENV_VALUE);
-        AuthorizerResponse response = sendRequest(envWithWrongSecretName);
-
-        List<StatementElement> statements = response.getPolicyDocument().getStatement();
-        assertThat(statements.size(), is(equalTo(SINGLE_STATEMENT_EXPECTED)));
-
-        StatementElement statement = statements.get(UNIQUE_STATEMENT);
-        String actualEffect = statement.getEffect();
-        assertThat(actualEffect, is(equalTo(ACTION_DENIED)));
-    }
-
     private AWSSecretsManager secretsManager() {
         AWSSecretsManager awsSecretsManager = mock(AWSSecretsManager.class);
         when(awsSecretsManager.getSecretValue(any(GetSecretValueRequest.class)))
@@ -111,8 +68,8 @@ public class LambdaAuthorizerTest implements WithEnvironment {
         return awsSecretsManager;
     }
 
-    private AuthorizerResponse sendRequest(Environment environment) throws IOException {
-        LambdaAuthorizer authorizer = new LambdaAuthorizer(secretsManager(), environment);
+    private AuthorizerResponse sendRequest() throws IOException {
+        LambdaAuthorizer authorizer = new LambdaAuthorizer(secretsManager());
         InputStream request = buildRequest();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         authorizer.handleRequest(request, outputStream, context);

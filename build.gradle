@@ -62,6 +62,8 @@ test {
     environment "PERSON_AUTHORITY_BASE_ADDRESS", "https://localhost/person"
     environment "BARE_HOST","www.example.com"
     environment "BARE_API_KEY","someKey"
+    environment "API_SECRET_NAME", "someSecretName"
+    environment "API_SECRET_KEY", "someSecretKey"
 }
 
 pmd {
