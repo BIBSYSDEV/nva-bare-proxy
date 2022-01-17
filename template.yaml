@@ -22,6 +22,10 @@ Parameters:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Description: Reference to Cognito UserPool for the stage
     Default: CognitoAuthorizerArn
+  ApiDomain:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /NVA/ApiDomain
+    Description: Domain-name for the backend
   CustomDomain:
     Type: String
     Description: Custom API to connect this lambda to
@@ -474,7 +478,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN: '*'
-          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
+          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${ApiDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
       Events:
         NvaBareFetchEvent:
@@ -492,7 +496,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN: '*'
-          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
+          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${ApiDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.FetchAuthorityHandler::handleRequest
       Events:
         NvaBareFetchEvent:
@@ -510,7 +514,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN: '*'
-          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
+          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${ApiDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.AddNewAuthorityIdentifierHandler::handleRequest
       Events:
         NvaBareAddNewIdentifierEvent:
@@ -528,7 +532,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN: '*'
-          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
+          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${ApiDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.DeleteAuthorityIdentifierHandler::handleRequest
       Events:
         NvaBareDeleteIdentifierEvent:
@@ -546,7 +550,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN: '*'
-          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
+          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${ApiDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.UpdateAuthorityIdentifierHandler::handleRequest
       Events:
         NvaBareUpdateIdentifierEvent:
@@ -564,7 +568,7 @@ Resources:
           BARE_HOST: !Ref BareHost
           BARE_API_KEY: !Ref BareApiKey
           ALLOWED_ORIGIN: '*'
-          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${CustomDomain}/${CustomDomainBasePath}/'
+          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${ApiDomain}/${CustomDomainBasePath}/'
       Handler: no.unit.nva.bare.CreateAuthorityHandler::handleRequest
       Events:
         NvaBareCreateAuthorityEvent:
@@ -578,9 +582,75 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
       BasePath: !Ref CustomDomainBasePath
-      DomainName: !Ref CustomDomain
+      DomainName: !Ref ApiDomain
       RestApiId: !Ref NvaBareProxyApi
       Stage: !Ref NvaBareProxyApi.Stage
+
+  ### Internal API #####################################################################################################
+
+  NvaInternalBareDeleteIdentifierFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+          ALLOWED_ORIGIN: '*'
+          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${ApiDomain}/${CustomDomainBasePath}/'
+      Handler: no.unit.nva.bare.DeleteAuthorityIdentifierHandler::handleRequest
+      Events:
+        NvaBareDeleteIdentifierEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref InternalApi
+            Path: /{scn}/identifiers/{qualifier}/delete
+            Method: delete
+
+  NvaInternalUpdateIdentifierFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          BARE_HOST: !Ref BareHost
+          BARE_API_KEY: !Ref BareApiKey
+          ALLOWED_ORIGIN: '*'
+          PERSON_AUTHORITY_BASE_ADDRESS: !Sub 'https://${ApiDomain}/${CustomDomainBasePath}/'
+      Handler: no.unit.nva.bare.UpdateAuthorityIdentifierHandler::handleRequest
+      Events:
+        NvaBareUpdateIdentifierEvent:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref InternalApi
+            Path: /{scn}/identifiers/{qualifier}/update
+            Method: put
+
+  InternalApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      EndpointConfiguration: REGIONAL
+      Auth:
+        Authorizers:
+          LambdaRequestAuthorizer:
+            FunctionArn: !GetAtt LambdaAuthorizer.Arn
+            FunctionPayloadType: REQUEST
+            Identity:
+              Headers:
+                - Authorization
+              ReauthorizeEvery: 1
+        DefaultAuthorizer: LambdaRequestAuthorizer
+
+  InternalBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath:
+        !If
+        - WithSuffix
+        - !Sub 'bare-proxy-internal-${Suffix}'
+        - !Sub 'bare-proxy-internal'
+      DomainName: !Ref ApiDomain
+      RestApiId: !Ref InternalApi
+      Stage: !Ref InternalApi.Stage
 
   #============================ Deploy API ============================================================================#
   # This solves the problem described here:
@@ -646,3 +716,52 @@ Resources:
       StageName: !Ref NvaBareProxyApi.Stage
       Timestamp: '${BUILD_TIMESTAMP}'
       AuthorizerArn: !Ref CognitoAuthorizerArn
+
+  ### Authorizer #######################################################################################################
+
+  BareProxySecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: API key securing selected methods in the Bare Proxy internal API. To be used by Identity Service when migrating data.
+      GenerateSecretString:
+        SecretStringTemplate: "{}"
+        GenerateStringKey: BareProxySecretKey
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+      Name: !Sub 'BareProxySecret${Suffix}'
+  BareProxySecretKeyArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      DataType: text
+      Description: Parameter containing the ARN for BareProxySecretSecretKey so that other services can use the Bare Proxy internal API
+      Name: /NVA/BareProxyInternalApiKeyArn
+      Type: String
+      Value: !Ref BareProxySecret
+
+  LambdaAuthorizerPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaAuthorizer
+      Principal: apigateway.amazonaws.com
+
+  LambdaAuthorizer:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: no.unit.nva.bare.authorizer.LambdaAuthorizer::handleRequest
+      MemorySize: 512
+      Environment:
+        Variables:
+          ALLOWED_ORIGIN: '*'
+          API_SECRET_NAME: !Sub 'BareProxySecret${Suffix}'
+          API_SECRET_KEY: BareProxySecretKey
+      Policies:
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Resource: !Ref BareProxySecret
+              Action:
+                - secretsmanager:GetResourcePolicy
+                - secretsmanager:GetSecretValue
+                - secretsmanager:DescribeSecret
+                - secretsmanager:ListSecretVersionIds
