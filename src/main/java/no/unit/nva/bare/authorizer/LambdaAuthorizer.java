@@ -11,7 +11,7 @@ import static nva.commons.core.attempt.Try.attempt;
 
 public class LambdaAuthorizer extends RequestAuthorizer {
 
-    public static final String DEFAULT_PRINCIPAL_ID = "ServiceAccessingIdentityService";
+    public static final String DEFAULT_PRINCIPAL_ID = "ServiceAccessingBareProxy";
     public static final String AWS_SECRET_NAME_ENV_VAR = "API_SECRET_NAME";
     public static final String AWS_SECRET_KEY_ENV_VAR = "API_SECRET_KEY";
     private transient final AWSSecretsManager awsSecretsManager;

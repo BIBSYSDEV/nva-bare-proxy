@@ -646,8 +646,8 @@ Resources:
       BasePath:
         !If
         - WithSuffix
-        - !Sub 'bare-proxy-internal-${Suffix}'
-        - !Sub 'bare-proxy-internal'
+        - !Sub '${CustomDomainBasePath}-internal-${Suffix}'
+        - !Sub '${CustomDomainBasePath}-internal'
       DomainName: !Ref ApiDomain
       RestApiId: !Ref InternalApi
       Stage: !Ref InternalApi.Stage
