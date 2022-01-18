@@ -40,6 +40,13 @@ Parameters:
   BareHost:
     Type: String
     Description: Address to bare
+  Suffix:
+    Type: String
+    Default: ''
+    Description: Suffix used for naming resources for feature branches to avoid conflicts.
+
+Conditions:
+  WithSuffix: !Not [ !Equals [ !Ref Suffix, '' ] ]
 
 Resources:
   ApiAccessLogGroup:
@@ -581,7 +588,11 @@ Resources:
   NvaBareProxyBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
-      BasePath: !Ref CustomDomainBasePath
+      BasePath:
+        !If
+        - WithSuffix
+        - !Sub '${CustomDomainBasePath}-${Suffix}'
+        - !Sub '${CustomDomainBasePath}'
       DomainName: !Ref ApiDomain
       RestApiId: !Ref NvaBareProxyApi
       Stage: !Ref NvaBareProxyApi.Stage
