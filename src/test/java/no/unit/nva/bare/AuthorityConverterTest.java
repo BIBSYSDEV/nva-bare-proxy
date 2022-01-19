@@ -1,12 +1,10 @@
 package no.unit.nva.bare;
 
-import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
+import static no.unit.nva.bare.ApplicationConfig.defaultRestObjectMapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.nio.file.Paths;
 import nva.commons.core.ioutils.IoUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +34,7 @@ public class AuthorityConverterTest {
         InputStream streamResp =
                 IoUtils.inputStreamFromResources(BARE_SINGLE_AUTHORITY_GET_RESPONSE_WITH_ALL_IDS_JSON);
         AuthorityConverter authorityConverter = new AuthorityConverter();
-        final BareAuthority bareAuthority = objectMapperWithEmpty.readValue(new InputStreamReader(streamResp), BareAuthority.class);
+        final BareAuthority bareAuthority = defaultRestObjectMapper.readValue(new InputStreamReader(streamResp), BareAuthority.class);
         final String value = authorityConverter.findValueIn(bareAuthority, "whatEver");
         assertEquals("", value);
     }
@@ -44,7 +42,7 @@ public class AuthorityConverterTest {
     @Test
     public void testBuildAuthority() throws IOException {
         InputStream streamResp = IoUtils.inputStreamFromResources(CREATE_AUTHORITY_REQUEST_TO_BARE_JSON);
-        final BareAuthority expectedAuth = objectMapperWithEmpty.readValue(new InputStreamReader(streamResp), BareAuthority.class);
+        final BareAuthority expectedAuth = defaultRestObjectMapper.readValue(new InputStreamReader(streamResp), BareAuthority.class);
         AuthorityConverter authorityConverter = new AuthorityConverter();
         final BareAuthority bareAuthority = authorityConverter.buildAuthority(INVERTED_NAME);
         assertEquals(expectedAuth.getStatus(), bareAuthority.getStatus());

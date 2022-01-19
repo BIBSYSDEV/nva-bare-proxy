@@ -3,6 +3,7 @@ package no.unit.nva.bare;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static no.unit.nva.bare.ApplicationConfig.defaultRestObjectMapper;
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY;
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.INVALID_VALUE_PATH_PARAMETER_QUALIFIER;
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.MISSING_ATTRIBUTE_IDENTIFIER;
@@ -13,7 +14,6 @@ import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.MISSING_REQUEST_
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.QUALIFIER_KEY;
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.REMOTE_SERVER_ERRORMESSAGE;
 import static no.unit.nva.bare.UpdateAuthorityIdentifierHandler.SCN_KEY;
-import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
@@ -75,14 +75,14 @@ public class UpdateAuthorityIdentifierHandlerTest {
     @DisplayName("handler Returns Bad Request Response When SCN Path Parameter Is Missing")
     public void handlerReturnsBadRequestWhenScnPathParameterIsMissing() throws IOException {
 
-        InputStream input = new HandlerUtils(objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(null);
+        InputStream input = new HandlerUtils(defaultRestObjectMapper).requestObjectToApiGatewayRequestInputSteam(null);
         updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(bareConnection);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse =
-            objectMapperWithEmpty.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
+            defaultRestObjectMapper.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
         assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
-        Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
+        Problem problem = defaultRestObjectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_PATH_PARAMETER_SCN));
         assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
@@ -94,17 +94,17 @@ public class UpdateAuthorityIdentifierHandlerTest {
     public void handlerReturnsBadRequestWhenQualifierPathParameterIsMissing() throws IOException {
 
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, null);
-        InputStream input = new HandlerUtils(objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(null,
+        InputStream input = new HandlerUtils(defaultRestObjectMapper).requestObjectToApiGatewayRequestInputSteam(null,
                                                                                                                TestHeaders.getRequestHeaders(),
                                                                                                                pathParams,
                                                                                                                null);
         updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(bareConnection);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(),
+        nva.commons.apigateway.GatewayResponse gatewayResponse = defaultRestObjectMapper.readValue(output.toString(),
                                                                                                  nva.commons.apigateway.GatewayResponse.class);
         assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
-        Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
+        Problem problem = defaultRestObjectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_PATH_PARAMETER_QUALIFIER));
         assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
@@ -117,7 +117,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE,
                                                            ValidIdentifierKey.ORGUNITID.asString() + "invalid");
-        InputStream input = new HandlerUtils(objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(null,
+        InputStream input = new HandlerUtils(defaultRestObjectMapper).requestObjectToApiGatewayRequestInputSteam(null,
                                                                                                                TestHeaders.getRequestHeaders(),
                                                                                                                pathParams,
                                                                                                                null);
@@ -125,9 +125,9 @@ public class UpdateAuthorityIdentifierHandlerTest {
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse =
-            objectMapperWithEmpty.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
+            defaultRestObjectMapper.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
         assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
-        Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
+        Problem problem = defaultRestObjectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(INVALID_VALUE_PATH_PARAMETER_QUALIFIER));
         assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
@@ -139,7 +139,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
     public void handlerReturnsBadRequestWhenMissingJsonInBody() throws IOException {
 
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.ORGUNITID.asString());
-        InputStream input = new HandlerUtils(objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(null,
+        InputStream input = new HandlerUtils(defaultRestObjectMapper).requestObjectToApiGatewayRequestInputSteam(null,
                                                                                                                TestHeaders.getRequestHeaders(),
                                                                                                                pathParams,
                                                                                                                null);
@@ -147,9 +147,9 @@ public class UpdateAuthorityIdentifierHandlerTest {
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse =
-            objectMapperWithEmpty.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
+            defaultRestObjectMapper.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
         assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
-        Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
+        Problem problem = defaultRestObjectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_REQUEST_JSON_BODY));
         assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
@@ -164,16 +164,16 @@ public class UpdateAuthorityIdentifierHandlerTest {
                                                                                               MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(
-            objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
+            defaultRestObjectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
                                                                               TestHeaders.getRequestHeaders(),
                                                                               pathParams, null);
         updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(bareConnection);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse =
-            objectMapperWithEmpty.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
+            defaultRestObjectMapper.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
         assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
-        Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
+        Problem problem = defaultRestObjectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_ATTRIBUTE_IDENTIFIER));
         assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
@@ -188,16 +188,16 @@ public class UpdateAuthorityIdentifierHandlerTest {
                                                                                               null);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(
-            objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
+            defaultRestObjectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
                                                                               TestHeaders.getRequestHeaders(),
                                                                               pathParams, null);
         updateAuthorityIdentifierHandler = new UpdateAuthorityIdentifierHandler(bareConnection);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
         nva.commons.apigateway.GatewayResponse gatewayResponse =
-            objectMapperWithEmpty.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
+            defaultRestObjectMapper.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
         assertEquals(HTTP_BAD_REQUEST, gatewayResponse.getStatusCode());
-        Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
+        Problem problem = defaultRestObjectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(MISSING_ATTRIBUTE_UPDATED_IDENTIFIER));
         assertThat(problem.getTitle(), containsString(Status.BAD_REQUEST.getReasonPhrase()));
@@ -210,7 +210,7 @@ public class UpdateAuthorityIdentifierHandlerTest {
 
         InputStream is =
             UpdateAuthorityIdentifierHandler.class.getResourceAsStream(BARE_SINGLE_AUTHORITY_GET_RESPONSE_JSON);
-        final BareAuthority bareAuthority = objectMapperWithEmpty.readValue(new InputStreamReader(is),
+        final BareAuthority bareAuthority = defaultRestObjectMapper.readValue(new InputStreamReader(is),
                                                                             BareAuthority.class);
         when(bareConnection.get(anyString())).thenReturn(bareAuthority);
         when(httpResponse.statusCode()).thenReturn(HTTP_OK);
@@ -221,12 +221,12 @@ public class UpdateAuthorityIdentifierHandlerTest {
                                                                                               MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(
-            objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
+            defaultRestObjectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
                                                                               TestHeaders.getRequestHeaders(),
                                                                               pathParams, null);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
         nva.commons.apigateway.GatewayResponse gatewayResponse =
-            objectMapperWithEmpty.readValue(output.toString(),
+            defaultRestObjectMapper.readValue(output.toString(),
                                             nva.commons.apigateway.GatewayResponse.class);
 
         assertEquals(HTTP_OK, gatewayResponse.getStatusCode());
@@ -244,12 +244,12 @@ public class UpdateAuthorityIdentifierHandlerTest {
                                                  MOCK_UPDATED_IDENTIFIER_URI.toString());
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.ORGUNITID.asString());
         InputStream input = new HandlerUtils(
-            objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
+            defaultRestObjectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
                                                                               TestHeaders.getRequestHeaders(),
                                                                               pathParams, null);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
         nva.commons.apigateway.GatewayResponse gatewayResponse =
-            objectMapperWithEmpty.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
+            defaultRestObjectMapper.readValue(output.toString(), nva.commons.apigateway.GatewayResponse.class);
 
         assertEquals(HTTP_OK, gatewayResponse.getStatusCode());
     }
@@ -267,14 +267,14 @@ public class UpdateAuthorityIdentifierHandlerTest {
                                                                                               MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(
-            objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
+            defaultRestObjectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
                                                                               TestHeaders.getRequestHeaders(),
                                                                               pathParams, null);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(),
+        nva.commons.apigateway.GatewayResponse gatewayResponse = defaultRestObjectMapper.readValue(output.toString(),
                                                                                                  nva.commons.apigateway.GatewayResponse.class);
-        Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
+        Problem problem = defaultRestObjectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(EXCEPTION_IS_EXPECTED));
         assertThat(problem.getTitle(), containsString(Status.INTERNAL_SERVER_ERROR.getReasonPhrase()));
@@ -294,14 +294,14 @@ public class UpdateAuthorityIdentifierHandlerTest {
                                                                                               MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(
-            objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
+            defaultRestObjectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
                                                                               TestHeaders.getRequestHeaders(),
                                                                               pathParams, null);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(),
+        nva.commons.apigateway.GatewayResponse gatewayResponse = defaultRestObjectMapper.readValue(output.toString(),
                                                                                                  nva.commons.apigateway.GatewayResponse.class);
-        Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
+        Problem problem = defaultRestObjectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(COMMUNICATION_ERROR_WHILE_RETRIEVING_UPDATED_AUTHORITY));
         assertThat(problem.getTitle(), containsString(Status.INTERNAL_SERVER_ERROR.getReasonPhrase()));
@@ -321,14 +321,14 @@ public class UpdateAuthorityIdentifierHandlerTest {
                                                                                               MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(
-            objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
+            defaultRestObjectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
                                                                               TestHeaders.getRequestHeaders(),
                                                                               pathParams, null);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(),
+        nva.commons.apigateway.GatewayResponse gatewayResponse = defaultRestObjectMapper.readValue(output.toString(),
                                                                                                  nva.commons.apigateway.GatewayResponse.class);
-        Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
+        Problem problem = defaultRestObjectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(EXCEPTION_IS_EXPECTED));
         assertThat(problem.getTitle(), containsString(Status.INTERNAL_SERVER_ERROR.getReasonPhrase()));
@@ -347,14 +347,14 @@ public class UpdateAuthorityIdentifierHandlerTest {
                                                                                               MOCK_FEIDEID_VALUE);
         Map<String, String> pathParams = getPathParameters(MOCK_SCN_VALUE, ValidIdentifierKey.FEIDEID.asString());
         InputStream input = new HandlerUtils(
-            objectMapperWithEmpty).requestObjectToApiGatewayRequestInputSteam(requestObject,
+            defaultRestObjectMapper).requestObjectToApiGatewayRequestInputSteam(requestObject,
                                                                               TestHeaders.getRequestHeaders(),
                                                                               pathParams, null);
         updateAuthorityIdentifierHandler.handleRequest(input, output, context);
 
-        nva.commons.apigateway.GatewayResponse gatewayResponse = objectMapperWithEmpty.readValue(output.toString(),
+        nva.commons.apigateway.GatewayResponse gatewayResponse = defaultRestObjectMapper.readValue(output.toString(),
                                                                                                  nva.commons.apigateway.GatewayResponse.class);
-        Problem problem = objectMapperWithEmpty.readValue(gatewayResponse.getBody(), Problem.class);
+        Problem problem = defaultRestObjectMapper.readValue(gatewayResponse.getBody(), Problem.class);
 
         assertThat(problem.getDetail(), containsString(REMOTE_SERVER_ERRORMESSAGE));
         assertThat(problem.getTitle(), containsString(Status.INTERNAL_SERVER_ERROR.getReasonPhrase()));

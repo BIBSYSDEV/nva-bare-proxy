@@ -4,7 +4,8 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.util.Objects.nonNull;
-import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
+import static no.unit.nva.bare.ApplicationConfig.defaultRestObjectMapper;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import java.io.IOException;
@@ -85,9 +86,9 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
                     BareQueryResponse searchResult = bareConnection.searchByAuthorityName(query);
 
                     final List<Authority> fetchedAuthority = authorityConverter.extractAuthorities(searchResult);
-                    log.info(objectMapperWithEmpty.writeValueAsString(fetchedAuthority));
+                    log.info(defaultRestObjectMapper.writeValueAsString(fetchedAuthority));
 
-                    gatewayResponse.setBody(objectMapperWithEmpty.writeValueAsString(fetchedAuthority));
+                    gatewayResponse.setBody(defaultRestObjectMapper.writeValueAsString(fetchedAuthority));
                     gatewayResponse.setStatusCode(HTTP_OK);
                 } catch (IOException | URISyntaxException | InterruptedException e) {
 
@@ -122,7 +123,7 @@ public class FetchAuthorityHandler implements RequestHandler<Map<String, Object>
         try {
             BareAuthority fetchedAuthority = bareConnection.get(arpId);
             Authority authority = authorityConverter.asAuthority(fetchedAuthority);
-            gatewayResponse.setBody(objectMapperWithEmpty.writeValueAsString(authority));
+            gatewayResponse.setBody(defaultRestObjectMapper.writeValueAsString(authority));
             gatewayResponse.setStatusCode(HTTP_OK);
             return gatewayResponse;
         } catch (URISyntaxException | IOException | InterruptedException e) {
