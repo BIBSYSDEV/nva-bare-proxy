@@ -5,8 +5,8 @@ import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 import static java.net.HttpURLConnection.HTTP_NOT_ACCEPTABLE;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static no.unit.nva.bare.ApplicationConfig.defaultRestObjectMapper;
 import static no.unit.nva.bare.CreateAuthorityRequest.MALFORMED_NAME_VALUE;
-import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import static nva.commons.core.attempt.Try.attempt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
@@ -74,8 +74,8 @@ public class CreateAuthorityHandlerTest {
         GatewayResponse<Authority> response = GatewayResponse.fromOutputStream(outputStream);
         assertEquals(HTTP_OK, response.getStatusCode());
         String resp = FetchAuthorityHandlerTest.readJsonStringFromFile(CREATE_AUTHORITY_GATEWAY_RESPONSE_BODY_JSON);
-        Authority expected = objectMapperWithEmpty.readValue(resp, Authority.class);
-        Authority actual = objectMapperWithEmpty.readValue(response.getBody(), Authority.class);
+        Authority expected = defaultRestObjectMapper.readValue(resp, Authority.class);
+        Authority actual = defaultRestObjectMapper.readValue(response.getBody(), Authority.class);
         assertEquals(expected, actual);
     }
 
@@ -157,7 +157,7 @@ public class CreateAuthorityHandlerTest {
     }
 
     private InputStream notInvertedName() throws JsonProcessingException {
-        return new HandlerRequestBuilder<CreateAuthorityRequest>(objectMapperWithEmpty)
+        return new HandlerRequestBuilder<CreateAuthorityRequest>(defaultRestObjectMapper)
             .withBody(new CreateAuthorityRequest("name without comma"))
             .build();
     }
@@ -165,11 +165,11 @@ public class CreateAuthorityHandlerTest {
     private InputStream sampleRequest() {
         Map<String, Object> requestEvent = new HashMap<>();
         requestEvent.put(BODY_KEY, MOCK_BODY);
-        String jsonString = attempt(() -> objectMapperWithEmpty.writeValueAsString(requestEvent)).orElseThrow();
+        String jsonString = attempt(() -> defaultRestObjectMapper.writeValueAsString(requestEvent)).orElseThrow();
         return IoUtils.stringToStream(jsonString);
     }
 
     private InputStream emptyRequest() throws JsonProcessingException {
-        return new HandlerRequestBuilder<CreateAuthorityRequest>(objectMapperWithEmpty).build();
+        return new HandlerRequestBuilder<CreateAuthorityRequest>(defaultRestObjectMapper).build();
     }
 }

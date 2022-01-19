@@ -1,11 +1,11 @@
 package no.unit.nva.bare;
 
 import static java.net.HttpURLConnection.HTTP_OK;
+import static no.unit.nva.bare.ApplicationConfig.defaultRestObjectMapper;
 import static no.unit.nva.bare.Config.BARE_APIKEY;
 import static no.unit.nva.bare.Config.BARE_CREATE_PATH;
 import static no.unit.nva.bare.Config.BARE_HOST;
 import static no.unit.nva.bare.Config.BARE_QUERY_PATH;
-import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,9 +13,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import nva.commons.apigateway.ContentTypes;
-import nva.commons.apigateway.HttpHeaders;
-import nva.commons.core.JsonUtils;
+
+import com.google.common.net.HttpHeaders;
+import com.google.common.net.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +65,7 @@ public class BareConnection {
         HttpResponse<String> response = sendGetRequest(getUri);
         if (response.statusCode() == HTTP_OK) {
             final String body = response.body();
-            return objectMapperWithEmpty.readValue(body, BareAuthority.class);
+            return defaultRestObjectMapper.readValue(body, BareAuthority.class);
         } else {
             logger.error("Error..? " + response.body());
             throw new IOException(response.body());
@@ -90,7 +90,7 @@ public class BareConnection {
             String.format(ADD_NEW_AUTHORITY_IDENTIFIER_PATH, authoritySystemControlNumber);
         URI uri = new URI(HTTPS, BARE_HOST, addIdentifierPath, EMPTY_QUERY, EMPTY_FRAGMENT);
 
-        final String body = objectMapperWithEmpty.writeValueAsString(authorityIdentifier);
+        final String body = defaultRestObjectMapper.writeValueAsString(authorityIdentifier);
         HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(body);
         final HttpRequest.Builder requestBuilder = getHttpRequestBuilder(uri);
         HttpRequest request = requestBuilder.POST(bodyPublisher).build();
@@ -170,7 +170,7 @@ public class BareConnection {
         URI queryUri = new URI(HTTPS, BARE_HOST, BARE_QUERY_PATH, query, EMPTY_FRAGMENT);
         HttpResponse<String> response = sendGetRequest(queryUri);
         String json = response.body();
-        return JsonUtils.objectMapperWithEmpty.readValue(json, BareQueryResponse.class);
+        return defaultRestObjectMapper.readValue(json, BareQueryResponse.class);
     }
 
     private URI formatGetByScnQuery(String systemControlNumber) throws URISyntaxException {
@@ -193,7 +193,7 @@ public class BareConnection {
         return HttpRequest.newBuilder()
             .uri(uri)
             .header(HttpHeaders.AUTHORIZATION, apiKeyAuth)
-            .header(HttpHeaders.CONTENT_TYPE, ContentTypes.APPLICATION_JSON)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.JSON_UTF_8.toString())
             .timeout(TIMEOUT_DURATION);
     }
 }

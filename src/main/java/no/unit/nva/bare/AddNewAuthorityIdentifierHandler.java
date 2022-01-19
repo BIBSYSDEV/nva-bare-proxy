@@ -56,7 +56,7 @@ public class AddNewAuthorityIdentifierHandler extends ApiGatewayHandler<AddNewAu
      *
      * @param bareConnection bareConnection
      */
-    public AddNewAuthorityIdentifierHandler( BareConnection bareConnection) {
+    public AddNewAuthorityIdentifierHandler(BareConnection bareConnection) {
         super(AddNewAuthorityIdentifierRequest.class, new Environment());
         this.bareConnection = bareConnection;
     }

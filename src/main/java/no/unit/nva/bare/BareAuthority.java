@@ -1,14 +1,16 @@
 package no.unit.nva.bare;
 
-import static nva.commons.core.attempt.Try.attempt;
+import nva.commons.core.JacocoGenerated;
+import nva.commons.core.JsonSerializable;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import nva.commons.core.JacocoGenerated;
-import nva.commons.core.JsonSerializable;
-import nva.commons.core.JsonUtils;
+
+import static no.unit.nva.bare.ApplicationConfig.defaultRestObjectMapper;
+import static nva.commons.core.attempt.Try.attempt;
 
 @SuppressWarnings("PMD")
 public class BareAuthority implements JsonSerializable {
@@ -20,7 +22,7 @@ public class BareAuthority implements JsonSerializable {
     private Map<String, List<String>> identifiersMap;
 
     public static BareAuthority fromJson(String json) {
-        return attempt(() -> JsonUtils.objectMapperWithEmpty.readValue(json, BareAuthority.class)).orElseThrow();
+        return attempt(() -> defaultRestObjectMapper.readValue(json, BareAuthority.class)).orElseThrow();
     }
 
     public String getAuthorityType() {

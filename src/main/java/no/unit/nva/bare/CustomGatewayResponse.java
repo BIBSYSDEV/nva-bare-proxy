@@ -1,13 +1,15 @@
 package no.unit.nva.bare;
 
 import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
-import static nva.commons.core.JsonUtils.objectMapperWithEmpty;
+import static no.unit.nva.bare.ApplicationConfig.defaultRestObjectMapper;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import nva.commons.apigateway.ContentTypes;
-import nva.commons.apigateway.HttpHeaders;
+
+import com.google.common.net.HttpHeaders;
+import com.google.common.net.MediaType;
 import nva.commons.core.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +65,7 @@ public class CustomGatewayResponse {
         Map<String, String> bodyContent = new ConcurrentHashMap<>();
         bodyContent.put(ERROR_KEY, message);
         try {
-            this.body = objectMapperWithEmpty.writeValueAsString(bodyContent);
+            this.body = defaultRestObjectMapper.writeValueAsString(bodyContent);
         } catch (JsonProcessingException e) {
             logger.error(e.getMessage(), e);
         }
@@ -71,7 +73,7 @@ public class CustomGatewayResponse {
 
     private void generateDefaultHeaders() {
         Map<String, String> headers = new ConcurrentHashMap<>();
-        headers.put(HttpHeaders.CONTENT_TYPE, ContentTypes.APPLICATION_JSON);
+        headers.put(HttpHeaders.CONTENT_TYPE, MediaType.JSON_UTF_8.toString());
         final String corsAllowDomain = Config.CORS_ALLOW_ORIGIN;
         if (StringUtils.isNotEmpty(corsAllowDomain)) {
             headers.put(CORS_ALLOW_ORIGIN_HEADER, corsAllowDomain);
