@@ -764,8 +764,8 @@ Resources:
       Environment:
         Variables:
           ALLOWED_ORIGIN: '*'
-          API_SECRET_NAME: !Sub 'BareProxySecret${Suffix}'
-          API_SECRET_KEY: BareProxySecretKey
+          API_KEY_SECRET_NAME: !Sub 'BareProxySecret${Suffix}'
+          API_KEY_SECRET_KEY: BareProxySecretKey
       Policies:
         - Version: 2012-10-17
           Statement:
